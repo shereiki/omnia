@@ -1,0 +1,13 @@
+name = "omnia"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-10-28"
+
+[[d1_databases]]
+binding = "INQUIRIES_DB"
+database_name = "omnia-inquiries"
+# Replace with the ID returned by `wrangler d1 create omnia-inquiries`.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# Set ADMIN_ACCESS_TEAM_DOMAIN and ADMIN_ACCESS_AUD in Pages environment variables
+# after configuring the Access application described in docs/CLOUDFLARE_SETUP.md.

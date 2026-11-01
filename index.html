@@ -1,0 +1,1958 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F2F0FA" />
+    <meta
+      name="description"
+      content="Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
+    />
+    <title>Omnia — Everything works together.</title>
+    <link rel="icon" href="assets/omnia-mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
+    <link
+      rel="preload"
+      href="assets/manrope.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link rel="stylesheet" href="styles.css?v=premium-7" />
+    <noscript
+      ><style>
+        .welcome,
+        .header nav,
+        .menu,
+        .story-navigation,
+        .perspective-controls,
+        .foundation-toggle,
+        .native-switch,
+        .dimension-controls,
+        .explorer-navigation {
+          display: none !important;
+        }
+        .os-explorer [data-module-stage][hidden],
+        .os-explorer [data-effect-stage][hidden] {
+          display: block !important;
+        }
+        .os-explorer .output-introduction {
+          display: none !important;
+        }
+        .story-rail {
+          position: relative !important;
+          top: auto !important;
+        }
+        .story-layout {
+          display: block !important;
+        }
+        .narrative-scene {
+          min-height: 0 !important;
+          padding-block: 30px !important;
+        }
+        .inquiry-form .form-row,
+        .inquiry-form .field,
+        .inquiry-form .form-footer {
+          display: none;
+        }
+      </style></noscript
+    >
+    <script src="assets/vendor/gsap.min.js" defer></script>
+    <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
+    <script src="assets/vendor/motion.js" defer></script>
+    <script src="assets/vendor/lenis-1.3.27.min.js" defer></script>
+    <script src="script.js?v=premium-7" defer></script>
+    <script src="native-intelligence.js?v=premium-7" defer></script>
+    <script src="omnia-story.js?v=premium-7" defer></script>
+    <script src="animations.js?v=premium-7" defer></script>
+    <script src="inquiry.js?v=premium-7" defer></script>
+  </head>
+  <body>
+    <svg class="svg-definitions" aria-hidden="true">
+      <defs>
+        <symbol id="mark" viewBox="0 0 430 440">
+          <path
+            class="part part-a"
+            fill="var(--omnia-mark-primary, #5b45d6)"
+            d="M228 70h-58Q70 70 70 170v68h74v-56q0-38 38-38h46Z"
+          />
+          <path
+            class="part part-b"
+            fill="var(--omnia-mark-accent, #69e3c0)"
+            d="M246 70h16q98 0 98 98v50h-74v-36q0-38-40-38Z"
+          />
+          <path
+            class="part part-c"
+            fill="var(--omnia-mark-primary, #5b45d6)"
+            d="M360 236v38q0 96-96 96h-74v-74h58q38 0 38-38v-22Z"
+          />
+          <path
+            class="part part-d"
+            fill="var(--omnia-mark-primary, #5b45d6)"
+            d="M70 256v18q0 96 98 96h4v-74q-28 0-28-38v-2Z"
+          />
+        </symbol>
+        <symbol id="icon-arrow" viewBox="0 0 24 24">
+          <path d="M5 12h14m-6-6 6 6-6 6" />
+        </symbol>
+
+        <symbol id="icon-check" viewBox="0 0 24 24">
+          <path d="m6 12 4 4 8-9" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="welcome" id="welcome" aria-label="Welcome to Omnia">
+      <div class="welcome-top">
+        <span class="wordmark">omnia</span
+        ><span class="launch-status">Coming soon</span>
+      </div>
+      <div class="welcome-center">
+        <svg class="welcome-mark" viewBox="0 0 430 440" aria-hidden="true">
+          <path
+            class="corner corner-a"
+            d="M228 70h-58Q70 70 70 170v68h74v-56q0-38 38-38h46Z"
+          />
+          <path
+            class="corner corner-b"
+            d="M246 70h16q98 0 98 98v50h-74v-36q0-38-40-38Z"
+          />
+          <path
+            class="corner corner-c"
+            d="M360 236v38q0 96-96 96h-74v-74h58q38 0 38-38v-22Z"
+          />
+          <path
+            class="corner corner-d"
+            d="M70 256v18q0 96 98 96h4v-74q-28 0-28-38v-2Z"
+          />
+        </svg>
+        <p class="welcome-line">It all comes together.</p>
+        <button class="button" id="enter" type="button">
+          <span>Discover Omnia</span
+          ><span class="button-symbol" aria-hidden="true"
+            ><svg viewBox="0 0 24 24"><use href="#icon-arrow" /></svg
+          ></span>
+        </button>
+      </div>
+      <p class="welcome-bottom">Everything connected. Everything optimized.</p>
+    </div>
+
+    <div id="site">
+      <a class="skip" href="#main">Skip to content</a>
+      <header class="header">
+        <div class="container header-inner">
+          <a class="brand" href="#main" aria-label="Omnia home"
+            ><svg viewBox="0 0 430 440" aria-hidden="true">
+              <use href="#mark" /></svg
+            ><span>omnia</span></a
+          >
+          <nav id="navigation" aria-label="Main navigation">
+            <a href="#omnia-os-overview">Omnia OS</a
+            ><a href="#native-intelligence">Native intelligence</a
+            ><a href="#explore">Omnia Modules</a
+            ><a href="#approach">Working with Omnia</a>
+          </nav>
+          <div class="header-actions">
+            <span class="launch-indicator"><i></i>Coming soon</span
+            ><a class="small-cta" href="#early-access"
+              >Let’s talk
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <use href="#icon-arrow" /></svg></a
+            ><button
+              class="menu"
+              type="button"
+              aria-label="Open navigation"
+              aria-expanded="false"
+              aria-controls="navigation"
+            >
+              <span></span><span></span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main id="main" tabindex="-1">
+        <section class="hero container" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="hero-category">
+              A technology company. An AI-native foundation.
+            </p>
+            <h1 id="hero-title" tabindex="-1">
+              <span>Everything</span><span>works together.</span>
+            </h1>
+            <p class="hero-description">
+              We're building Omnia OS—an AI-native environment that brings your
+              existing technology together and makes room for entirely new
+              capabilities.
+            </p>
+            <p class="hero-support">
+              Connect the tools you rely on. Expand with Omnia Modules. Put
+              native intelligence and new capabilities to work.
+            </p>
+            <p class="hero-statement">One foundation. Entirely your own.</p>
+            <div class="hero-actions">
+              <a class="button" href="#omnia-os-overview"
+                ><span>Explore Omnia</span
+                ><span class="button-symbol"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <use href="#icon-arrow" /></svg></span></a
+              ><a class="quiet-link" href="#early-access"
+                >Start a conversation</a
+              >
+            </div>
+          </div>
+          <div
+            class="hero-art motion-scene"
+            role="img"
+            aria-label="An Omnia extension inside an existing workspace: existing software, connected tools, and new intelligent capabilities. "
+          >
+            <div class="art-orbit" aria-hidden="true"></div>
+            <div class="art-ground" aria-hidden="true"></div>
+            <div class="hero-workspace">
+              <div class="mock-top">
+                <div class="mock-brand">
+                  <span class="own-system" aria-hidden="true"
+                    ><svg
+                      class="purpose-icon"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="4" width="18" height="16" rx="3" />
+                      <path d="M3 9h18M9 9v11m4-7h4m-4 3h4" /></svg></span
+                  ><span>Your existing workspace</span>
+                </div>
+                <span class="mock-avatar" aria-label="Your team">T</span>
+              </div>
+              <div class="workspace-grid">
+                <div class="mock-sidebar">
+                  <span class="nav-line selected">Overview</span
+                  ><span class="nav-line">Projects</span
+                  ><span class="nav-line">Clients</span
+                  ><span class="nav-line">Your tools</span
+                  ><span class="sidebar-end">Built for your team</span>
+                </div>
+                <div class="workspace-body">
+                  <span class="mock-overline">The tools you already know</span>
+                  <h3>A familiar place.<br />With new possibilities.</h3>
+                  <div class="mock-project">
+                    <div
+                      class="project-graphic omnia-extension-mark"
+                      aria-hidden="true"
+                    >
+                      <svg viewBox="0 0 430 440"><use href="#mark" /></svg>
+                    </div>
+                    <div>
+                      <small>Omnia extension</small
+                      ><strong>Information brought together</strong
+                      ><span class="status-label"
+                        ><i></i>Connected records · permitted access</span
+                      >
+                    </div>
+                  </div>
+                  <div class="mock-bottom">
+                    <div>
+                      <span>Today’s focus</span
+                      ><strong>Review the brief. Prepare the next step.</strong>
+                    </div>
+                    <span class="mock-circle"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="#icon-arrow" /></svg
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="hero-customer">
+              <div class="customer-top">
+                <svg class="mini-mark" viewBox="0 0 430 440" aria-hidden="true">
+                  <use href="#mark" /></svg
+                ><span>Powered by Omnia</span><i></i>
+              </div>
+              <div class="customer-art" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <small>Across your connected tools</small
+              ><strong>Answers.<br />Next steps.</strong>
+              <div class="customer-progress"><span></span></div>
+              <span class="customer-caption"
+                >Knowledge, records &amp; permitted actions</span
+              >
+            </div>
+            <div class="hero-tools">
+              <span>Connected to your tools</span>
+              <div>
+                <img
+                  src="assets/integration-marks/google.svg"
+                  alt="Google Workspace"
+                /><img
+                  src="assets/integration-marks/stripe.svg"
+                  alt="Stripe"
+                /><img
+                  src="assets/integration-marks/shopify.svg"
+                  alt="Shopify"
+                /><img
+                  src="assets/integration-marks/whatsapp.svg"
+                  alt="WhatsApp"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="hero-bottom">
+            <p>
+              Your existing tools. One shared foundation.<br />New capabilities
+              as your business needs them.
+            </p>
+            <a class="scroll-cue" href="#omnia-os-overview"
+              >Discover Omnia OS<span
+                ><svg viewBox="0 0 24 24" aria-hidden="true">
+                  <use href="#icon-arrow" /></svg></span
+            ></a>
+          </div>
+        </section>
+
+        <section
+          class="os-overview container"
+          id="omnia-os-overview"
+          tabindex="-1"
+          aria-labelledby="os-overview-title"
+        >
+          <div class="os-overview-layout" data-os-explorer>
+            <div class="os-overview-left">
+              <h2 id="os-overview-title">Meet Omnia OS.</h2>
+            <div
+              class="foundation-environment"
+              data-expanded="false"
+              role="group"
+              aria-label="Your existing technology remains in place around Omnia OS, an intelligent foundation for new capabilities."
+            >
+              <span class="foundation-existing-label"
+                >Your existing technology</span
+              >
+
+              <div class="business-tools" aria-hidden="true">
+                <div class="business-tool tool-communication">
+                  <div>
+                    <img src="assets/integration-marks/google.svg" alt="" /><img
+                      src="assets/integration-marks/whatsapp.svg"
+                      alt=""
+                    />
+                  </div>
+                  <span>Communication</span>
+                </div>
+                <div class="business-tool tool-customers">
+                  <div>
+                    <span class="context-symbol"><i></i><i></i><i></i></span>
+                  </div>
+                  <span>Customer context</span>
+                </div>
+                <div class="business-tool tool-operations">
+                  <div>
+                    <span class="own-tool-symbol"
+                      ><svg
+                        class="purpose-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="4" width="18" height="16" rx="3" />
+                        <path d="M3 9h18M9 9v11m4-7h4m-4 3h4" /></svg
+                    ></span>
+                  </div>
+                  <span>Operations &amp; records</span>
+                </div>
+                <div class="business-tool tool-sales">
+                  <div>
+                    <img src="assets/integration-marks/stripe.svg" alt="" /><img
+                      src="assets/integration-marks/shopify.svg"
+                      alt=""
+                    />
+                  </div>
+                  <span>Sales &amp; payments</span>
+                </div>
+              </div>
+              <div class="foundation-emblem">
+                <div class="foundation-emblem-sculpture" aria-hidden="true">
+                  <svg viewBox="0 0 430 440"><use href="#mark" /></svg>
+                </div>
+                <strong>Omnia OS</strong>
+                <span><i aria-hidden="true"></i>Intelligence, built in</span>
+              </div>
+              <div class="foundation-possibilities" aria-hidden="true">
+                <span>New functionality</span
+                ><span>Intelligent coordination</span
+                ><span>Tailored experiences</span>
+              </div>
+              <span class="foundation-environment-caption"
+                >The systems you rely on stay in place.</span
+              >
+            </div>
+            </div>
+            <div class="os-overview-right">
+            <div class="os-overview-copy">
+              <p class="os-lead">
+                A foundation for what your technology could become.
+              </p>
+              <p>
+                Omnia OS is the persistent, customizable, AI-native environment
+                we're building to work with the technology your business already
+                uses.
+              </p>
+              <p>
+                Omnia Modules expand its capabilities. Native intelligence can
+                put the connected environment to work. Your Solution brings
+                these together with the configuration and custom engineering
+                your business needs.
+              </p>
+            </div>
+            <div class="os-principles">
+              <div>
+                <span>Your technology has more to give.</span>
+                <p>
+                  Keep the software that works for you. Build connections and
+                  introduce capabilities around it, without starting over.
+                </p>
+              </div>
+              <button
+                class="small-cta foundation-toggle"
+                type="button"
+                data-foundation-toggle
+                aria-expanded="false"
+                aria-controls="foundation-possibility-copy"
+              >
+                <span>Explore what becomes possible</span
+                ><span aria-hidden="true">+</span>
+              </button>
+              <div
+                id="foundation-possibility-copy"
+                class="foundation-possibility-copy"
+                hidden
+              >
+                <p>
+                  A new capability inside familiar software. An agent with
+                  relevant context. Work that can continue across tools. The
+                  same foundation can support each of them.
+                </p>
+              </div>
+              <div class="os-native-statement">
+                <svg viewBox="0 0 430 440" aria-hidden="true">
+                  <use href="#mark" />
+                </svg>
+                <p>
+                  Intelligence is native to Omnia OS. Its shared agent runtime
+                  is designed to connect specialized agents with relevant
+                  business context, capabilities, permissions, and human
+                  oversight.
+                </p>
+              </div>
+            </div>
+            </div>
+          </div>        </section>
+
+        <section
+          class="ecosystem container"
+          id="connections"
+          tabindex="-1"
+          aria-labelledby="connections-title"
+        >
+          <div class="section-intro">
+            <div>
+              <span class="section-kicker">Your ecosystem</span>
+              <h2 id="connections-title">
+                Built around the<br />tools you use.
+              </h2>
+            </div>
+            <div>
+              <p>
+                We start with the software you rely on—global platforms, the
+                systems used in your market, or software built just for your
+                business.
+              </p>
+              <p>
+                Then we connect what exists, extend it where it helps, and
+                engineer what's missing. Your environment stays yours; the
+                foundation underneath starts working as one.
+              </p>
+            </div>
+          </div>
+          <div
+            class="connection-map"
+            data-lens="all"
+            role="group"
+            aria-label="Your existing platforms connect through Omnia OS to become one business system."
+          >
+            <div class="map-grid" aria-hidden="true"></div>
+            <svg
+              class="map-lines"
+              viewBox="0 0 1200 340"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <g class="map-base">
+                <path
+                  class="line-global"
+                  d="M340 90H420Q455 90 475 122L535 168"
+                />
+                <path
+                  class="line-global"
+                  d="M340 250H420Q455 250 475 218L535 172"
+                />
+                <path
+                  class="line-regional"
+                  d="M860 90H780Q745 90 725 122L665 168"
+                />
+                <path
+                  class="line-regional"
+                  d="M860 250H780Q745 250 725 218L665 172"
+                />
+                <path class="line-custom" d="M600 340V235" />
+              </g>
+              <g class="map-signal">
+                <path
+                  class="line-global"
+                  d="M340 90H420Q455 90 475 122L535 168"
+                />
+                <path
+                  class="line-global"
+                  d="M340 250H420Q455 250 475 218L535 172"
+                />
+                <path
+                  class="line-regional"
+                  d="M860 90H780Q745 90 725 122L665 168"
+                />
+                <path
+                  class="line-regional"
+                  d="M860 250H780Q745 250 725 218L665 172"
+                />
+                <path class="line-custom" d="M600 340V235" />
+              </g>
+            </svg>
+            <div class="family global-family">
+              <div class="family-heading">
+                <span>Global platforms</span>
+                <small>The tools your teams already know.</small>
+              </div>
+              <ul class="brands">
+                <li>
+                  <img
+                    src="assets/integration-marks/stripe.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Stripe</span>
+                </li>
+                <li>
+                  <img
+                    src="assets/integration-marks/shopify.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Shopify</span>
+                </li>
+                <li>
+                  <img
+                    src="assets/integration-marks/whatsapp.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>WhatsApp</span>
+                </li>
+                <li>
+                  <img
+                    src="assets/integration-marks/google.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Google Workspace</span>
+                </li>
+                <li>
+                  <img
+                    src="assets/integration-marks/microsoft.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Microsoft 365</span>
+                </li>
+                <li>
+                  <img
+                    src="assets/integration-marks/meta.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Meta</span>
+                </li>
+                <li class="brand-more"><span aria-hidden="true">+</span><span>Many more tools</span></li>
+              </ul>
+            </div>
+            <div class="hub">
+              <div class="hub-halo" aria-hidden="true"></div>
+              <div class="hub-ring" aria-hidden="true"></div>
+              <div class="hub-icon">
+                <svg viewBox="0 0 430 440" aria-hidden="true">
+                  <use href="#mark" />
+                </svg>
+              </div>
+              <strong>Your business</strong><span>as one system</span>
+              <span class="hub-os">Powered by Omnia OS</span>
+            </div>
+            <div class="family regional-family">
+              <div class="family-heading">
+                <span>Regional leaders</span>
+                <small>Starting in Dubai &amp; the Gulf — built to travel.</small>
+              </div>
+              <ul class="brands">
+                <li>
+                  <img
+                    src="assets/integration-marks/wafeq.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Wafeq</span>
+                </li>
+                <li>
+                  <img
+                    src="assets/integration-marks/foodics.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Foodics</span>
+                </li>
+                <li>
+                  <img
+                    src="assets/integration-marks/ziina.svg"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Ziina</span>
+                </li>
+                <li>
+                  <img
+                    src="assets/integration-marks/telr.png"
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                  /><span>Telr</span>
+                </li>
+                <li class="brand-more"><span aria-hidden="true">+</span><span>Many more tools</span></li>
+              </ul>
+            </div>
+            <div class="custom-family">
+              <div class="custom-symbol" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M8 5 2 12l6 7m8-14 6 7-6 7m-2-17-4 20" />
+                </svg>
+              </div>
+              <div>
+                <h3>Custom &amp; proprietary systems</h3>
+                <p>
+                  The internal database, the legacy ERP, the bespoke API, the
+                  spreadsheet that quietly runs the company. This is where Omnia
+                  is built to matter most.
+                </p>
+              </div>
+              <span class="custom-tag">Designed for the unusual</span>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="native-intelligence-section"
+          id="native-intelligence"
+          tabindex="-1"
+          aria-labelledby="native-title"
+          data-native-intelligence
+        >
+          <div class="container">
+            <div class="section-intro">
+              <h2 id="native-title">
+                Intelligence, built<br />into everything.
+              </h2>
+              <div>
+                <p>
+                  Omnia OS doesn't treat intelligence as another disconnected
+                  application.
+                </p>
+                <p>
+                  Its native AI layer can work with the information, systems,
+                  and capabilities brought together within the Omnia
+                  environment.
+                </p>
+                <p>
+                  That means agents can be created around the responsibilities
+                  of your organization, equipped with the relevant knowledge,
+                  connected tools, and permissions to carry out their work.
+                </p>
+              </div>
+            </div>
+            <div
+              class="intelligence-console"
+              data-perspective="organization"
+              data-focus="responsibility"
+            >
+              <header class="console-head">
+                <div class="console-brand brand-on-violet">
+                  <svg viewBox="0 0 430 440" aria-hidden="true">
+                    <use href="#mark" />
+                  </svg>
+                  <div>
+                    <strong>Native intelligence</strong>
+                    <span>Omnia OS · shared runtime</span>
+                  </div>
+                </div>
+                <div class="console-status">
+                  <i aria-hidden="true"></i>Part of the foundation
+                </div>
+              </header>
+              <div class="console-grid">
+                <div class="console-narrative">
+                  <div
+                    class="native-switch"
+                    role="tablist"
+                    aria-label="Explore native intelligence for different audiences"
+                  >
+                    <button
+                      type="button"
+                      role="tab"
+                      id="organization-agent-tab"
+                      aria-selected="true"
+                      aria-controls="organization-agent-copy"
+                      tabindex="0"
+                      data-agent-perspective="organization"
+                    >
+                      For your organization
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      id="customer-agent-tab"
+                      aria-selected="false"
+                      aria-controls="customer-agent-copy"
+                      tabindex="-1"
+                      data-agent-perspective="customers"
+                    >
+                      For your customers
+                    </button>
+                  </div>
+                  <div
+                    id="organization-agent-copy"
+                    class="native-perspective-copy"
+                    role="tabpanel"
+                    aria-labelledby="organization-agent-tab"
+                    tabindex="0"
+                  >
+                    <h3>An agent for the way you work.</h3>
+                    <p>
+                      Omnia agents are configured around a responsibility, with
+                      the context, tools and boundaries that responsibility
+                      requires.
+                    </p>
+                    <p>
+                      They retrieve permitted knowledge, read current records,
+                      prepare work and coordinate actions—then bring
+                      consequential decisions back to your people.
+                    </p>
+                    <span class="native-role-note"
+                      >Every behavior, permission and approval is yours to
+                      define.</span
+                    >
+                  </div>
+                  <div
+                    id="customer-agent-copy"
+                    class="native-perspective-copy"
+                    role="tabpanel"
+                    aria-labelledby="customer-agent-tab"
+                    tabindex="0"
+                    hidden
+                  >
+                    <h3>Your intelligence.<br />Your customer experience.</h3>
+                    <p>
+                      The same runtime can power agents inside the experiences
+                      your customers already use.
+                    </p>
+                    <p>
+                      An agent can carry your products, policies and approved
+                      knowledge, understand a verified customer's own context,
+                      and prepare the right next step through permitted tools.
+                    </p>
+                    <span class="native-role-note"
+                      >One foundation. A different scope, voice and
+                      boundary.</span
+                    >
+                  </div>
+                  <div
+                    class="dimension-controls"
+                    role="group"
+                    aria-label="Explore six configurable agent dimensions"
+                  >
+                    <button
+                      type="button"
+                      data-agent-dimension="responsibility"
+                      aria-pressed="true"
+                      aria-controls="agent-dimension-detail"
+                    >
+                      Responsibility</button
+                    ><button
+                      type="button"
+                      data-agent-dimension="knowledge"
+                      aria-pressed="false"
+                      aria-controls="agent-dimension-detail"
+                    >
+                      Knowledge</button
+                    ><button
+                      type="button"
+                      data-agent-dimension="capabilities"
+                      aria-pressed="false"
+                      aria-controls="agent-dimension-detail"
+                    >
+                      Capabilities</button
+                    ><button
+                      type="button"
+                      data-agent-dimension="behavior"
+                      aria-pressed="false"
+                      aria-controls="agent-dimension-detail"
+                    >
+                      Behavior</button
+                    ><button
+                      type="button"
+                      data-agent-dimension="autonomy"
+                      aria-pressed="false"
+                      aria-controls="agent-dimension-detail"
+                    >
+                      Autonomy</button
+                    ><button
+                      type="button"
+                      data-agent-dimension="oversight"
+                      aria-pressed="false"
+                      aria-controls="agent-dimension-detail"
+                    >
+                      Oversight
+                    </button>
+                  </div>
+                  <div
+                    class="agent-dimension-detail"
+                    id="agent-dimension-detail"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <svg
+                      class="dimension-mark"
+                      viewBox="0 0 430 440"
+                      aria-hidden="true"
+                    >
+                      <use href="#mark" />
+                    </svg>
+                    <div>
+                      <span data-dimension-definition
+                        >What the agent is expected to accomplish.</span
+                      ><strong data-dimension-example
+                        >Keep track of commitments, identify what needs
+                        attention, and prepare the next steps.</strong
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="console-visual"
+                  role="group"
+                  aria-label="An illustrative Operations Intelligence agent draws on permitted organizational knowledge, current operational records and authorized Omnia Modules through the native intelligence layer of Omnia OS."
+                  data-native-canvas
+                >
+                  <article class="agent-run" data-agent-result="organization">
+                    <header class="run-head">
+                      <div class="run-id">
+                        <span class="run-avatar" aria-hidden="true">
+                          <svg viewBox="0 0 430 440"><use href="#mark" /></svg>
+                        </span>
+                        <div>
+                          <span>Operations Intelligence</span>
+                          <strong>Decision prepared for review</strong>
+                        </div>
+                      </div>
+                      <span class="run-status"
+                        ><i aria-hidden="true"></i>Just now</span
+                      >
+                    </header>
+                    <div class="run-request">
+                      <span>Requested by the ops lead</span>
+                      <p>“What needs attention before the client call?”</p>
+                    </div>
+                    <ol class="run-steps">
+                      <li>
+                        <span class="step-index">1</span>
+                        <div>
+                          <strong>Read the renewal record</strong>
+                          <span
+                            >Riyadh · renews in two days · 24.1% current
+                            margin</span
+                          >
+                        </div>
+                        <span class="step-chip">Record</span>
+                      </li>
+                      <li>
+                        <span class="step-index">2</span>
+                        <div>
+                          <strong>Compared it with the pricing floor</strong>
+                          <span
+                            >The requested exception lands at 15.2% against a
+                            16% floor.</span
+                          >
+                        </div>
+                        <span class="step-chip">Policy</span>
+                      </li>
+                      <li>
+                        <span class="step-index">3</span>
+                        <div>
+                          <strong>Prepared a decision, not an action</strong>
+                          <span
+                            >An exception below the floor needs a person to
+                            decide.</span
+                          >
+                        </div>
+                        <span class="step-chip is-approval">Approval</span>
+                      </li>
+                    </ol>
+                    <div class="decision-card">
+                      <div class="decision-top">
+                        <span class="decision-tag">Needs your approval</span>
+                        <span class="decision-time">Riyadh renewal · Q4</span>
+                      </div>
+                      <h4>Approve a 9% exception to keep the renewal?</h4>
+                      <div class="margin-chart">
+                        <svg
+                          viewBox="0 0 320 88"
+                          preserveAspectRatio="none"
+                          aria-hidden="true"
+                        >
+                          <defs>
+                            <linearGradient
+                              id="margin-fill"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="0"
+                                stop-color="#69e3c0"
+                                stop-opacity=".5"
+                              />
+                              <stop
+                                offset="1"
+                                stop-color="#69e3c0"
+                                stop-opacity="0"
+                              />
+                            </linearGradient>
+                          </defs>
+                          <path
+                            class="chart-area"
+                            d="M0 24C40 20 62 30 92 26S150 38 182 46S252 54 320 60L320 88L0 88Z"
+                            fill="url(#margin-fill)"
+                          />
+                          <path
+                            class="chart-line"
+                            d="M0 24C40 20 62 30 92 26S150 38 182 46S252 54 320 60"
+                          />
+                          <line
+                            class="chart-floor"
+                            x1="0"
+                            y1="62"
+                            x2="320"
+                            y2="62"
+                          />
+                        </svg>
+                        <div class="chart-labels">
+                          <span>Current 24.1%</span
+                          ><span class="chart-floor-label">Floor 16%</span
+                          ><span>After 15.2%</span>
+                        </div>
+                      </div>
+                      <div class="decision-actions">
+                        <span class="decision-primary">Approve exception</span>
+                        <span class="decision-secondary">Ask for options</span>
+                        <span class="decision-note"
+                          >A person makes the call.</span
+                        >
+                      </div>
+                    </div>
+                    <div class="run-foot">
+                      <span class="run-boundary"
+                        ><svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5zM12 14v3"
+                          /></svg
+                        >Consequential changes stay with your team.</span
+                      >
+                    </div>
+                  </article>
+                  <article
+                    class="agent-run agent-run-customer"
+                    data-agent-result="customers"
+                    hidden
+                  >
+                    <header class="run-head">
+                      <div class="run-id">
+                        <span class="run-avatar" aria-hidden="true">
+                          <svg viewBox="0 0 430 440"><use href="#mark" /></svg>
+                        </span>
+                        <div>
+                          <span>Your service guide</span>
+                          <strong>Answering on your website</strong>
+                        </div>
+                      </div>
+                      <span class="run-status"
+                        ><i aria-hidden="true"></i>Live</span
+                      >
+                    </header>
+                    <div class="customer-thread">
+                      <div class="chat-line is-customer">
+                        <span class="chat-author">Customer</span>
+                        <p>
+                          I want cool mushroom-looking lamps for our lobby.
+                        </p>
+                      </div>
+                      <div class="chat-line is-agent">
+                        <span class="chat-author">Your service guide</span>
+                        <p>
+                          The Arc is the closest match in the current
+                          collection. It comes in plum, moss or ivory.
+                        </p>
+                        <div class="product-card">
+                          <div
+                            class="product-thumb"
+                            data-product-color="Plum"
+                          >
+                            <img
+                              src="assets/illustrative-lamp.svg"
+                              alt=""
+                              loading="lazy"
+                            />
+                          </div>
+                          <div class="product-info">
+                            <span class="product-eyebrow"
+                              >In the collection</span
+                            >
+                            <strong>Arc floor lamp</strong>
+                            <span class="product-price">AED 1,240</span>
+                            <div
+                              class="color-picker"
+                              role="group"
+                              aria-label="Choose a colour"
+                            >
+                              <button
+                                type="button"
+                                data-color="Plum"
+                                aria-pressed="true"
+                              >
+                                <i style="--swatch: #6b4fc9"></i>Plum</button
+                              ><button
+                                type="button"
+                                data-color="Moss"
+                                aria-pressed="false"
+                              >
+                                <i style="--swatch: #4f8f6e"></i>Moss</button
+                              ><button
+                                type="button"
+                                data-color="Ivory"
+                                aria-pressed="false"
+                              >
+                                <i style="--swatch: #e9e0d2"></i>Ivory
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          class="explain-toggle"
+                          type="button"
+                          aria-expanded="false"
+                          aria-controls="explain-product"
+                        >
+                          How did it match?<span aria-hidden="true">+</span>
+                        </button>
+                        <div
+                          class="explain-panel"
+                          id="explain-product"
+                          hidden
+                        >
+                          <ol>
+                            <li>
+                              <span>1</span>
+                              <div>
+                                <strong>Read the request</strong>
+                                <p>
+                                  “Mushroom-looking” became a domed shade and a
+                                  slim stem.
+                                </p>
+                              </div>
+                            </li>
+                            <li>
+                              <span>2</span>
+                              <div>
+                                <strong>Searched the approved catalogue</strong>
+                                <p>
+                                  Compared the description with 42 product
+                                  records.
+                                </p>
+                              </div>
+                            </li>
+                            <li>
+                              <span>3</span>
+                              <div>
+                                <strong>Ranked the Arc</strong>
+                                <p>
+                                  The shape matched, and all three colours are
+                                  available.
+                                </p>
+                              </div>
+                            </li>
+                          </ol>
+                        </div>
+                      </div>
+                      <div class="chat-line is-customer">
+                        <span class="chat-author">Customer</span>
+                        <p>
+                          The <span data-selected-color>plum</span> one. Two
+                          units to our Riyadh office by Thursday.
+                        </p>
+                      </div>
+                      <div class="chat-line is-agent">
+                        <span class="chat-author">Your service guide</span>
+                        <p>
+                          Two <span data-selected-color>plum</span> Arc lamps
+                          are in stock in Riyadh, and Thursday delivery works.
+                          I've prepared the invoice for you to review.
+                        </p>
+                        <div class="invoice-card">
+                          <div class="invoice-head">
+                            <span>Prepared invoice</span>
+                            <strong>AED 2,480</strong>
+                          </div>
+                          <div class="invoice-line">
+                            <span>2 × Arc floor lamp</span
+                            ><span data-invoice-color>Plum</span>
+                          </div>
+                          <div class="invoice-line">
+                            <span>Delivery · Riyadh</span
+                            ><span>Thursday</span>
+                          </div>
+                          <div class="invoice-actions">
+                            <span class="invoice-primary"
+                              >Review invoice</span
+                            >
+                            <span class="invoice-note"
+                              >Nothing is charged yet.</span
+                            >
+                          </div>
+                        </div>
+                        <button
+                          class="explain-toggle"
+                          type="button"
+                          aria-expanded="false"
+                          aria-controls="explain-stock"
+                        >
+                          How was this checked?<span aria-hidden="true"
+                            >+</span
+                          >
+                        </button>
+                        <div
+                          class="explain-panel"
+                          id="explain-stock"
+                          hidden
+                        >
+                          <ol>
+                            <li>
+                              <span>1</span>
+                              <div>
+                                <strong>Checked Riyadh stock</strong>
+                                <p>Two plum units are available.</p>
+                              </div>
+                            </li>
+                            <li>
+                              <span>2</span>
+                              <div>
+                                <strong>Read the delivery policy</strong>
+                                <p>
+                                  Orders confirmed before 2pm ship the same
+                                  day.
+                                </p>
+                              </div>
+                            </li>
+                            <li>
+                              <span>3</span>
+                              <div>
+                                <strong>Prepared the invoice</strong>
+                                <p>
+                                  Ready for review; payment stays in your
+                                  customer's hands.
+                                </p>
+                              </div>
+                            </li>
+                          </ol>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="run-foot">
+                      <span class="run-boundary"
+                        ><svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5zM12 14v3"
+                          /></svg
+                        >Internal records and other customers' data stay out of
+                        scope.</span
+                      >
+                    </div>
+                  </article>
+                </div>
+              <p
+                class="visually-hidden"
+                data-native-announcement
+                role="status"
+                aria-live="polite"
+              ></p>
+            </div>
+          </div>
+        </section>
+        <section
+          class="business-story os-explorer"
+          id="explore"
+          tabindex="-1"
+          aria-labelledby="story-title"
+          data-omnia-story
+        >
+          <div class="container">
+            <div class="story-intro">
+              <div>
+                <span class="section-kicker">Omnia Modules</span>
+                <h2 id="story-title">An ecosystem that grows with you.</h2>
+              </div>
+              <div class="ecosystem-intro-copy">
+                <p>
+                  Start with the systems you already use. Omnia OS connects
+                  them, adds native intelligence, and opens a Module ecosystem
+                  that can become entirely new software.
+                </p>
+                <p>
+                  Reuse, adapt, combine, or engineer it from scratch. The
+                  foundation stays; the experience becomes yours.
+                </p>
+              </div>
+            </div>
+            <div
+              class="explorer-assembly"
+              data-explorer-assembly
+              data-scene="0"
+            >
+              <div
+                class="os-three-zones"
+                role="group"
+                aria-label="Existing systems connect through an initial Connector Module to Omnia OS. New capabilities can power existing software, new frontends, and background services."
+                data-os-composition
+              >
+                <div class="os-role os-input-zone">
+                  <h4 class="os-zone-heading">Existing technology</h4>
+                  <div class="os-zone-body">
+                    <div class="existing-system-list">
+                      <div class="existing-system">
+                        <img
+                          src="assets/integration-marks/microsoft.svg"
+                          alt=""
+                        />
+                        <div>
+                          <strong>Workspace tools</strong
+                          ><span>Email, shared files &amp; knowledge</span>
+                        </div>
+                      </div>
+                      <div class="existing-system">
+                        <svg
+                          class="purpose-icon"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <rect x="3" y="4" width="18" height="16" rx="3" />
+                          <path d="M3 9h18M9 9v11m4-7h4m-4 3h4" />
+                        </svg>
+                        <div>
+                          <strong>Business systems</strong
+                          ><span>Software, records &amp; operations</span>
+                        </div>
+                      </div>
+                      <div class="existing-system">
+                        <svg
+                          class="purpose-icon"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <ellipse cx="12" cy="5" rx="8" ry="3" />
+                          <path
+                            d="M4 5v7c0 4 16 4 16 0V5M4 12v7c0 4 16 4 16 0v-7"
+                          />
+                        </svg>
+                        <div>
+                          <strong>Data &amp; services</strong
+                          ><span>Relevant current information</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p class="existing-environment-note">
+                      Your technology remains part of the environment. New
+                      interfaces are a choice, too.
+                    </p>
+                  </div>
+                </div>
+                <div class="os-role os-center-zone">
+                  <h4 class="os-zone-heading">The shared foundation</h4>
+                  <div class="os-zone-body">
+                    <div class="os-environment" data-os-environment>
+                      <div class="os-environment-header brand-on-violet">
+                        <svg viewBox="0 0 430 440" aria-hidden="true">
+                          <use href="#mark" />
+                        </svg>
+                        <div>
+                          <strong>Omnia OS</strong
+                          ><span>Persistent. Extensible. Your own.</span>
+                        </div>
+                        <span
+                          class="os-environment-edge"
+                          aria-hidden="true"
+                        ></span>
+                      </div>
+                      <div class="os-native-band" data-native-band>
+                        <div class="native-band-heading">
+                          <span
+                            class="native-band-signal"
+                            aria-hidden="true"
+                          ></span
+                          ><strong>Native intelligence</strong>
+                        </div>
+                        <p>Authorized context &amp; capabilities</p>
+                        <span class="native-band-state" data-native-band-state
+                          >Part of the foundation</span
+                        >
+                      </div>
+                      <div class="module-ecosystem">
+                        <div class="ecosystem-surface-heading">
+                          <span>Omnia Modules</span>
+                        </div>
+                        <div class="module-constellation">
+                          <div
+                            class="capability-piece capability-connect"
+                            data-module-stage="0"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <rect x="2" y="7" width="7" height="10" rx="2" />
+                              <rect x="15" y="7" width="7" height="10" rx="2" />
+                              <path d="M9 12h6" />
+                            </svg>
+                            <strong>Connect records</strong
+                            >
+                          </div>
+                          <div
+                            class="capability-piece capability-knowledge"
+                            data-module-stage="0"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <path
+                                d="M5 3h10l4 4v14H5zM15 3v5h4M8 12h8m-8 4h5"
+                              />
+                            </svg>
+                            <strong>Retrieve knowledge</strong>
+                            <span
+                              class="adaptation-tuning"
+                              data-effect-stage="2"
+                              hidden
+                              aria-label="Knowledge access adapted to your organization"
+                              ><i></i><i></i><i></i
+                            ></span>
+                          </div>
+                          <div
+                            class="capability-piece capability-extend"
+                            data-module-stage="2"
+                            hidden
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <rect x="2" y="3" width="20" height="18" rx="3" />
+                              <path d="M2 8h20M14 8v13M17 12h2m-2 4h2" />
+                            </svg>
+                            <strong>Extend a workspace</strong
+                            >
+                          </div>
+                          <div
+                            class="capability-piece capability-coordinate"
+                            data-module-stage="2"
+                            hidden
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <rect x="2" y="3" width="7" height="6" rx="2" />
+                              <rect x="15" y="15" width="7" height="6" rx="2" />
+                              <path d="M9 6h9v9M5 9v9h10" />
+                            </svg>
+                            <strong>Coordinate work</strong
+                            >
+                          </div>
+                          <div
+                            class="capability-piece capability-serve"
+                            data-module-stage="3"
+                            hidden
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <rect x="2" y="3" width="20" height="13" rx="3" />
+                              <path d="M8 21h8m-4-5v5M6 7h12m-12 4h7" />
+                            </svg>
+                            <strong>Power a frontend</strong
+                            >
+                          </div>
+                          <div
+                            class="capability-piece capability-custom"
+                            data-module-stage="4"
+                            hidden
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <path d="M4 5h16M4 12h16M4 19h16" />
+                              <circle cx="8" cy="5" r="2" />
+                              <circle cx="16" cy="12" r="2" />
+                              <circle cx="10" cy="19" r="2" />
+                            </svg>
+                            <strong>Your business logic</strong
+                            >
+                          </div>
+                        </div>
+                      </div>
+                      <div class="os-foundation-edge">
+                        <span>Configured and managed by Omnia.</span
+                        ><i aria-hidden="true"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="os-role os-output-zone">
+                  <h4 class="os-zone-heading">Your Solution</h4>
+                  <div class="os-zone-body os-output-body">
+                    <div class="output-introduction" data-output-introduction>
+                      <span
+                        class="output-introduction-line"
+                        aria-hidden="true"
+                      ></span>
+                      <h5>The experience<br />is yours to choose.</h5>
+                      <p>
+                        Inside existing software.<br />An entirely new
+                        frontend.<br />Or both, working together.
+                      </p>
+                    </div>
+                    <div
+                      class="intelligence-effect"
+                      data-effect-stage="1"
+                      hidden
+                    >
+                      <span class="intelligence-effect-mark" aria-hidden="true"
+                        ><svg class="purpose-icon" viewBox="0 0 24 24">
+                          <path
+                            d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6zM8 12l3 3 5-6"
+                          /></svg
+                      ></span>
+                      <div>
+                        <strong>Intelligence with context</strong
+                        ><span
+                          >Relevant information. Permitted actions. Human
+                          oversight.</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      class="frontend-preview employee-preview"
+                      data-effect-stage="2"
+                      role="group"
+                      aria-label="Illustrative employee workspace for preparing a tailored service scope"
+                      hidden
+                    >
+                      <div class="preview-chrome">
+                        <span class="preview-window-mark" aria-hidden="true"
+                          ><i></i><i></i><i></i></span
+                        ><strong>Team workspace</strong
+                        ><span class="preview-context-label"
+                          >Extended workspace</span
+                        >
+                      </div>
+                      <div class="employee-preview-body">
+                        <div class="employee-preview-rail" aria-hidden="true">
+                          <i></i><i></i><i></i>
+                        </div>
+                        <div class="employee-preview-content">
+                          <span class="preview-eyebrow">Service request</span>
+                          <h5>Prepare a tailored scope.</h5>
+                          <div class="scope-evidence">
+                            <span>Client goal</span
+                            ><strong
+                              >A service shaped around their needs.</strong
+                            >
+                          </div>
+                          <div class="workspace-next-step">
+                            <span class="next-step-glyph" aria-hidden="true"
+                              >↗</span
+                            >
+                            <div>
+                              <span>Next step</span
+                              ><strong>Prepare the proposal.</strong>
+                            </div>
+                          </div>
+                          <div class="workspace-approval">
+                            <i aria-hidden="true"></i
+                            ><span>Scope changes require team approval.</span>
+                          </div>
+                          <span
+                            class="workspace-custom-rule"
+                            data-effect-stage="4"
+                            hidden
+                            >Your review logic, built into the workspace.</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="frontend-preview customer-preview"
+                      data-effect-stage="3"
+                      role="group"
+                      aria-label="Illustrative customer-facing service portal, connected to the same service environment"
+                      hidden
+                    >
+                      <div class="preview-chrome">
+                        <span class="preview-window-mark" aria-hidden="true"
+                          ><i></i><i></i><i></i></span
+                        ><strong>Your customer experience</strong
+                        ><span class="preview-context-label">Your website</span>
+                      </div>
+                      <div class="solution-recipe">
+                        <span>Connected records</span><b aria-hidden="true">+</b
+                        ><span>Access rules</span><b aria-hidden="true">+</b
+                        ><span>Workflows</span>
+                      </div>
+                      <div class="customer-preview-body">
+                        <span class="customer-brand-line">Your business</span>
+                        <h5>Your service,<br />in one place.</h5>
+                        <div class="customer-service-summary">
+                          <span>Your request</span
+                          ><strong>Tailored service scope</strong
+                          ><span class="customer-summary-status"
+                            >Ready for your review</span
+                          >
+                        </div>
+                        <div
+                          class="tailored-service-panel"
+                          data-effect-stage="4"
+                          hidden
+                        >
+                          <span class="tailored-panel-label"
+                            >A proposal space, designed for you.</span
+                          >
+                          <dl>
+                            <div>
+                              <dt>Scope</dt>
+                              <dd>Your requirements</dd>
+                            </div>
+                            <div>
+                              <dt>Evidence</dt>
+                              <dd>Connected sources</dd>
+                            </div>
+                            <div>
+                              <dt>Review</dt>
+                              <dd>Your decision rules</dd>
+                            </div>
+                          </dl>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="custom-app-preview"
+                      data-effect-stage="4"
+                      hidden
+                      role="group"
+                      aria-label="An illustrative custom operations application with a live route map and an exception to approve."
+                    >
+                      <div class="custom-app-chrome">
+                        <span>Custom operations app</span><b>Engineered</b>
+                      </div>
+                      <div class="custom-app-body">
+                        <svg viewBox="0 0 260 78" aria-hidden="true">
+                          <defs>
+                            <linearGradient id="mini-route" x1="0" y1="0" x2="260" y2="78">
+                              <stop stop-color="#69e3c0" />
+                              <stop offset="1" stop-color="#a98cf4" />
+                            </linearGradient>
+                          </defs>
+                          <g stroke="#ffffff10">
+                            <path d="M0 26 260 26M0 52 260 52" />
+                            <path d="M40 0 40 78M96 0 96 78M152 0 152 78M208 0 208 78" />
+                          </g>
+                          <path
+                            d="M12 62C42 48 58 68 88 50S142 32 176 44 226 24 248 30"
+                            fill="none"
+                            stroke="url(#mini-route)"
+                            stroke-width="1.7"
+                          />
+                          <circle cx="12" cy="62" r="3" fill="#69e3c0" />
+                          <circle cx="88" cy="50" r="3" fill="#69e3c0" />
+                          <circle cx="176" cy="44" r="3" fill="#a98cf4" />
+                          <circle cx="248" cy="30" r="3" fill="#f4f1fc" />
+                        </svg>
+                        <div class="custom-app-copy">
+                          <span>Route exception</span>
+                          <strong>Reroute shipment 218</strong>
+                          <span class="custom-app-approve">Approve</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="background-process-note"
+                      data-effect-stage="3"
+                      hidden
+                    >
+                      <span class="background-process-symbol" aria-hidden="true"
+                        ><i></i><i></i><i></i
+                      ></span>
+                      <p>
+                        <strong>Behind the experience</strong>Connected records,
+                        approvals, and handoffs.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="story-return">
+              <p>
+                Your Solution.<br />Frontend, backend, or the complete
+                environment.
+              </p>
+              <a class="button mint" href="#customization"
+                ><span>Make it your own</span
+                ><span class="button-symbol"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <use href="#icon-arrow" /></svg></span
+              ></a>
+            </div>
+          </div>
+        </section>
+        <section
+          class="capabilities-section container"
+          id="customization"
+          tabindex="-1"
+          aria-labelledby="customization-title"
+        >
+          <div class="section-intro">
+            <h2 id="customization-title">
+              The foundation is shared.<br />The possibilities are yours.
+            </h2>
+            <div>
+              <p>
+                Some businesses need intelligence inside familiar tools. Others
+                want their systems to work together in ways they never have.
+                Some need something that doesn't exist yet.
+              </p>
+              <p>
+                Your Solution combines Omnia OS, the relevant Modules, native
+                intelligence, and custom engineering. Connections, behavior,
+                permissions, and interfaces can be shaped around what you want
+                to make possible.
+              </p>
+            </div>
+          </div>
+          <div class="capability-spectrum">
+            <article class="spectrum-item spectrum-connections">
+              <div class="spectrum-art" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div>
+                <h3>Your technology.</h3>
+                <p>
+                  Connect global platforms, specialized software, and your own
+                  systems. Keep the parts that work and introduce what is
+                  missing.
+                </p>
+              </div>
+            </article>
+            <article class="spectrum-item spectrum-intelligence">
+              <div
+                class="spectrum-art intelligence-controls-art"
+                aria-hidden="true"
+              >
+                <div><i></i><i></i><i></i></div>
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 5h16M4 12h16M4 19h16" />
+                  <circle cx="8" cy="5" r="2" />
+                  <circle cx="16" cy="12" r="2" />
+                  <circle cx="10" cy="19" r="2" />
+                </svg>
+              </div>
+              <div>
+                <h3>Your intelligence.</h3>
+                <p>
+                  Shape specialized agents around suitable responsibilities,
+                  with relevant knowledge, permitted capabilities, and the right
+                  human involvement.
+                </p>
+              </div>
+            </article>
+            <article class="spectrum-item spectrum-functionality">
+              <div class="spectrum-art" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <div>
+                <h3>Your way of working.</h3>
+                <p>
+                  Customize the logic, functionality, and interfaces around how
+                  your business works—or a completely new experience you want to
+                  create.
+                </p>
+              </div>
+            </article>
+            <article class="spectrum-item spectrum-evolution">
+              <div class="spectrum-art" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <div>
+                <h3>Room for the next idea.</h3>
+                <p>
+                  Add a connection, introduce another responsibility, or build a
+                  new capability. Reusable components and custom engineering
+                  extend the same foundation.
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+        <section
+          class="relationship-section product-relationship"
+          id="approach"
+          tabindex="-1"
+          aria-labelledby="approach-title"
+        >
+          <div class="container">
+            <div class="section-intro">
+              <h2 id="approach-title">
+                Your ambition.<br />Our team behind it.
+              </h2>
+              <div>
+                <p>
+                  You bring the idea, the problem, or the possibility. We work
+                  closely with your team to understand what it needs and what
+                  your technology can already do.
+                </p>
+                <p>
+                  Omnia configures the foundation, engineers what's missing, and
+                  implements the environment. We stay involved to manage,
+                  support, and extend it within the agreed engagement.
+                </p>
+                <div class="delivery-signature">
+                  <svg viewBox="0 0 430 440" aria-hidden="true">
+                    <use href="#mark" /></svg
+                  ><span
+                    >You focus on what becomes possible.<br />We handle the
+                    technology behind it.</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section
+          class="invitation container"
+          id="early-access"
+          tabindex="-1"
+          aria-labelledby="invitation-title"
+        >
+          <div class="invitation-copy">
+            <span class="section-kicker">Start a conversation</span>
+            <h2 id="invitation-title">What could you<br />make possible?</h2>
+            <p>
+              An idea your software can't accommodate. A responsibility
+              intelligence could take on. A capability you wish existed.
+            </p>
+            <p>Bring it to Omnia. Let's explore what it could become.</p>
+            <button
+              class="quiet-link launch-updates-link"
+              type="button"
+              data-inquiry-intent="updates"
+            >
+              Launch updates
+            </button>
+          </div>
+          <form
+            class="inquiry-form"
+            id="inquiry-form"
+            method="post"
+            action="/api/inquiries"
+            aria-label="Send Omnia an inquiry"
+          >
+            <div class="form-row">
+              <div class="field">
+                <label for="name">Your name</label
+                ><input
+                  id="name"
+                  name="name"
+                  autocomplete="name"
+                  maxlength="120"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="email">Your email</label
+                ><input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  maxlength="254"
+                  required
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label for="interest">I’m here as</label
+              ><select id="interest" name="interest" required>
+                <option value="business">
+                  A business exploring possibilities
+                </option>
+                <option value="partner">A potential partner</option>
+                <option value="investor">An investor</option>
+                <option value="updates">
+                  Someone interested in launch updates
+                </option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="message">Tell us about your business or idea</label
+              ><textarea
+                id="message"
+                name="message"
+                rows="3"
+                maxlength="4000"
+                required
+                placeholder="What would you like your business to do—or become?"
+              ></textarea>
+            </div>
+            <div class="form-trap" aria-hidden="true">
+              <label
+                >Website<input name="website" tabindex="-1" autocomplete="off"
+              /></label>
+            </div>
+            <div class="form-footer">
+              <button class="button" type="submit">
+                <span>Start a conversation</span
+                ><span class="button-symbol" aria-hidden="true"
+                  ><svg viewBox="0 0 24 24"><use href="#icon-arrow" /></svg
+                ></span>
+              </button>
+              <p>
+                Sent privately to the Omnia team.<br />Used to respond to your
+                inquiry.
+              </p>
+            </div>
+            <p
+              class="form-status"
+              id="inquiry-status"
+              role="status"
+              aria-live="polite"
+            ></p>
+            <noscript
+              ><p>Please enable JavaScript to send an inquiry.</p></noscript
+            >
+          </form>
+          <div
+            class="questions closing-questions"
+            aria-labelledby="questions-title"
+          >
+            <div>
+              <span class="section-kicker">A few useful answers</span>
+              <h2 id="questions-title">A closer look.</h2>
+            </div>
+            <div class="question-list">
+              <details>
+                <summary>
+                  <span>What is Omnia building?</span
+                  ><span class="detail-plus" aria-hidden="true">+</span>
+                </summary>
+                <p>
+                  Omnia is a technology company building Omnia OS: an
+                  extensible, AI-native environment that connects with existing
+                  business technology. Omnia Modules add reusable or
+                  purpose-built capabilities. Native intelligence and custom
+                  engineering can introduce radically different functionality
+                  through the same foundation. Our team implements and operates
+                  it with clients.
+                </p>
+              </details>
+              <details>
+                <summary>
+                  <span>Do we have to replace our existing software?</span
+                  ><span class="detail-plus" aria-hidden="true">+</span>
+                </summary>
+                <p>
+                  We start by understanding what you already rely on. A Solution
+                  can connect and extend those tools, add software where it’s
+                  needed, and bring the work together around your business.
+                </p>
+              </details>
+              <details>
+                <summary>
+                  <span>Is Omnia OS another off-the-shelf application?</span
+                  ><span class="detail-plus" aria-hidden="true">+</span>
+                </summary>
+                <p>
+                  Omnia OS is the persistent foundation behind an environment
+                  that can be deeply customized. It can extend familiar tools,
+                  introduce agents, coordinate work, or support entirely new
+                  functionality. The shared foundation carries capabilities
+                  forward as the environment evolves.
+                </p>
+              </details>
+              <details>
+                <summary>
+                  <span>What happens after implementation?</span
+                  ><span class="detail-plus" aria-hidden="true">+</span>
+                </summary>
+                <p>
+                  Omnia helps keep the result working, with ongoing management,
+                  support, and improvements agreed around the Solution and your
+                  business. The relationship can continue as your needs change.
+                </p>
+              </details>
+              <details>
+                <summary>
+                  <span>Can we work with Omnia now?</span
+                  ><span class="detail-plus" aria-hidden="true">+</span>
+                </summary>
+                <p>
+                  Omnia is coming soon. You can introduce your business, bring
+                  us an idea, register for launch updates, or begin a
+                  conversation as a prospective partner or investor.
+                </p>
+              </details>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="footer container">
+        <div class="footer-top">
+          <a class="brand" href="#main" aria-label="Omnia home"
+            ><svg viewBox="0 0 430 440" aria-hidden="true">
+              <use href="#mark" /></svg
+            ><span>omnia</span></a
+          >
+          <p>Everything works together.</p>
+          <div>
+            <a href="https://useomnia.dev">useomnia.dev</a
+            ><span>© <span id="year">2026</span> Omnia</span>
+          </div>
+        </div>
+        <span class="footer-word" aria-hidden="true">omnia</span>
+      </footer>
+    </div>
+  </body>
+</html>
