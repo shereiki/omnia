@@ -177,6 +177,7 @@
         const visible = index >= threshold;
         const wasHidden = element.hidden;
         element.hidden = !visible;
+        element.dataset.active = String(visible);
         element.setAttribute("aria-hidden", String(!visible));
         if (visible && wasHidden && animate && !reduced.matches) {
           if (element.matches("[data-effect-stage]")) outputDrop(element);

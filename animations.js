@@ -159,9 +159,9 @@
       });
     });
 
-    // Module pieces lift as if they are physical parts of the assembly.
+    // Module tiles lift as if they are physical parts of the assembly.
     const pieces = document.querySelectorAll(
-      ".capability-piece, .business-tool, .family, .brands li",
+      ".os-module-unit, .business-tool, .family, .brands li",
     );
     pieces.forEach((piece) => {
       piece.addEventListener("pointerenter", () => {
