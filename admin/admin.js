@@ -29,10 +29,13 @@
         cache: "no-store",
       });
       const result = await response.json().catch(() => null);
+      if (response.status === 401) {
+        location.href = "/admin/login";
+        return;
+      }
       if (!response.ok || !Array.isArray(result?.inquiries))
         throw new Error(
-          result?.error ||
-            "Open this page on your configured Cloudflare site and sign in through Access.",
+          result?.error || "The inbox could not be loaded. Please try again.",
         );
       inbox.replaceChildren();
       for (const item of result.inquiries) {
@@ -107,5 +110,9 @@
     load();
   });
   refresh.addEventListener("click", load);
+  document.querySelector("#logout").addEventListener("click", async () => {
+    await fetch("/api/admin/session", { method: "DELETE" });
+    location.href = "/admin/login";
+  });
   load();
 })();

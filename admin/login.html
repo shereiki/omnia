@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Omnia — Sign in</title>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/assets/omnia-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css?v=launch-1" />
+    <link rel="stylesheet" href="/admin/admin.css" />
+    <script src="/admin/login.js" defer></script>
+  </head>
+  <body>
+    <main class="admin container login-panel">
+      <header class="admin-heading">
+        <a href="/" class="brand"
+          ><img src="/assets/omnia-mark.svg" width="34" height="34" alt="" />omnia</a
+        ><span>Private inbox</span>
+      </header>
+      <div class="admin-title">
+        <div>
+          <p class="eyebrow">Omnia team</p>
+          <h1>Sign in.</h1>
+        </div>
+      </div>
+      <form id="login-form" method="post" action="/api/admin/session">
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+        <button class="button" type="submit"><span>Open inbox</span></button>
+        <p id="login-status" class="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </main>
+  </body>
+</html>

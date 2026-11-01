@@ -1,0 +1,14 @@
+{
+  "name": "omnia",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/access-check.mjs && node tests/inquiries.test.mjs && node tests/page.test.mjs",
+    "migrate": "node scripts/migrate.mjs",
+    "preview": "node scripts/preview.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "@vercel/functions": "^3.10.5"
+  }
+}

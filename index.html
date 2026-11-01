@@ -8,19 +8,55 @@
       name="description"
       content="Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
     />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://useomnia.dev/" />
+    <meta property="og:title" content="Omnia — Everything works together." />
+    <meta
+      property="og:description"
+      content="Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://useomnia.dev/" />
+    <meta property="og:site_name" content="Omnia" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://useomnia.dev/assets/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Omnia. Everything works together." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Omnia — Everything works together." />
+    <meta
+      name="twitter:description"
+      content="Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
+    />
+    <meta name="twitter:image" content="https://useomnia.dev/assets/og.png" />
     <title>Omnia — Everything works together.</title>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="icon" href="assets/omnia-mark.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Omnia",
+        "url": "https://useomnia.dev/",
+        "logo": "https://useomnia.dev/assets/apple-touch-icon.png",
+        "description": "Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
+      }
+    </script>
     <script>
       document.documentElement.classList.add("js");
     </script>
     <link
       rel="preload"
-      href="assets/manrope.ttf"
+      href="assets/manrope.woff2"
       as="font"
-      type="font/ttf"
+      type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="styles.css?v=premium-7" />
+    <link rel="stylesheet" href="launch.css?v=launch-1" />
+    <link rel="stylesheet" href="styles.css?v=launch-1" />
     <noscript
       ><style>
         .welcome,
@@ -63,11 +99,11 @@
     <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
     <script src="assets/vendor/motion.js" defer></script>
     <script src="assets/vendor/lenis-1.3.27.min.js" defer></script>
-    <script src="script.js?v=premium-7" defer></script>
-    <script src="native-intelligence.js?v=premium-7" defer></script>
-    <script src="omnia-story.js?v=premium-7" defer></script>
-    <script src="animations.js?v=premium-7" defer></script>
-    <script src="inquiry.js?v=premium-7" defer></script>
+    <script src="script.js?v=launch-1" defer></script>
+    <script src="native-intelligence.js?v=launch-1" defer></script>
+    <script src="omnia-story.js?v=launch-1" defer></script>
+    <script src="animations.js?v=launch-1" defer></script>
+    <script src="inquiry.js?v=launch-1" defer></script>
   </head>
   <body>
     <svg class="svg-definitions" aria-hidden="true">
@@ -1789,6 +1825,7 @@
             method="post"
             action="/api/inquiries"
             aria-label="Send Omnia an inquiry"
+            aria-describedby="inquiry-status"
           >
             <div class="form-row">
               <div class="field">
@@ -1859,6 +1896,7 @@
               id="inquiry-status"
               role="status"
               aria-live="polite"
+              tabindex="-1"
             ></p>
             <noscript
               ><p>Please enable JavaScript to send an inquiry.</p></noscript

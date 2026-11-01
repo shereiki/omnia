@@ -20,29 +20,39 @@ The Module visual is an open assembly of small keyed capabilities, rather than n
 
 Only the primary OS introduction retains the dimensional logo sculpture. Native Intelligence uses a compact runtime layer with knowledge, configured responsibility, permitted capabilities and access boundaries. The agent configuration illustration uses controls rather than another brand sculpture. Internal/customer perspectives, six agent dimensions, and the approved interface composition remain.
 
-
-
 ## Preview the design
+
+Static files only:
 
 ```sh
 python3 -m http.server 8766 --bind 127.0.0.1
 ```
 
-Open http://127.0.0.1:8766. Static previews show the design but do not collect inquiries. A submission reports success only after the backend confirms an actual stored record.
+Open http://127.0.0.1:8766. A static preview does not collect inquiries.
+
+To exercise the inquiry form and the private inbox against an in-memory store:
+
+```sh
+npm install
+npm run preview
+```
+
+The command prints a local password for http://127.0.0.1:8787/admin/login. Nothing is written to Neon. A submission reports success only after the handler confirms a stored record.
 
 ## Inquiry storage and admin
 
-The website includes Cloudflare Pages Functions, a D1 schema, and a private inbox at `/admin/`. Inquiries go to the database, with no company mailbox or email sending service. Admin data requires a verified Cloudflare Access session. No credentials are included.
+Inquiries are stored in Neon Postgres and read from `/admin/`. There is no company mailbox and no email is sent. The form collects the visitor's email so the team can reply later.
 
-**Production is not deployed.** Cloudflare account authorization, a D1 database ID, and an Access application with an owner-only policy still need to be configured. See [Cloudflare setup](docs/CLOUDFLARE_SETUP.md) for the exact steps.
+`/admin` and `/api/admin/*` require a signed httpOnly session. The password and the session secret are Vercel environment variables. Knowing the admin URL does not grant access. Missing configuration denies access.
+
+**Production is not deployed from this repository's automation.** Create the Neon database, set the environment variables, and connect `useomnia.dev` by following [the Vercel checklist](docs/VERCEL_SETUP.md).
 
 ```sh
-python3 scripts/prepare-deploy.py
-npx wrangler@4.154.0 d1 migrations apply omnia-inquiries --local
-npx wrangler@4.154.0 pages dev dist
+npm test
+npm run migrate
 ```
 
-`dist/` contains only public assets. Functions are compiled from `functions/`, with shared server utilities in `server/`. Private state, documentation, and local credentials are not copied into the deployment output.
+`npm run migrate` applies `db/schema.sql` when `DATABASE_URL` is set. The same SQL can be pasted into the Neon SQL editor.
 
 ## Source files
 
@@ -52,12 +62,13 @@ npx wrangler@4.154.0 pages dev dist
 - `omnia-story.js`: the preserved OS overview interaction and rebuilt five-stage assembly, with cumulative Modules/effects, keyboard navigation, entry/deep-link handling and reduced-motion behavior.
 - `native-intelligence.js`: internal/customer perspectives, permission/context boundaries, six agent dimensions, keyboard navigation and reduced-motion behavior.
 - `inquiry.js`: inquiry and launch-interest selection, editable drafts, confirmed storage and failure handling.
-- `functions/`, `server/`, `migrations/`: the API, admin authentication and database.
-- `admin/`: the private inbox interface.
-- `assets/`: existing local logos, Manrope and Lenis, with their attribution/license files.
+- `api/`, `server/`, `db/schema.sql`: the Vercel Functions, admin session and Postgres schema.
+- `admin/`: the private inbox and its sign-in page.
+- `assets/`: existing local logos, Manrope (woff2 subset plus the original file), Lenis, and their attribution/license files.
+- `archive/cloudflare/`: the previous Pages, D1 and Access setup. It is not deployed.
 
-No framework or runtime dependency was added to the site. Wrangler is deployment/development tooling. Integration targets are illustrative, not live-connector or partnership claims. Omnia OS is the shared foundation of the upcoming offering. The public site does not claim proven scalability, customers or metrics.
+No framework was added to the public site. Vercel serves the static files and the `api/` functions. Integration targets are illustrative, not live-connector or partnership claims. Omnia OS is the shared foundation of the upcoming offering. The public site does not claim proven scalability, customers or metrics.
 
-## Backend verification
+## Checks
 
-Run `node tests/access-check.mjs` for the cryptographic Access checks (controlled local signing keys and JWKS fixture; no account or network required). The backend was also tested in the local Cloudflare runtime with real D1 migrations, form writes and independent database readback. Production Access login and domain deployment still require the account setup above.
+`npm test` covers the admin session, inquiry validation, rate limit, and the public meta tags. It does not call Neon or Vercel.

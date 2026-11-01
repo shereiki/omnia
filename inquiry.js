@@ -37,10 +37,31 @@
       status.dataset.state = "draft";
     });
   });
+  function markInvalid() {
+    for (const field of form.querySelectorAll("input, select, textarea")) {
+      if (field.name === "website" || field.disabled) {
+        field.removeAttribute("aria-invalid");
+        continue;
+      }
+      field.toggleAttribute("aria-invalid", !field.checkValidity());
+    }
+  }
+  form.addEventListener("input", (event) => {
+    const field = event.target;
+    if (
+      field instanceof HTMLElement &&
+      field.matches?.("input, select, textarea") &&
+      field.checkValidity()
+    )
+      field.removeAttribute("aria-invalid");
+  });
   let sending = false;
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (sending || !form.reportValidity()) return;
+    if (sending || !form.reportValidity()) {
+      if (!sending) markInvalid();
+      return;
+    }
     const payload = Object.fromEntries(new FormData(form));
     sending = true;
     button.disabled = true;
@@ -69,6 +90,7 @@
         payload.interest === "updates"
           ? "Your interest is registered. Thank you for following Omnia."
           : "Your idea is with the Omnia team. Thank you for starting the conversation.";
+      status.focus();
     } catch (error) {
       status.dataset.state = "error";
       status.textContent =
@@ -78,6 +100,7 @@
             ? "Your connection was interrupted. Please try again. Your details are still here."
             : error.message ||
               "Your inquiry could not be sent. Please try again later.";
+      status.focus();
     } finally {
       clearTimeout(timeout);
       sending = false;

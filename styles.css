@@ -1,9 +1,9 @@
-@import url("launch.css?v=enterprise-1");
 @font-face {
   font-family: Manrope;
-  src: url("assets/manrope.ttf") format("truetype");
+  src: url("assets/manrope.woff2") format("woff2");
   font-weight: 200 800;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20AC, U+2122, U+2190-21FF;
 }
 :root {
   --frost: #f2f0fa;
@@ -31,8 +31,12 @@ body {
   font-family: Manrope, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
-body.welcome-visible {
+body.welcome-visible,
+html.js body:not(.site-ready) {
   overflow: hidden;
+}
+html.js body:not(.site-ready) #site {
+  visibility: hidden;
 }
 a {
   color: inherit;
@@ -1046,6 +1050,7 @@ details[data-expanded="true"] .detail-plus {
   margin-top: 13px;
 }
 .inquiry-form {
+  position: relative;
   padding: 8px 0 0;
 }
 .form-row {
@@ -1089,8 +1094,9 @@ details[data-expanded="true"] .detail-plus {
   line-height: 1.7;
   min-height: 102px;
 }
-.field textarea::placeholder {
-  color: #8f84a2;
+.field textarea::placeholder,
+.field input::placeholder {
+  color: #655d7c;
 }
 .form-trap {
   position: absolute;
@@ -1102,6 +1108,7 @@ details[data-expanded="true"] .detail-plus {
 .form-footer {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 22px;
   margin-top: 24px;
 }
@@ -1109,15 +1116,17 @@ details[data-expanded="true"] .detail-plus {
   min-height: 51px;
   padding-left: 21px;
   font-size: 12px;
+  flex-shrink: 0;
 }
 .form-footer .button-symbol {
   width: 35px;
   height: 35px;
 }
 .form-footer p {
-  font-size: 8px;
+  font-size: 12px;
   color: var(--muted);
-  line-height: 1.8;
+  line-height: 1.5;
+  max-width: 28ch;
 }
 .form-status {
   font-size: 11px;
@@ -1159,7 +1168,7 @@ details[data-expanded="true"] .detail-plus {
 .footer-top > div {
   display: flex;
   gap: 25px;
-  font-size: 9px;
+  font-size: 13px;
   color: var(--muted);
 }
 .footer-word {
@@ -1959,13 +1968,13 @@ details[data-expanded="true"] .detail-plus {
     margin-bottom: 17px;
   }
   .field label {
-    font-size: 10px;
+    font-size: 12px;
     margin-bottom: 8px;
   }
   .field input,
   .field select,
   .field textarea {
-    font-size: 12px;
+    font-size: 16px;
     border-radius: 10px;
     padding: 12px;
     min-height: 45px;
@@ -1980,7 +1989,7 @@ details[data-expanded="true"] .detail-plus {
     min-height: 50px;
   }
   .form-footer p {
-    font-size: 7px;
+    font-size: 12px;
   }
   .form-status {
     font-size: 10px;
@@ -2002,7 +2011,7 @@ details[data-expanded="true"] .detail-plus {
   .footer-top > div {
     width: 100%;
     justify-content: space-between;
-    font-size: 8px;
+    font-size: 13px;
   }
   .footer-word {
     font-size: 29.3vw;
@@ -2191,7 +2200,7 @@ details[data-expanded="true"] .detail-plus {
     gap: 12px;
   }
   .form-footer p {
-    font-size: 6px;
+    font-size: 12px;
   }
   .form-row {
     gap: 12px;

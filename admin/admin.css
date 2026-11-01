@@ -78,9 +78,16 @@
   margin-top: 28px;
   font-size: 12px;
 }
-.admin #admin-status {
+.admin #admin-status,
+.login-panel .form-status {
   font-size: 14px;
   color: var(--muted);
+}
+.login-panel {
+  max-width: 560px;
+}
+.login-panel .button {
+  margin-top: 4px;
 }
 @media (max-width: 600px) {
   .admin-title {

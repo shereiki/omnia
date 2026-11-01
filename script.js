@@ -98,6 +98,7 @@
   function openSite() {
     if (entered) return;
     entered = true;
+    document.body.classList.add("site-ready");
     enter.disabled = true;
     const mark = document.querySelector(".welcome-mark");
     const travel =
