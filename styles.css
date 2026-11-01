@@ -6995,12 +6995,22 @@ details[open]:not([data-expanded]) .detail-plus {
   line-height: 1.3;
   letter-spacing: -0.035em;
 }
-.os-module-unit span:not(.connector-contact):not(.custom-unit-label) {
+.os-module-unit
+  span:not(.connector-contact):not(.custom-unit-label):not(.module-family) {
   display: block;
   font-size: 8px;
   color: #665a83;
   line-height: 1.6;
   margin-top: 5px;
+}
+.module-family {
+  display: block;
+  font-size: 7px;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #665a83;
+  margin: 0 0 4px;
 }
 .module-glyph {
   display: block;
@@ -7040,11 +7050,21 @@ details[open]:not([data-expanded]) .detail-plus {
   border-radius: 2px;
   background: #b4a1dd;
 }
+.os-workspace-unit,
+.os-workflow-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 .os-workspace-unit > .purpose-icon,
 .os-workflow-unit > .module-glyph {
   margin-bottom: 12px;
   height: 25px;
   width: 25px;
+}
+.os-workspace-unit > div,
+.os-workflow-unit > div {
+  min-width: 0;
 }
 .os-workflow-unit {
   background: #cdc0ee;
@@ -7065,15 +7085,22 @@ details[open]:not([data-expanded]) .detail-plus {
   background: #a8ebd4;
   border-color: #8addc1;
 }
-.os-custom-unit span:not(.custom-unit-label) {
+.os-custom-unit
+  span:not(.custom-unit-label):not(.module-family) {
   color: #376e5a;
 }
+.os-custom-unit .module-family,
 .custom-unit-label {
   display: block;
   font-size: 7px;
   line-height: 1.4;
   color: #356b57;
   margin-bottom: 5px;
+}
+.os-custom-unit .module-family {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
 }
 .os-foundation-edge {
   display: flex;
@@ -7098,21 +7125,16 @@ details[open]:not([data-expanded]) .detail-plus {
 .explorer-stage[data-scene="2"]
   .os-workspace-unit {
   grid-column: 1/-1;
-  display: grid;
-  grid-template-columns: 27px 1fr;
-  column-gap: 11px;
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  gap: 11px;
 }
 .explorer-stage[data-scene="2"]
   .os-workspace-unit
   > .purpose-icon {
-  grid-row: 1/3;
   margin: 0;
-}
-.explorer-stage[data-scene="2"]
-  .os-workspace-unit
-  > span {
-  grid-column: 2;
+  flex-shrink: 0;
 }
 .os-output-body {
   display: flex;
@@ -7550,7 +7572,7 @@ details[open]:not([data-expanded]) .detail-plus {
   .os-module-unit strong {
     font-size: 12px;
   }
-  .os-module-unit span:not(.connector-contact):not(.custom-unit-label) {
+  .os-module-unit span:not(.connector-contact):not(.custom-unit-label):not(.module-family) {
     font-size: 7px;
   }
   .os-connector-unit,
@@ -7656,7 +7678,7 @@ details[open]:not([data-expanded]) .detail-plus {
   .os-module-unit strong {
     font-size: 11px;
   }
-  .os-module-unit span:not(.connector-contact):not(.custom-unit-label) {
+  .os-module-unit span:not(.connector-contact):not(.custom-unit-label):not(.module-family) {
     font-size: 7px;
   }
   .os-native-band > p {
@@ -7857,7 +7879,7 @@ details[open]:not([data-expanded]) .detail-plus {
   .os-module-unit strong {
     font-size: 13px;
   }
-  .os-module-unit span:not(.connector-contact):not(.custom-unit-label) {
+  .os-module-unit span:not(.connector-contact):not(.custom-unit-label):not(.module-family) {
     font-size: 8px;
   }
   .os-connector-unit,
@@ -7874,7 +7896,8 @@ details[open]:not([data-expanded]) .detail-plus {
     width: 25px;
     height: 25px;
   }
-  .custom-unit-label {
+  .custom-unit-label,
+  .module-family {
     font-size: 7px;
   }
   .os-foundation-edge {
@@ -8098,7 +8121,7 @@ details[open]:not([data-expanded]) .detail-plus {
   .os-module-unit strong {
     font-size: 12px;
   }
-  .os-module-unit span:not(.connector-contact):not(.custom-unit-label) {
+  .os-module-unit span:not(.connector-contact):not(.custom-unit-label):not(.module-family) {
     font-size: 7px;
   }
   .os-module-unit .module-glyph {
@@ -8823,8 +8846,13 @@ details[open]:not([data-expanded]) .detail-plus {
   .explorer-stage .os-module-unit strong {
     font-size: 12px;
   }
-  .explorer-stage .os-module-unit span {
+  .explorer-stage
+    .os-module-unit
+    span:not(.connector-contact):not(.custom-unit-label):not(.module-family) {
     font-size: 10px;
+  }
+  .explorer-stage .module-family {
+    font-size: 7px;
   }
   .explorer-stage .os-workspace-unit > .purpose-icon,
   .explorer-stage .os-workflow-unit > .module-glyph {
@@ -8894,7 +8922,7 @@ details[open]:not([data-expanded]) .detail-plus {
   }
   .explorer-stage
     .os-module-unit
-    span:not(.connector-contact):not(.custom-unit-label) {
+    span:not(.connector-contact):not(.custom-unit-label):not(.module-family) {
     font-size: 9px;
   }
   .explorer-stage .customer-preview-body h5 {

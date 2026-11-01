@@ -56,11 +56,11 @@
   const header = document.querySelector(".header");
 
   const mapOutputs = [
-    "Your existing tools, connected",
-    "The same tools, with intelligence",
-    "An extended team workspace",
-    "A customer experience, powered",
-    "Entirely your own",
+    "Shared records across systems",
+    "Same systems, better decisions",
+    "Work stays in tools you already pay for",
+    "Fewer touches from intake to close",
+    "Self-service that cuts follow-ups",
   ];
 
   const wrap = document.createElement("div");
