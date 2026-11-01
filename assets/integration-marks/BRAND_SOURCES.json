@@ -1,0 +1,49 @@
+[
+  {
+    "title": "Meta",
+    "hex": "0467DF",
+    "source": "https://www.meta.com",
+    "guidelines": "https://www.facebook.com/brand/resources/meta/company-brand"
+  },
+  {
+    "title": "Shopify",
+    "hex": "7AB55C",
+    "source": "https://www.shopify.com/brand-assets",
+    "guidelines": "https://www.shopify.com/brand-assets"
+  },
+  {
+    "title": "Stripe",
+    "hex": "635BFF",
+    "source": "https://stripe.com/newsroom/information"
+  },
+  {
+    "title": "WhatsApp",
+    "hex": "25D366",
+    "source": "https://about.meta.com/brand/resources/whatsapp/whatsapp-brand",
+    "guidelines": "https://about.meta.com/brand/resources/whatsapp/whatsapp-brand"
+  },
+  {
+    "title": "Wafeq",
+    "hex": "505EDD",
+    "source": "https://www.wafeq.com",
+    "notes": "Official mark extracted from the company site footer logo, October 2026."
+  },
+  {
+    "title": "Foodics",
+    "hex": "5B2EFF",
+    "source": "https://www.foodics.com/wp-content/uploads/2021/12/foodics-logo.svg",
+    "notes": "Official F symbol extracted from the company's official logo file, October 2026."
+  },
+  {
+    "title": "Ziina",
+    "hex": "14141A",
+    "source": "https://ziina.com",
+    "notes": "Official rosette mark extracted from the company site, October 2026."
+  },
+  {
+    "title": "Telr",
+    "hex": "006B4E",
+    "source": "https://telr.com",
+    "notes": "Official transparent logo PNG downloaded from the company site CDN, October 2026."
+  }
+]

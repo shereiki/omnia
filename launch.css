@@ -1,0 +1,217 @@
+/* Original intentional welcome screen. */
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: radial-gradient(ellipse at 50% 43%, #e4ddf8, var(--frost) 65%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition:
+    opacity 0.6s,
+    transform 0.7s ease;
+}
+
+.welcome:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#5b45d622 0.8px, transparent 1px);
+  background-size: 27px 27px;
+  mask-image: radial-gradient(ellipse, #000, transparent 65%);
+  pointer-events: none;
+}
+
+.welcome-top {
+  position: absolute;
+  top: 30px;
+  left: 52px;
+  right: 52px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wordmark {
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.07em;
+  color: var(--violet);
+}
+
+.launch-status {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.launch-status:before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mint);
+}
+
+.welcome-center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.welcome-center:before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  width: 350px;
+  height: 350px;
+  border: 1px solid #5b45d61c;
+  border-top-color: #5b45d660;
+  border-radius: 50%;
+  animation: launch-orbit 26s linear infinite;
+  pointer-events: none;
+}
+
+.welcome-mark {
+  width: 310px;
+  height: 320px;
+  overflow: visible;
+  fill: var(--violet);
+  filter: drop-shadow(0 13px 22px #5b45d625);
+}
+
+.corner {
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: corner-hover 5s ease-in-out infinite;
+}
+
+.corner-a {
+  transform: translate(-34px, -34px);
+}
+
+.corner-b {
+  transform: translate(34px, -34px);
+  fill: var(--mint);
+  animation-delay: -1.3s;
+}
+
+.corner-c {
+  transform: translate(34px, 34px);
+  animation-delay: -2.5s;
+}
+
+.corner-d {
+  transform: translate(-34px, 34px);
+  animation-delay: -3.6s;
+}
+
+.welcome-line {
+  font-size: 36px;
+  letter-spacing: -0.055em;
+  color: var(--violet);
+  line-height: 1.25;
+  margin: 25px 0;
+}
+
+.welcome-bottom {
+  position: absolute;
+  bottom: 25px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* The launch gesture: four parts depart outward; the system stays whole. */
+.welcome.departing .corner {
+  animation: none;
+  translate: 0 0;
+}
+
+.welcome.departing .corner-a {
+  transform: translate(calc(-1 * var(--depart)), calc(-1 * var(--depart)))
+    rotate(-12deg);
+}
+
+.welcome.departing .corner-b {
+  transform: translate(var(--depart), calc(-1 * var(--depart))) rotate(12deg);
+}
+
+.welcome.departing .corner-c {
+  transform: translate(var(--depart), var(--depart)) rotate(-12deg);
+}
+
+.welcome.departing .corner-d {
+  transform: translate(calc(-1 * var(--depart)), var(--depart)) rotate(12deg);
+}
+
+.welcome-line,
+.welcome .button,
+.welcome-bottom {
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+.welcome.departing .welcome-line,
+.welcome.departing .button,
+.welcome.departing .welcome-bottom {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.welcome.departing .welcome-center:before {
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.welcome.leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes launch-orbit {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes corner-hover {
+  50% {
+    translate: 0 -7px;
+  }
+}
+@media (max-width: 760px) {
+  .welcome-top {
+    top: 24px;
+    left: 24px;
+    right: 24px;
+  }
+  .welcome-mark {
+    width: 240px;
+    height: 250px;
+  }
+  .welcome-line {
+    font-size: 30px;
+  }
+  .welcome-center:before {
+    width: 280px;
+    height: 280px;
+  }
+  .welcome-bottom {
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome *,
+  .welcome:before {
+    animation: none !important;
+    transition: none !important;
+  }
+  .welcome.leaving {
+    transform: none;
+  }
+}

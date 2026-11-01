@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Omnia — Private inbox</title>
+    <link rel="icon" href="/assets/omnia-mark.svg" />
+    <link rel="stylesheet" href="/styles.css?v=launch-1" />
+    <link rel="stylesheet" href="/admin/admin.css" />
+    <script src="/admin/admin.js" defer></script>
+  </head>
+  <body>
+    <main class="admin container">
+      <header class="admin-heading">
+        <a href="/" class="brand"
+          ><img
+            src="/assets/omnia-mark.svg"
+            width="34"
+            height="34"
+            alt=""
+          />omnia</a
+        ><span>Private inbox</span>
+      </header>
+      <div class="admin-title">
+        <div>
+          <p class="eyebrow">Conversations start here.</p>
+          <h1>Inquiries</h1>
+        </div>
+        <div class="header-actions">
+          <button class="small-cta" id="refresh" type="button">Refresh inbox</button>
+          <button class="small-cta" id="logout" type="button">Sign out</button>
+        </div>
+      </div>
+      <p id="admin-status" role="status" aria-live="polite">
+        Opening your inbox…
+      </p>
+      <div id="inquiries"></div>
+      <nav class="admin-pagination" aria-label="Inbox pages">
+        <button class="small-cta" id="previous" type="button" disabled>
+          Previous</button
+        ><span id="page-number"></span
+        ><button class="small-cta" id="next" type="button" disabled>
+          Next
+        </button>
+      </nav>
+    </main>
+  </body>
+</html>
