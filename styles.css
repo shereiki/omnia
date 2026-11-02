@@ -13363,3 +13363,221 @@ details[open] summary:hover .detail-plus {
     display: none;
   }
 }
+
+/* ==========================================================================
+   Mobile & tablet: the same Omnia Modules dashboard as desktop, stacked.
+   Existing technology → Omnia OS with its Modules → Your Solution, inside the
+   same pale glass panel. Replaces the simplified schematic map below 1100px.
+   ========================================================================== */
+.os-solution-line {
+  display: none;
+}
+@media (max-width: 1099px) {
+  .explorer-dashboard {
+    align-items: flex-start;
+    padding: 6px 0 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .explorer-dashboard .explorer-map {
+    display: none;
+  }
+  .explorer-pin-mode .explorer-dashboard > .os-three-zones {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: min(100%, 520px);
+    min-height: 0;
+    margin-inline: auto;
+    padding: 14px 14px 12px;
+    border-radius: 22px;
+    zoom: var(--dash-zoom, 1);
+  }
+  .explorer-dashboard .os-role {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    margin: 0;
+  }
+  .explorer-dashboard .os-zone-body {
+    display: block;
+    height: auto;
+    max-width: none;
+    margin: 0;
+  }
+  .explorer-pin-mode .explorer-dashboard .os-zone-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px 2px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .explorer-dashboard .os-zone-heading::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, #cfc2ef, transparent);
+  }
+  /* Thin flow line between the three zones. */
+  .explorer-dashboard .os-center-zone,
+  .explorer-dashboard .os-output-zone {
+    padding-top: 18px;
+  }
+  .explorer-dashboard .os-center-zone::before,
+  .explorer-dashboard .os-output-zone::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 50%;
+    width: 1px;
+    height: 12px;
+    background: linear-gradient(#b9a8df00, #9a83dd);
+  }
+  .explorer-dashboard .os-input-zone::after,
+  .explorer-dashboard .os-center-zone::after {
+    display: none;
+  }
+  /* Existing technology: three compact chips in one row. */
+  .explorer-dashboard .existing-system-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .explorer-dashboard .existing-system,
+  .explorer-dashboard .existing-system:first-child {
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid #ffffffd9;
+    border-radius: 11px;
+    background: #ffffff8c;
+    box-shadow: inset 0 1px 0 #fff;
+  }
+  .explorer-dashboard .existing-system img,
+  .explorer-dashboard .existing-system > .purpose-icon {
+    width: 17px;
+    height: 17px;
+  }
+  .explorer-dashboard .existing-system > div {
+    min-width: 0;
+  }
+  .explorer-dashboard .existing-system strong {
+    font-size: 10.5px;
+    line-height: 1.25;
+  }
+  .explorer-dashboard .existing-system span,
+  .explorer-dashboard .existing-environment-note {
+    display: none;
+  }
+  /* The shared foundation keeps the desktop panel, tuned for a phone. */
+  .explorer-pin-mode .explorer-dashboard .os-environment-header {
+    padding: 11px 13px;
+  }
+  .explorer-dashboard .os-environment-header strong {
+    font-size: 17px;
+  }
+  .explorer-pin-mode .explorer-dashboard .os-native-band {
+    margin: 0 10px;
+    padding: 8px 10px;
+  }
+  .explorer-dashboard .os-native-band p {
+    margin-top: 2px;
+  }
+  .explorer-pin-mode .explorer-dashboard .os-module-surface {
+    padding: 10px 10px 10px;
+  }
+  .explorer-dashboard .module-surface-label {
+    margin-bottom: 8px;
+  }
+  .explorer-dashboard .os-module-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px;
+  }
+  .explorer-pin-mode .explorer-dashboard .os-module-unit {
+    padding: 10px;
+  }
+  .explorer-pin-mode .explorer-dashboard .os-module-unit strong {
+    font-size: 13px;
+  }
+  .explorer-dashboard .os-module-unit
+    span:not(.connector-contact):not(.custom-unit-label):not(.module-family) {
+    font-size: 9.5px;
+    line-height: 1.45;
+    margin-top: 3px;
+  }
+  .explorer-dashboard .module-family {
+    font-size: 8px;
+  }
+  .explorer-dashboard .os-module-unit .module-glyph,
+  .explorer-dashboard .os-module-unit > .purpose-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .explorer-pin-mode .explorer-dashboard .os-workspace-unit > .purpose-icon,
+  .explorer-pin-mode .explorer-dashboard .os-workflow-unit > .module-glyph {
+    margin-bottom: 7px;
+    width: 22px;
+    height: 22px;
+  }
+  .explorer-pin-mode .explorer-dashboard .os-foundation-edge {
+    padding: 8px 13px 10px;
+  }
+  /* Your Solution: previews collapse into one outcome line per stage. */
+  .explorer-dashboard .os-output-body > :not(.os-solution-line) {
+    display: none !important;
+  }
+  .explorer-pin-mode .explorer-dashboard .os-output-body {
+    display: block !important;
+  }
+  .explorer-dashboard .os-solution-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 11px 13px;
+    border: 1px solid #ffffffe6;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #ffffffd1, #f1ebfdb8);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 6px 18px #261e5014;
+    color: var(--ink);
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+  }
+  .explorer-dashboard .os-solution-line i {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--mint);
+    box-shadow: 0 0 0 4px #69e3c033;
+  }
+}
+@media (min-width: 700px) and (max-width: 1099px) {
+  .explorer-dashboard {
+    align-items: center;
+  }
+}
+@media (max-width: 380px) {
+  .explorer-pin-mode .explorer-dashboard > .os-three-zones {
+    padding: 12px 11px 10px;
+  }
+  .explorer-dashboard .existing-system,
+  .explorer-dashboard .existing-system:first-child {
+    padding: 7px 6px;
+    gap: 5px;
+  }
+  .explorer-dashboard .existing-system strong {
+    font-size: 9.5px;
+  }
+}

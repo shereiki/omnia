@@ -56,11 +56,11 @@
   const header = document.querySelector(".header");
 
   const mapOutputs = [
-    "Shared records across systems",
+    "One record across sales, operations and finance",
     "Same systems, better decisions",
     "Work stays in tools you already pay for",
-    "Fewer touches from intake to close",
-    "Self-service that cuts follow-ups",
+    "Fewer handoffs across service and HR",
+    "Exceptions resolved before they cost you",
   ];
 
   const wrap = document.createElement("div");
@@ -95,6 +95,15 @@
   dashboard.append(composition);
   dashboard.append(map);
   assembly.classList.add("explorer-pin-mode");
+
+  /* Small screens show the same dashboard; previews fold into one line. */
+  const solutionLine = document.createElement("p");
+  solutionLine.className = "os-solution-line";
+  solutionLine.setAttribute("aria-hidden", "true");
+  solutionLine.innerHTML = "<i></i><span></span>";
+  composition.querySelector(".os-output-body")?.append(solutionLine);
+  const solutionText = solutionLine.querySelector("span");
+  const compact = matchMedia("(max-width: 1099px)");
 
   const mapIntel = map.querySelector(".map-intelligence");
   const mapModules = map.querySelector(".map-modules");
@@ -163,6 +172,32 @@
       .map((label) => `<span>${label}</span>`)
       .join("")}<span class="map-socket">+</span>`;
     mapOutput.textContent = mapOutputs[index];
+    if (solutionText.textContent !== mapOutputs[index]) {
+      solutionText.textContent = mapOutputs[index];
+      if (compact.matches && !reduced.matches && progress >= 0) {
+        gsap.fromTo(
+          solutionLine,
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", overwrite: true },
+        );
+      }
+    }
+    fitDashboard();
+  }
+
+  /* Keep the stacked dashboard inside the pinned viewport on short phones. */
+  function fitDashboard() {
+    if (!compact.matches) {
+      composition.style.removeProperty("--dash-zoom");
+      return;
+    }
+    composition.style.setProperty("--dash-zoom", "1");
+    const available =
+      (parseFloat(assembly.style.getPropertyValue("--story-pin-height")) ||
+        innerHeight) - 24;
+    const natural = composition.offsetHeight;
+    const zoom = natural > available ? Math.max(0.72, available / natural) : 1;
+    composition.style.setProperty("--dash-zoom", zoom.toFixed(3));
   }
 
   function applyScene(index, animate = true) {
@@ -249,6 +284,7 @@
     assembly.style.setProperty("--story-distance", `${distance}px`);
     scrollTrigger?.refresh();
     applyScene(scene < 0 ? 0 : scene, false);
+    fitDashboard();
   }
 
   function createTrigger() {
@@ -269,6 +305,7 @@
     resizeFrame = requestAnimationFrame(layout);
   });
   reduced.addEventListener("change", layout);
+  compact.addEventListener("change", layout);
 
   composition.addEventListener(
     "pointermove",
