@@ -1,0 +1,62 @@
+/* ==========================================================================
+   Omnia — performance + small-screen layer
+   Loaded after styles.css. Keeps the desktop experience intact and makes
+   phones and tablets fast and native-feeling.
+   ========================================================================== */
+
+/* ---------- Ambient motion pauses when it cannot be seen ---------- */
+[data-offscreen],
+[data-offscreen] *,
+[data-page-hidden] *,
+[data-page-hidden] *::before,
+[data-page-hidden] *::after {
+  animation-play-state: paused !important;
+}
+
+/* ---------- Touch / small screens: cheaper effects, same look ---------- */
+@media (max-width: 1099px), (hover: none), (pointer: coarse) {
+  /* Backdrop blur re-rasterises whatever scrolls beneath it every frame.
+     Solid tinted surfaces read the same on the pale lavender ground. */
+  *,
+  *::before,
+  *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .header {
+    background: rgb(244 242 251 / 0.96) !important;
+  }
+
+  /* Large blurred, animated glows are the most expensive paint on a phone. */
+  .world-aurora i {
+    animation: none !important;
+    will-change: auto !important;
+    filter: none !important;
+  }
+
+  /* stroke-dashoffset animates on the main thread; keep the lines static. */
+  .map-signal {
+    animation: none !important;
+  }
+
+  /* Continuous float/spin loops add nothing at arm's length. */
+  .hub-ring,
+  .hub-icon,
+  .core-inner,
+  .node-float,
+  .orbit-a,
+  .orbit-b {
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
