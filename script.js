@@ -26,23 +26,15 @@
     { threshold: 0.08 },
   );
 
-  let scrollTick = null;
-  function updateScrollProgress() {
-    if (scrollTick !== null) return;
-    scrollTick = requestAnimationFrame(() => {
-      const distance = document.documentElement.scrollHeight - innerHeight;
-      document.documentElement.style.setProperty(
-        "--scroll-progress",
-        distance > 0 ? scrollY / distance : 0,
-      );
-      scrollTick = null;
-    });
-  }
-  addEventListener("scroll", updateScrollProgress, { passive: true });
-  addEventListener("resize", updateScrollProgress, { passive: true });
   document.body.classList.add("welcome-visible");
 
   /* ---------- Smooth scroll, governed ---------- */
+
+  // Touch devices keep native, compositor-driven scrolling. Smooth wheel
+  // scrolling is only a desktop refinement.
+  const smoothScrollCapable = matchMedia(
+    "(hover: hover) and (pointer: fine) and (min-width: 1100px)",
+  );
 
   function animate(time) {
     if (!lenis || document.hidden) return;
@@ -73,6 +65,7 @@
     if (
       entered &&
       !reducedMotion.matches &&
+      smoothScrollCapable.matches &&
       typeof window.Lenis === "function"
     ) {
       lenis = new Lenis({
@@ -124,7 +117,6 @@
             site.inert = false;
             document.body.classList.remove("welcome-visible");
             lenis?.start();
-            updateScrollProgress();
             ScrollTrigger?.refresh();
             document.dispatchEvent(new CustomEvent("omnia:entered"));
             (destination || document.querySelector("#hero-title")).focus({
@@ -140,6 +132,7 @@
 
   enter.addEventListener("click", openSite);
   reducedMotion.addEventListener("change", configureMotion);
+  smoothScrollCapable.addEventListener("change", configureMotion);
   document.addEventListener("visibilitychange", () => {
     document.documentElement.toggleAttribute(
       "data-page-hidden",
@@ -151,6 +144,19 @@
       frame = requestAnimationFrame(animate);
     }
   });
+
+  /* ---------- Ambient motion only runs where it can be seen ---------- */
+
+  const ambientObserver = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((entry) =>
+        entry.target.toggleAttribute("data-offscreen", !entry.isIntersecting),
+      ),
+    { rootMargin: "120px 0px" },
+  );
+  document
+    .querySelectorAll("main > *, .site-footer, footer")
+    .forEach((element) => ambientObserver.observe(element));
 
   /* ---------- Navigation ---------- */
 
@@ -222,31 +228,36 @@
   const navigationSections = navigationLinks.map((link) =>
     document.querySelector(link.hash),
   );
-  let navigationFrame = null;
-  function updateNavigation() {
-    if (navigationFrame !== null) return;
-    navigationFrame = requestAnimationFrame(() => {
-      document
-        .querySelector(".header")
-        .classList.toggle("is-scrolled", scrollY > 24);
-      let current = null;
-      navigationSections.forEach((section, index) => {
-        if (
-          section.getBoundingClientRect().top <= innerHeight * 0.35 &&
-          section.getBoundingClientRect().bottom > innerHeight * 0.35
-        )
-          current = navigationLinks[index];
+  // Active-section tracking is observed, not measured on every scroll frame.
+  const headerElement = document.querySelector(".header");
+  const scrolledSentinel = document.createElement("div");
+  scrolledSentinel.setAttribute("aria-hidden", "true");
+  scrolledSentinel.style.cssText =
+    "position:absolute;top:0;left:0;width:1px;height:24px;pointer-events:none";
+  document.body.prepend(scrolledSentinel);
+  new IntersectionObserver(([entry]) => {
+    headerElement.classList.toggle("is-scrolled", !entry.isIntersecting);
+  }).observe(scrolledSentinel);
+  const visibleSections = new Set();
+  const navigationObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) visibleSections.add(entry.target);
+        else visibleSections.delete(entry.target);
       });
-      navigationLinks.forEach((link) => {
-        if (link === current) link.setAttribute("aria-current", "location");
+      const current = navigationSections.findIndex((section) =>
+        visibleSections.has(section),
+      );
+      navigationLinks.forEach((link, index) => {
+        if (index === current) link.setAttribute("aria-current", "location");
         else link.removeAttribute("aria-current");
       });
-      navigationFrame = null;
-    });
-  }
-  addEventListener("scroll", updateNavigation, { passive: true });
-  addEventListener("resize", updateNavigation, { passive: true });
-  updateNavigation();
+    },
+    { rootMargin: "-35% 0px -65% 0px" },
+  );
+  navigationSections.forEach(
+    (section) => section && navigationObserver.observe(section),
+  );
 
   document.addEventListener("omnia:scenejump", (event) => {
     const { element, offset = 0, top, onComplete } = event.detail;
@@ -387,7 +398,6 @@
       disclosure.open = expanded;
       body.style.removeProperty("height");
       body.classList.remove("is-animating");
-      updateScrollProgress();
     }
 
     function transition(next) {
