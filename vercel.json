@@ -2,7 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -118,6 +120,22 @@
   ],
   "proxy": {
     "entrypoint": "proxy.js",
-    "matcher": ["/admin", "/admin/:path*", "/api/admin/:path*"]
+    "matcher": [
+      "/admin",
+      "/admin/:path*",
+      "/api/admin/:path*",
+      "/server/:path*",
+      "/docs/:path*",
+      "/tests/:path*",
+      "/db/:path*",
+      "/scripts/:path*",
+      "/archive/:path*",
+      "/proxy.js",
+      "/package.json",
+      "/package-lock.json",
+      "/vercel.json",
+      "/README.md",
+      "/.vercelignore"
+    ]
   }
 }
