@@ -7582,10 +7582,10 @@ details[open] summary:hover .detail-plus {
 
 /* Header call to action: the primary button, sized for the navigation bar. */
 .header .header-cta {
-  min-height: 42px;
+  min-height: 44px;
   padding: 4px 5px 4px 17px;
   gap: 12px;
-  font-size: 11px;
+  font-size: 12px;
 }
 .header .header-cta .button-symbol {
   width: 32px;
@@ -7629,7 +7629,7 @@ details[open] summary:hover .detail-plus {
   position: relative;
 }
 .form-note {
-  font-size: 11px;
+  font-size: 12.5px;
   line-height: 1.6;
   color: var(--muted);
   margin-top: 14px;
@@ -7669,10 +7669,10 @@ details[open] summary:hover .detail-plus {
 
 @media (max-width: 760px) {
   .header .header-cta {
-    min-height: 38px;
+    min-height: 44px;
     padding: 3px 4px 3px 13px;
-    gap: 9px;
-    font-size: 10px;
+    gap: 8px;
+    font-size: 12px;
   }
   .header .header-cta .button-symbol {
     width: 29px;
@@ -7698,7 +7698,7 @@ details[open] summary:hover .detail-plus {
 @media (max-width: 360px) {
   .header .header-cta {
     padding-left: 11px;
-    font-size: 9px;
+    gap: 6px;
   }
 }
 
