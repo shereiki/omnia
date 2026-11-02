@@ -1,7 +1,7 @@
-import { handleAdminInquiries } from "../../server/inquiries.js";
+import { handleAdminSignups } from "../../server/early-access.js";
 
 export default {
   async fetch(request) {
-    return handleAdminInquiries(request);
+    return handleAdminSignups(request);
   },
 };

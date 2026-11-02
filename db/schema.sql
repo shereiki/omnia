@@ -1,14 +1,17 @@
-CREATE TABLE IF NOT EXISTS inquiries (
+CREATE TABLE IF NOT EXISTS early_access (
   id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
   email TEXT NOT NULL,
-  interest TEXT NOT NULL CHECK (interest IN ('business', 'partner', 'investor', 'updates')),
-  message TEXT NOT NULL,
+  email_normalized TEXT NOT NULL UNIQUE,
+  company TEXT,
+  role TEXT,
+  message TEXT,
+  follow_token_hash TEXT,
   status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'reviewed')),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS inquiries_created ON inquiries (created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS early_access_created ON early_access (created_at DESC);
 
 CREATE TABLE IF NOT EXISTS submission_limits (
   key TEXT PRIMARY KEY,

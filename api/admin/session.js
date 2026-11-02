@@ -1,4 +1,4 @@
-import { handleAdminSession } from "../../server/inquiries.js";
+import { handleAdminSession } from "../../server/early-access.js";
 
 export default {
   async fetch(request) {
