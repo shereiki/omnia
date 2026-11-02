@@ -7,31 +7,6 @@
   gsap.registerPlugin(ScrollTrigger);
   gsap.config({ nullTargetWarn: false });
 
-  function animateHero() {
-    if (reduced.matches) return;
-    const timeline = gsap.timeline({
-      defaults: { ease: "power3.out", duration: 0.85 },
-    });
-    timeline
-      .from(".hero-category", { y: 14, opacity: 0, duration: 0.55 })
-      .from(
-        ".hero h1",
-        { y: 26, opacity: 0, duration: 0.95 },
-        "-=0.35",
-      )
-      .from(
-        ".hero-description, .hero-support, .hero-statement",
-        { y: 16, opacity: 0, stagger: 0.07 },
-        "-=0.55",
-      )
-      .from(".hero-actions > *", { y: 12, opacity: 0, stagger: 0.07 }, "-=0.5")
-      .from(
-        ".hero-bottom",
-        { y: 10, opacity: 0, duration: 0.6 },
-        "-=0.4",
-      );
-  }
-
   function revealSections() {
     if (reduced.matches) return;
     const targets = gsap.utils.toArray(
@@ -160,16 +135,11 @@
   }
 
   function start() {
-    animateHero();
     revealSections();
     animateConnectionMap();
     animateConsole();
     microInteractions();
   }
 
-  if (!document.querySelector("#welcome")) {
-    requestAnimationFrame(start);
-  } else {
-    document.addEventListener("omnia:entered", start, { once: true });
-  }
+  requestAnimationFrame(start);
 })();

@@ -1,14 +1,9 @@
 (() => {
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  const welcome = document.querySelector("#welcome");
-  const site = document.querySelector("#site");
-  const enter = document.querySelector("#enter");
   const menu = document.querySelector(".menu");
   const navigation = document.querySelector("#navigation");
-  if (site) site.inert = true;
   let lenis = null;
   let frame = null;
-  let entered = false;
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
   if (ScrollTrigger) {
@@ -25,8 +20,6 @@
     },
     { threshold: 0.08 },
   );
-
-  document.body.classList.add("welcome-visible");
 
   /* ---------- Smooth scroll, governed ---------- */
 
@@ -63,7 +56,6 @@
     }
     lenis = null;
     if (
-      entered &&
       !reducedMotion.matches &&
       smoothScrollCapable.matches &&
       typeof window.Lenis === "function"
@@ -86,51 +78,6 @@
     ScrollTrigger?.refresh();
   }
 
-  /* ---------- The welcome threshold ---------- */
-
-  function openSite() {
-    if (entered) return;
-    entered = true;
-    document.body.classList.add("site-ready");
-    enter.disabled = true;
-    const mark = document.querySelector(".welcome-mark");
-    const travel =
-      (Math.max(innerWidth, innerHeight) * 430) /
-      mark.getBoundingClientRect().width;
-    welcome.style.setProperty("--depart", Math.ceil(travel) + "px");
-
-    // Settle the destination and start ambient motion underneath the opaque gate.
-    // The revealed page stays in place; it does not begin a second entrance.
-    const destination = document.getElementById(location.hash.slice(1));
-    if (destination) destination.scrollIntoView({ behavior: "instant" });
-    scenes.forEach((scene) => sceneObserver.observe(scene));
-    configureMotion();
-    lenis?.stop();
-    welcome.classList.add("departing");
-
-    setTimeout(
-      () => {
-        welcome.classList.add("leaving");
-        setTimeout(
-          () => {
-            welcome.remove();
-            site.inert = false;
-            document.body.classList.remove("welcome-visible");
-            lenis?.start();
-            ScrollTrigger?.refresh();
-            document.dispatchEvent(new CustomEvent("omnia:entered"));
-            (destination || document.querySelector("#hero-title")).focus({
-              preventScroll: true,
-            });
-          },
-          reducedMotion.matches ? 0 : 650,
-        );
-      },
-      reducedMotion.matches ? 0 : 520,
-    );
-  }
-
-  enter.addEventListener("click", openSite);
   reducedMotion.addEventListener("change", configureMotion);
   smoothScrollCapable.addEventListener("change", configureMotion);
   document.addEventListener("visibilitychange", () => {
@@ -460,6 +407,20 @@
       if (reducedMotion.matches && animation) settle();
     });
   });
+
+  scenes.forEach((scene) => sceneObserver.observe(scene));
+  configureMotion();
+
+  function announceEntered() {
+    document.dispatchEvent(new CustomEvent("omnia:entered"));
+  }
+  if (document.readyState === "complete") {
+    announceEntered();
+  } else {
+    document.addEventListener("DOMContentLoaded", announceEntered, {
+      once: true,
+    });
+  }
 
   document.querySelector("#year").textContent = new Date().getFullYear();
 })();

@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from "node:crypto";
 import { clientIp, json, readJson, sameOrigin } from "./http.js";
 import {
   adminConfigured,
@@ -10,8 +11,8 @@ import {
 } from "./session.js";
 import { getStore } from "./store.js";
 
-const interests = new Set(["business", "partner", "investor", "updates"]);
 const memoryLimits = new Map();
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function limitKey(prefix, ip, hour) {
   const digest = await crypto.subtle.digest(
@@ -31,36 +32,39 @@ async function bump(store, key, hour) {
   return count;
 }
 
-export async function handleInquiry(request, { store = getStore() } = {}) {
+function hashToken(token) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function newToken() {
+  return randomBytes(24).toString("base64url");
+}
+
+function text(value, max) {
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  return trimmed.length <= max ? trimmed : "";
+}
+
+export async function handleEarlyAccess(request, { store = getStore() } = {}) {
   if (request.method !== "POST")
     return json({ error: "Method not allowed." }, 405);
   if (!sameOrigin(request)) return json({ error: "Request not allowed." }, 403);
   let input;
   try {
-    input = await readJson(request);
+    input = await readJson(request, 8192);
   } catch {
-    return json({ error: "Please check your details and try again." }, 400);
+    return json({ error: "Please check your email and try again." }, 400);
   }
-  const name = typeof input?.name === "string" ? input.name.trim() : "";
-  const email = typeof input?.email === "string" ? input.email.trim() : "";
-  const message =
-    typeof input?.message === "string" ? input.message.trim() : "";
-  if (
-    input?.website ||
-    !name ||
-    name.length > 120 ||
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-    email.length > 254 ||
-    (!message && input?.interest !== "updates") ||
-    message.length > 4000 ||
-    !interests.has(input?.interest)
-  )
-    return json({ error: "Please check your details and try again." }, 400);
+  if (input?.website) return json({ received: true }, 201);
+  const email = text(input?.email, 254);
+  if (!email || !emailPattern.test(email))
+    return json({ error: "Please check your email and try again." }, 400);
   if (!store)
     return json(
       {
         error:
-          "Inquiries are not open yet. Nothing has been sent. Please check back soon.",
+          "Sign-ups are not open yet. Nothing has been sent. Please check back soon.",
       },
       503,
     );
@@ -68,50 +72,117 @@ export async function handleInquiry(request, { store = getStore() } = {}) {
     const ip = clientIp(request);
     if (ip) {
       const hour = Math.floor(Date.now() / 3600000);
-      const key = await limitKey("inquiry", ip, hour);
+      const key = await limitKey("early-access", ip, hour);
       const count = await bump(store, key, hour);
       if (count > 10)
         return json(
           {
             error:
-              "Too many inquiries from this connection. Please try again later.",
+              "Too many requests from this connection. Please try again later.",
           },
           429,
         );
     }
-    const id = crypto.randomUUID();
-    await store.insertInquiry({
-      id,
-      name,
+    const token = newToken();
+    const result = await store.insertSignup({
+      id: crypto.randomUUID(),
       email,
-      interest: input.interest,
-      message,
+      emailNormalized: email.toLowerCase(),
+      tokenHash: hashToken(token),
     });
-    return json({ id, received: true }, 201);
-  } catch {
-    console.error("Inquiry storage unavailable.");
     return json(
-      { error: "Your inquiry could not be saved. Please try again later." },
+      { received: true, id: result.id, token },
+      result.inserted ? 201 : 200,
+    );
+  } catch {
+    console.error("Early access storage unavailable.");
+    return json(
+      { error: "Your email could not be saved. Please try again later." },
       503,
     );
   }
 }
 
-export async function handleAdminInquiries(
+export async function handleEarlyAccessDetails(
+  request,
+  { store = getStore() } = {},
+) {
+  if (request.method !== "POST")
+    return json({ error: "Method not allowed." }, 405);
+  if (!sameOrigin(request)) return json({ error: "Request not allowed." }, 403);
+  let input;
+  try {
+    input = await readJson(request, 8192);
+  } catch {
+    return json({ error: "Please check your details and try again." }, 400);
+  }
+  const id = text(input?.id, 64);
+  const token = text(input?.token, 200);
+  const company = text(input?.company, 160);
+  const role = text(input?.role, 120);
+  const message = text(input?.message, 2000);
+  const invalid =
+    !id ||
+    !token ||
+    (typeof input?.company === "string" && input.company.trim().length > 160) ||
+    (typeof input?.role === "string" && input.role.trim().length > 120) ||
+    (typeof input?.message === "string" && input.message.trim().length > 2000) ||
+    (!company && !role && !message);
+  if (invalid)
+    return json({ error: "Please check your details and try again." }, 400);
+  if (!store)
+    return json(
+      { error: "Sign-ups are not open yet. Please try again later." },
+      503,
+    );
+  try {
+    const ip = clientIp(request);
+    if (ip) {
+      const hour = Math.floor(Date.now() / 3600000);
+      const key = await limitKey("early-access-details", ip, hour);
+      const count = await bump(store, key, hour);
+      if (count > 10)
+        return json(
+          {
+            error:
+              "Too many requests from this connection. Please try again later.",
+          },
+          429,
+        );
+    }
+    const changes = await store.updateSignupDetails(id, hashToken(token), {
+      company,
+      role,
+      message,
+    });
+    if (!changes)
+      return json({ error: "That link is no longer valid." }, 404);
+    return json({ saved: true }, 200);
+  } catch {
+    console.error("Early access details unavailable.");
+    return json(
+      { error: "Your details could not be saved. Please try again later." },
+      503,
+    );
+  }
+}
+
+export async function handleAdminSignups(
   request,
   { store = getStore(), env = process.env } = {},
 ) {
   const denied = await requireAdmin(request, env);
   if (denied) return denied;
-  if (!store) return json({ error: "The inquiry database is not connected." }, 503);
+  if (!store)
+    return json({ error: "The early access database is not connected." }, 503);
   try {
     if (request.method === "GET") {
       const rawPage = Number(new URL(request.url).searchParams.get("page") || 0);
       if (!Number.isInteger(rawPage) || rawPage < 0 || rawPage > 10000)
         return json({ error: "Invalid page." }, 400);
-      const results = await store.listInquiries(rawPage * 50);
+      const results = await store.listSignups(rawPage * 50);
       return json({
-        inquiries: results.slice(0, 50),
+        signups: results.slice(0, 50),
         hasMore: results.length > 50,
       });
     }
@@ -130,8 +201,8 @@ export async function handleAdminInquiries(
         !["new", "reviewed"].includes(input?.status)
       )
         return json({ error: "Invalid update." }, 400);
-      const changes = await store.updateInquiry(input.id, input.status);
-      if (!changes) return json({ error: "Inquiry not found." }, 404);
+      const changes = await store.updateSignupStatus(input.id, input.status);
+      if (!changes) return json({ error: "Sign-up not found." }, 404);
       return json({ updated: true });
     }
     return json({ error: "Method not allowed." }, 405);

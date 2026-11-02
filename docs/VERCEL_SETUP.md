@@ -19,12 +19,15 @@ Pushing `main` deploys production. Pull-request branches get preview URLs. Leave
 ## 2. Create the Neon database
 
 1. Open the project → **Storage** → **Marketplace** → **Neon**.
-2. Create a database named `omnia-inquiries` in **eu-central-1 (Frankfurt)**.
+2. Create a database named `omnia-early-access` in **eu-central-1 (Frankfurt)**.
 3. Connect it to this project for the **Production** environment only.
 4. Leave Preview disconnected until you want a separate Neon branch. Do not point preview deployments at the production database.
 5. Confirm the integration added `DATABASE_URL`. That value is the pooled connection string. Do not copy it into git.
 
 ## 3. Create the tables
+
+The sign-up table is `early_access`. It stores one row per work email, with an
+optional company, role and message, and a status of `new` or `reviewed`.
 
 In the Neon SQL editor, paste and run the whole of `db/schema.sql`.
 
@@ -62,10 +65,13 @@ Redeploy production after saving the variables. A deployment that was built befo
 
 ## 6. Check production
 
-1. Submit the inquiry form with an email you control. The success sentence appears only after the row is stored.
-2. Open `/admin` in a signed-out browser. You should land on `/admin/login`, not the inbox.
-3. Sign in with `ADMIN_PASSWORD`. The inquiry should be first in the list. Mark it reviewed.
-4. Sign out. In a private window, `https://useomnia.dev/api/admin/inquiries` should return 401.
-5. A wrong password should not open the inbox. After too many failures from the same network, sign-in pauses until the next hour. The correct password still works.
+1. Submit the early access form with a work email you control. The next step appears only after `/api/early-access` stores the row.
+2. Add a company or role and submit the optional details. The thanks message appears only after `/api/early-access/details` saves them.
+3. Open `/admin` in a signed-out browser. You should land on `/admin/login`, not the inbox.
+4. Sign in with `ADMIN_PASSWORD`. The sign-up should be first in the list. Mark it reviewed.
+5. Sign out. In a private window, `https://useomnia.dev/api/admin/inquiries` should return 401.
+6. A wrong password should not open the inbox. After too many failures from the same network, sign-in pauses until the next hour. The correct password still works.
+
+Sign-ups are visible in `/admin` in production (signed in with `ADMIN_PASSWORD`), or directly in the Neon console under **Tables → early_access**.
 
 Local preview (`npm run preview`) uses an in-memory inbox and a printed password. It is not a substitute for the production check.

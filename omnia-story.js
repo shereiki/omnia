@@ -7,46 +7,6 @@
     ScrollTrigger.config({ ignoreMobileResize: true });
   }
 
-  /* OS overview disclosure */
-  const explorer = document.querySelector("[data-os-explorer]");
-  if (explorer) {
-    const toggle = explorer.querySelector("[data-foundation-toggle]");
-    const environment = explorer.querySelector(".foundation-environment");
-    const copy = explorer.querySelector("#foundation-possibility-copy");
-    let animation;
-    toggle?.addEventListener("click", () => {
-      const expanded = toggle.getAttribute("aria-expanded") !== "true";
-      const from = copy.hidden ? 0 : copy.getBoundingClientRect().height;
-      animation?.cancel();
-      toggle.setAttribute("aria-expanded", String(expanded));
-      environment.dataset.expanded = String(expanded);
-      environment
-        .querySelector(".foundation-possibilities")
-        .setAttribute("aria-hidden", String(!expanded));
-      toggle.firstElementChild.textContent = expanded
-        ? "Return to the foundation"
-        : "Explore what becomes possible";
-      toggle.lastElementChild.textContent = expanded ? "−" : "+";
-      copy.hidden = false;
-      if (reduced.matches) {
-        copy.hidden = !expanded;
-        return;
-      }
-      const to = expanded ? copy.scrollHeight : 0;
-      animation = copy.animate(
-        [
-          { height: `${from}px`, opacity: expanded ? 0 : 1 },
-          { height: `${to}px`, opacity: expanded ? 1 : 0 },
-        ],
-        { duration: 380, easing: "cubic-bezier(.22,1,.36,1)" },
-      );
-      animation.onfinish = () => {
-        copy.hidden = !expanded;
-        animation = null;
-      };
-    });
-  }
-
   /* One dashboard, no slides */
   const story = document.querySelector("[data-omnia-story]");
   if (!story) return;
@@ -83,7 +43,7 @@
         <svg viewBox="0 0 430 440" aria-hidden="true"><use href="#mark" /></svg>
         <strong>Omnia OS</strong>
       </div>
-      <div class="map-intelligence"><i aria-hidden="true"></i>Native intelligence</div>
+      <div class="map-intelligence"><i aria-hidden="true"></i>Shared records &amp; permissions</div>
       <div class="map-modules"></div>
     </div>
     <i class="map-connector" aria-hidden="true"></i>
@@ -243,7 +203,7 @@
     if (bandState)
       bandState.textContent =
         index >= 1
-          ? "Context + reasoning + authorized actions"
+          ? "Shared records, routed work, fewer handoffs"
           : "Part of the foundation";
     const introduction = composition.querySelector("[data-output-introduction]");
     if (introduction) introduction.hidden = index >= 2;
@@ -278,7 +238,9 @@
 
   function layout() {
     const pinHeight = measure();
-    const step = Math.min(760, Math.max(420, innerHeight * 0.55));
+    const step = compact.matches
+      ? Math.max(280, innerHeight * 0.36)
+      : Math.min(760, Math.max(420, innerHeight * 0.55));
     const distance = step * (stagesCount - 1);
     wrap.style.height = `${pinHeight + distance}px`;
     assembly.style.setProperty("--story-distance", `${distance}px`);
@@ -340,7 +302,5 @@
       ScrollTrigger.refresh();
     });
   });
-  if (!document.querySelector("#welcome")) {
-    layout();
-  }
+  layout();
 })();

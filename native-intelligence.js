@@ -7,13 +7,13 @@
   const tabs = [...section.querySelectorAll("[data-agent-perspective]")];
   const dimensions = [...section.querySelectorAll("[data-agent-dimension]")];
   const definitions = {
-    responsibility: "What the agent is expected to accomplish.",
+    responsibility: "What the automation is expected to accomplish.",
     knowledge: "Which information it can reference.",
     capabilities: "Which connected tools and Omnia Modules it can use.",
     behavior:
-      "Communication style, instructions, language, and operating rules.",
-    autonomy: "What it can do independently versus what requires approval.",
-    oversight: "Escalations, monitoring, and records of consequential actions.",
+      "How it communicates, the instructions it follows and its operating rules.",
+    autonomy: "What it can do on its own versus what requires approval.",
+    oversight: "Escalations, monitoring and records of consequential actions.",
   };
   const perspectives = {
     organization: {
@@ -25,7 +25,7 @@
       modules: "Read relevant records. Prepare permitted work.",
       boundaryLabel: "Approval boundary",
       boundary: "Changing an agreed commitment goes to the team.",
-      alt: "An illustrative Operations Intelligence agent draws on permitted organizational knowledge, current operational records and authorized Omnia Modules through the native intelligence layer of Omnia OS. It prepares priorities, supporting context and work for review. Changes to commitments require human approval.",
+      alt: "An illustrative Operations automation draws on permitted business knowledge, current operational records and authorized Omnia Modules. It prepares priorities, supporting context and work for review. Changes to commitments require human approval.",
       examples: {
         responsibility:
           "Keep track of commitments, identify what needs attention, and prepare the next steps.",
@@ -51,7 +51,7 @@
       boundaryLabel: "Scope boundary",
       boundary:
         "Restricted internal records and other customers’ data stay out of scope.",
-      alt: "An illustrative customer-facing service guide on a website uses approved service knowledge, the verified customer’s own authorized details and permitted Omnia Module capabilities. It explains options and prepares a next step for review. Restricted internal records and other customers’ data remain outside its scope. The same native intelligence and Omnia OS foundation remain.",
+      alt: "An illustrative customer-facing service guide on a website uses approved service knowledge, the verified customer’s own authorized details and permitted Omnia Module capabilities. It explains options and prepares a next step for review. Restricted internal records and other customers’ data remain outside its scope. The same Omnia OS foundation remains.",
       examples: {
         responsibility:
           "Help customers understand their options and prepare the right next step through your own customer experience.",

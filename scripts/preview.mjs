@@ -1,7 +1,12 @@
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, sep } from "node:path";
-import { handleAdminInquiries, handleAdminSession, handleInquiry } from "../server/inquiries.js";
+import {
+  handleAdminSession,
+  handleAdminSignups,
+  handleEarlyAccess,
+  handleEarlyAccessDetails,
+} from "../server/early-access.js";
 import { guardAdminRequest } from "../server/session.js";
 import { createMemoryStore } from "../server/store.js";
 
@@ -117,13 +122,15 @@ const server = createServer(async (req, res) => {
         status: 404,
         headers: { "Content-Type": "text/html; charset=utf-8", ...headersFor(url.pathname) },
       });
-    } else if (url.pathname === "/api/inquiries")
-      response = await handleInquiry(request, { store });
+    } else if (url.pathname === "/api/early-access")
+      response = await handleEarlyAccess(request, { store });
+    else if (url.pathname === "/api/early-access/details")
+      response = await handleEarlyAccessDetails(request, { store });
     else if (url.pathname === "/api/admin/session")
       response = await handleAdminSession(request, { store, env });
     else if (url.pathname === "/api/admin/inquiries") {
       const denied = await guardAdminRequest(request, env);
-      response = denied || (await handleAdminInquiries(request, { store, env }));
+      response = denied || (await handleAdminSignups(request, { store, env }));
     } else if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
       const denied = await guardAdminRequest(request, env);
       if (denied) response = denied;
@@ -154,6 +161,6 @@ const server = createServer(async (req, res) => {
 
 server.listen(port, "127.0.0.1", () => {
   console.log(`Preview at http://127.0.0.1:${port}`);
-  console.log("In-memory inbox. Nothing is written to Neon.");
+  console.log("In-memory early access inbox. Nothing is written to Neon.");
   console.log(`Local admin password: ${env.ADMIN_PASSWORD}`);
 });
