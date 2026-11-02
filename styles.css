@@ -517,7 +517,7 @@ h1:focus {
   right: 12px;
   font-size: 7px;
   line-height: 1.5;
-  color: #655d7c99;
+  color: #655d7c;
 }
 .workspace-body {
   padding: 23px 25px;
@@ -1052,6 +1052,10 @@ details[data-expanded="true"] .detail-plus {
   color: #ddd5f4;
   padding: 35px 0 0;
   user-select: none;
+}
+/* Decorative wordmark drawn as generated content so it is not read as text. */
+.footer-word::before {
+  content: attr(data-word);
 }
 /* Responsive composition preserves the same experiences rather than shrinking a desktop. */
 @media (min-width: 1500px) {
