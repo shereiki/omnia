@@ -71,7 +71,7 @@ const PERIODS = {
 };
 
 const TICKET_TEMPLATES = SHARED_TICKET_TEMPLATES;
-const DASH = CLIENT.dashboards;
+const DASH = Object.fromEntries((CLIENT.views || []).map((v) => [v.id, v.label]));
 const firstName = () =>
   CLIENT.people[0].name.replace(/^Dr\.\s*/, "").split(" ")[0];
 const greeting = () => {
@@ -1486,7 +1486,7 @@ function viewOrders() {
   const rows = filteredOrders();
   return `
   <div class="view-head">
-    <div><h1>${DASH.orders}</h1><p>${CLIENT.pitch}</p></div>
+    <div><h1>${DASH.orders || "Orders"}</h1><p>${CLIENT.pitch}</p></div>
   </div>
 
   <div class="split wide-left">
@@ -1550,7 +1550,7 @@ function viewOrders() {
 function viewInventory() {
   return `
   <div class="view-head">
-    <div><h1>${DASH.inventory}</h1><p>Capacity, cover and the things that need restocking.</p></div>
+    <div><h1>${DASH.inventory || "Inventory"}</h1><p>Capacity, cover and the things that need restocking.</p></div>
     <div class="head-actions"><span class="chip warn">3 need review</span></div>
   </div>
 
