@@ -57,25 +57,23 @@
         <span>OMNIA</span>
       </a>
 
-      <button class="pill-workspace" type="button" data-action="workspace" title="Meridian Outfitters">
-        <span class="workspace-mark">M</span>
-      </button>
-
       <span class="pill-divider" aria-hidden="true"></span>
 
       <div class="tabs" id="tabs" role="tablist" aria-label="Dashboards"></div>
-      <button class="tab-add" id="tabAdd" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Open a dashboard">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus" /></svg>
+      <button class="pill-agents" id="agentsButton" type="button" aria-expanded="false" aria-controls="dock">
+        <i></i><b id="agentsChipCount">3</b><span>agents</span>
       </button>
-      <div class="menu solutions-menu" id="solutionsMenu" role="menu" hidden></div>
 
       <div class="pill-actions">
         <button class="pill-button" type="button" aria-label="Search" data-action="search">
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search" /></svg>
         </button>
-        <button class="pill-person" id="dockButton" type="button" aria-label="Ayesha, your engineer" aria-expanded="false" aria-controls="dock">
-          <span class="pill-person-avatar">AK</span>
-          <span class="pill-person-name">Ayesha</span>
+        <button class="pill-person" id="dockButton" type="button" aria-label="Your engineer" aria-expanded="false" aria-controls="dock">
+          <span class="pill-person-avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mail" /></svg></span>
+          <span class="pill-person-copy">
+            <small>Your engineer</small>
+            <strong>Ayesha Karim</strong>
+          </span>
           <i class="badge" id="dockBadge" hidden></i>
         </button>
         <button class="pill-button" id="bell" type="button" aria-label="Notifications" data-action="notify">
@@ -87,7 +85,12 @@
             <span class="avatar">MO</span>
           </button>
           <div class="menu account-menu" id="accountMenu" role="menu" hidden>
-            <div class="menu-head"><strong>Maya Ortiz</strong><span>Workspace admin · Meridian</span></div>
+            <div class="menu-head"><strong>Maya Ortiz</strong><span>Workspace admin</span></div>
+            <button class="menu-item" role="menuitem" type="button" data-action="workspace">
+              <span class="workspace-mark">M</span><span>Meridian Outfitters</span>
+              <svg class="menu-end" viewBox="0 0 24 24"><use href="#i-chevron" /></svg>
+            </button>
+            <div class="menu-sep"></div>
             <button class="menu-item" role="menuitem" type="button" data-action="manage-os"><svg viewBox="0 0 24 24"><use href="#i-gear" /></svg><span>Manage Omnia OS</span><kbd>G</kbd></button>
             <button class="menu-item" role="menuitem" type="button" data-action="people"><svg viewBox="0 0 24 24"><use href="#i-team" /></svg><span>People &amp; access</span></button>
             <button class="menu-item" role="menuitem" type="button" data-action="requests"><svg viewBox="0 0 24 24"><use href="#i-ticket" /></svg><span>Your requests</span></button>
@@ -109,11 +112,6 @@
       </div>
       <div class="dock-body" id="dockBody"></div>
     </aside>
-
-    <button class="agents-orb" id="agentsOrb" type="button" aria-label="Agents" aria-expanded="false">
-      <span class="agents-orb-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-agent" /></svg></span>
-      <span class="agents-orb-live"><i></i><b id="agentsOrbCount">3</b><em>running</em></span>
-    </button>
 
     <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
     <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Details" hidden></aside>

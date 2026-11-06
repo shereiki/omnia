@@ -308,6 +308,7 @@ const state = {
     { id: "decisions" },
     { id: "orders" },
     { id: "inventory" },
+    { id: "savings" },
   ],
   dock: { open: false, view: "requests", thread: null },
   active: "general",
@@ -792,27 +793,6 @@ function openTab(id) {
   renderStage();
 }
 
-function renderSolutionsMenu() {
-  const menu = document.getElementById("solutionsMenu");
-  menu.innerHTML = `
-    <div class="menu-head"><strong>Open a dashboard</strong><span>Built and maintained by your Omnia team</span></div>
-    ${SOLUTIONS.map(
-      (s) => `<button class="solution-option" role="menuitem" data-open="${s.id}">
-        <span class="tile-icon ${s.tone}">${I(s.icon)}</span>
-        <span><strong>${s.label}</strong><small>${s.meta}</small></span>
-        ${s.state ? `<span class="state ${s.review ? "review" : ""}"><i></i>${s.state}</span>` : ""}
-      </button>`,
-    ).join("")}
-`;
-  menu.querySelectorAll("[data-open]").forEach((b) =>
-    b.addEventListener("click", () => {
-      menu.hidden = true;
-      document.getElementById("tabAdd").setAttribute("aria-expanded", "false");
-      openTab(b.dataset.open);
-    }),
-  );
-}
-
 /* ------------------------------------------------------------------ views */
 
 function kpiTiles() {
@@ -865,7 +845,7 @@ function decisionCard(decision, { compact = false } = {}) {
         : `<div class="decision-actions">
             <button class="btn primary sm" data-approve="${decision.id}">Approve</button>
             <button class="btn sm" data-decline="${decision.id}">Decline</button>
-            <button class="btn quiet sm" data-ask="${decision.id}">Ask Ayesha</button>
+            <button class="btn quiet sm" data-ask="${decision.id}">Ask ${decision.agent}</button>
           </div>`
     }
   </article>`;
@@ -1032,9 +1012,9 @@ function openDock(view = "requests", thread = null) {
   panel.style.opacity = "";
   panel.hidden = false;
   document.getElementById("dockButton")?.setAttribute("aria-expanded", String(view === "requests"));
-  document.getElementById("agentsOrb")?.setAttribute("aria-expanded", String(view === "agents"));
-  const orbCount = document.getElementById("agentsOrbCount");
-  if (orbCount) orbCount.textContent = String(AGENTS.filter((a) => a.status === "live").length);
+  document.getElementById("agentsButton")?.setAttribute("aria-expanded", String(view === "agents"));
+  const chipCount = document.getElementById("agentsChipCount");
+  if (chipCount) chipCount.textContent = String(AGENTS.filter((a) => a.status === "live").length);
   if (window.gsap) {
     gsap.fromTo(
       document.getElementById("dock"),
@@ -1050,7 +1030,7 @@ function closeDock() {
   const done = () => {
     dock.hidden = true;
     document.getElementById("dockButton")?.setAttribute("aria-expanded", "false");
-    document.getElementById("agentsOrb")?.setAttribute("aria-expanded", "false");
+    document.getElementById("agentsButton")?.setAttribute("aria-expanded", "false");
   };
   state.dock.open = false;
   state.dock.thread = null;
@@ -1121,35 +1101,68 @@ function dockAgents() {
   const agent = AGENTS.find((a) => a.id === state.agentId) || AGENTS[0];
   const live = AGENTS.filter((a) => a.status === "live").length;
   return `
-    <div class="dock-live"><i></i>${live} agents running · anything consequential comes to you</div>
-    <div class="dock-list agents-dock">
-      ${AGENTS.map(
-        (a) => `<button class="dock-agent ${a.id === agent.id ? "selected" : ""}" data-dock-agent="${a.id}">
-          <span class="agent-avatar">${I(a.icon)}</span>
-          <span class="dock-agent-main">
-            <strong>${a.name}</strong>
-            <small>${a.scope}</small>
-          </span>
-          <i class="status-dot ${a.status === "idle" ? "idle" : "live"}"></i>
-        </button>`,
-      ).join("")}
-    </div>
-    <div class="dock-section">
-      <div class="dock-section-head"><span>Latest from ${agent.name}</span>
-        <span class="chip ${agent.status === "live" ? "good" : "ghost"}">${agent.status === "live" ? "Running" : "Idle"}</span></div>
-      <div class="dock-messages">
-        ${agent.thread
-          .slice(-2)
-          .map((m) => `<div class="dock-msg ${m.from}">${m.text}<span>${m.meta}</span></div>`)
-          .join("")}
+    <div class="agent-panel">
+      <div class="agent-banner">
+        <span class="agent-banner-live"><i></i>${live} running</span>
+        <p>Agents do the work. Anything with a cost, a customer or access comes to you as a decision.</p>
       </div>
-      <div class="dock-stats">
-        <div><span>Runs today</span><strong>${fmt.n(agent.stats.runs)}</strong></div>
-        <div><span>Raised</span><strong>${agent.stats.approval}</strong></div>
-        <div><span>Success</span><strong>${agent.stats.success}</strong></div>
+
+      <div class="agent-cards">
+        ${AGENTS.map(
+          (a) => `<button class="agent-card ${a.id === agent.id ? "selected" : ""}" data-dock-agent="${a.id}">
+            <span class="agent-card-avatar">${I(a.icon)}</span>
+            <span class="agent-card-body">
+              <span class="agent-card-top"><strong>${a.name}</strong>
+                <i class="status-dot ${a.status === "idle" ? "idle" : "live"}"></i></span>
+              <small>${a.scope}</small>
+              <span class="agent-card-meta"><b>${fmt.n(a.stats.runs)}</b> runs · <b>${a.stats.approval}</b> raised</span>
+            </span>
+          </button>`,
+        ).join("")}
       </div>
-    </div>
-    <p class="dock-note">Agents work inside the rules you approved. Cost, customers and access land in Decisions.</p>`;
+
+      <section class="agent-detail">
+        <header class="agent-detail-head">
+          <span class="agent-card-avatar lg">${I(agent.icon)}</span>
+          <div>
+            <h3>${agent.name}</h3>
+            <p>${agent.scope}</p>
+          </div>
+          <span class="chip ${agent.status === "live" ? "good" : "ghost"}">${agent.status === "live" ? "Running" : "Idle"}</span>
+        </header>
+
+        <div class="agent-detail-stats">
+          <div><span>Runs today</span><strong>${fmt.n(agent.stats.runs)}</strong></div>
+          <div><span>Raised to you</span><strong>${agent.stats.approval}</strong></div>
+          <div><span>Success</span><strong>${agent.stats.success}</strong></div>
+        </div>
+
+        <h4 class="agent-detail-label">Latest</h4>
+        <div class="agent-thread">
+          ${agent.thread
+            .slice(-2)
+            .map(
+              (m) => `<div class="agent-msg ${m.from}">
+                <span class="agent-msg-who">${m.from === "user" ? "Maya" : agent.name}</span>
+                <p>${m.text}</p>
+                <span class="agent-msg-when">${m.meta}</span>
+              </div>`,
+            )
+            .join("")}
+        </div>
+
+        <h4 class="agent-detail-label">Rules it works inside</h4>
+        <div class="agent-rules">
+          <span class="guard">${I("i-shield")}${agent.autonomy}</span>
+          <span class="guard">${I("i-shield")}Cost and customer exceptions go to Decisions</span>
+        </div>
+
+        <h4 class="agent-detail-label">Tools</h4>
+        <div class="agent-tools-list">
+          ${agent.tools.map((t) => `<span class="tool-chip">${t}</span>`).join("")}
+        </div>
+      </section>
+    </div>`;
 }
 
 function renderDock() {
@@ -1680,26 +1693,12 @@ function wireStage() {
   stage.querySelectorAll("[data-ask]").forEach((el) =>
     el.addEventListener("click", () => {
       const decision = state.decisions.find((d) => d.id === el.dataset.ask);
-      openModal(`
-        <div class="modal-head"><div><h2>Ask Ayesha about ${decision.id}</h2><p>She has the context already — no need to explain it.</p></div>
-          <button class="icon-button" data-close-modal aria-label="Close">${I("i-x")}</button></div>
-        <div class="modal-body">
-          <form class="request-form" id="askForm">
-            <label>Your question<textarea name="details" rows="3" placeholder="What happens to the customer if we decline?"></textarea></label>
-            <div class="modal-actions"><button class="btn primary" type="submit">Send</button></div>
-          </form>
-        </div>`);
-      document.getElementById("askForm").addEventListener("submit", (event) => {
-        event.preventDefault();
-        closeModal();
-        toast(`${decision.id} question sent to Ayesha`);
-        setTimeout(() => {
-          notify({ title: `Ayesha answered your question on ${decision.id}`, meta: "Your engineer · just now", kind: "decision", ref: decision.id });
-          toast("Ayesha replied — open Requests");
-        }, 8000);
-      });
+      const agent = AGENTS.find((a) => a.name === decision.agent);
+      if (agent) state.agentId = agent.id;
+      openDock("agents");
     }),
   );
+
   stage.querySelectorAll("[data-request]").forEach((el) =>
     el.addEventListener("click", () => openDock("requests", el.dataset.request)),
   );
@@ -2055,16 +2054,8 @@ function init() {
   restoreTabOrder();
   renderTabs();
   setupTabDrag();
-  renderSolutionsMenu();
   renderStage();
   updateBadge();
-
-  document.getElementById("tabAdd").addEventListener("click", (event) => {
-    const menu = document.getElementById("solutionsMenu");
-    const open = menu.hidden;
-    menu.hidden = !open;
-    event.currentTarget.setAttribute("aria-expanded", String(!open));
-  });
 
   const accountButton = document.getElementById("accountButton");
   const accountMenu = document.getElementById("accountMenu");
@@ -2099,8 +2090,8 @@ function init() {
   );
   document.querySelector('[data-action="notify"]').addEventListener("click", renderNotifications);
 
-  const orb = document.getElementById("agentsOrb");
-  orb.addEventListener("click", () => {
+  const agentsButton = document.getElementById("agentsButton");
+  agentsButton.addEventListener("click", () => {
     if (state.dock.open && state.dock.view === "agents") return closeDock();
     state.dock.thread = null;
     openDock("agents");
@@ -2202,8 +2193,6 @@ function init() {
       closeDrawer();
       accountMenu.hidden = true;
       accountButton.setAttribute("aria-expanded", "false");
-      document.getElementById("solutionsMenu").hidden = true;
-      document.getElementById("tabAdd").setAttribute("aria-expanded", "false");
     }
     if (!backdrop.hidden && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
       const all = [...results.querySelectorAll(".palette-item")];
@@ -2219,10 +2208,6 @@ function init() {
     if (!event.target.closest(".account-wrap")) {
       accountMenu.hidden = true;
       accountButton.setAttribute("aria-expanded", "false");
-    }
-    if (!event.target.closest(".tab-add") && !event.target.closest(".solutions-menu")) {
-      document.getElementById("solutionsMenu").hidden = true;
-      document.getElementById("tabAdd").setAttribute("aria-expanded", "false");
     }
   });
 
