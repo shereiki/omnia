@@ -2770,3 +2770,7 @@ body { padding-top: var(--bar); }
 .room-free small { font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mint-deep); }
 .room-free:hover { border-style: solid; border-color: #c9bbf0; background: #f6f2ff; }
 @media (max-width: 640px) { .room-free-list { gap: 6px; } .room-free { padding: 7px 10px; } }
+
+.wait-row.offered { background: #f7fdfa; border-radius: 12px; }
+.wait-row.offered .wait-score { color: var(--mint-deep); }
+

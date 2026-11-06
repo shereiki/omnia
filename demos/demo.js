@@ -325,6 +325,10 @@ const state = {
 const sum = (list, key) => list.reduce((total, item) => total + item[key], 0);
 const period = () => PERIODS[state.period];
 const pendingDecisions = () => state.decisions.filter((d) => d.status === "pending");
+
+/* the demo's own copy, so an action can change it */
+const ORDERS_LIVE = (ORDERS || []).map((o) => ({ ...o }));
+const WAITLIST_LIVE = (CLIENT.waitlist || []).map((w) => ({ ...w }));
 const openRequests = () => state.requests.filter((r) => r.status !== "Closed");
 const unread = () => state.notifications.filter((n) => !n.read).length;
 
@@ -522,7 +526,7 @@ function submitRequest(type, title, details) {
   state.requests.unshift(request);
   closeModal();
   if (state.dock.open) renderDock();
-  toast(`${id} sent · Ayesha will reply shortly`);
+  toast(`${id} sent · ${ENGINEER.name.split(" ")[0]} will reply shortly`);
 
   scheduleReply(id, type);
 }
@@ -554,7 +558,7 @@ function deliverReply(id, type) {
   request.deliverables = template.evidence;
   request.thread.push({ from: "engineer", author: ENGINEER.name, when: "Just now", text: template.reply });
   notify({ title: `${ENGINEER.name.split(" ")[0]} replied to ${id}`, meta: "Your engineer · just now", kind: "request", ref: id });
-  toast(`${id} · Ayesha replied`);
+  toast(`${id} · ${ENGINEER.name.split(" ")[0]} replied`);
   if (state.dock.open) renderDock();
 }
 
@@ -1171,7 +1175,7 @@ function dockThread() {
         : ""
     }
     <form class="reply-form" data-reply="${request.id}">
-      <textarea rows="2" placeholder="Reply to Ayesha…"></textarea>
+      <textarea rows="2" placeholder="Reply to ${ENGINEER.name.split(" ")[0]}…"></textarea>
       <button class="btn primary sm" type="submit">Send</button>
     </form>`;
 }
@@ -1738,13 +1742,13 @@ function renderDock() {
       request.thread.push({ from: "client", author: "${CLIENT.people[0].name}", when: "Just now", text });
       request.updated = "just now";
       renderDock();
-      toast("Reply sent to Ayesha");
+      toast(`Reply sent to ${ENGINEER.name.split(" ")[0]}`);
     }),
   );
 }
 
 function filteredOrders() {
-  return ORDERS.filter((o) => {
+  return ORDERS_LIVE.filter((o) => {
     const stageOk = state.stageFilter === "All" || o.stage === state.stageFilter;
     const q = state.orderQuery.toLowerCase();
     const qOk = !q || o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q) || o.city.toLowerCase().includes(q);
@@ -1783,7 +1787,7 @@ function viewOrders() {
 
   <section class="card">
     <div class="card-head">
-      <div><h2>Orders</h2><small>${rows.length} of ${ORDERS.length}</small></div>
+      <div><h2>Orders</h2><small>${rows.length} of ${ORDERS_LIVE.length}</small></div>
       <div class="table-tools">
         <button class="btn quiet sm" data-export-orders>${I("i-doc")}Export</button>
         <div class="filter-chips">
@@ -1836,7 +1840,7 @@ function viewInventory() {
   <section class="card">
     <div class="card-head">
       <div><h2>Stock</h2><small>Cover is days of stock at current sell-through</small></div>
-      <button class="btn sm" data-send-reorder ${state.selectedStock.size ? "" : "disabled"}>Send ${state.selectedStock.size || ""} to Ayesha</button>
+      <button class="btn sm" data-send-reorder ${state.selectedStock.size ? "" : "disabled"}>Send ${state.selectedStock.size || ""} to ${ENGINEER.name.split(" ")[0]}</button>
     </div>
     <div class="card-body">
       <table class="table">
@@ -1889,7 +1893,7 @@ function viewSavings() {
     <section class="card">
       <div class="card-head"><div><h2>Monthly saving</h2><small>${CLIENT.currency}, quarter to date</small></div></div>
       <div class="card-body">${chart("columns", months, 190)}</div>
-      <div class="card-foot"><span>Reported to finance monthly</span><span>Prepared by Ayesha</span></div>
+      <div class="card-foot"><span>Reported to finance monthly</span><span>Prepared by ${ENGINEER.name.split(" ")[0]}</span></div>
     </section>
     <section class="card">
       <div class="card-head"><div><h2>Where it comes from</h2><small>Quarter to date</small></div></div>
@@ -2040,8 +2044,26 @@ function initFleetMap() {
       .addTo(map)
       .bindTooltip(truck.id + " · " + truck.label, { direction: "top", offset: [0, -8], className: "map-tip" })
       .on("click", () => openTruckDrawer(truck.id));
-    marker.getElement()?.setAttribute("role", "button");
-    marker.getElement()?.setAttribute("aria-label", truck.id + " · " + truck.label);
+    // name it for a screen reader, and again whenever Leaflet re-adds the icon
+    const namePin = () => {
+      const el = marker.getElement();
+      if (!el) return;
+      el.setAttribute("role", "button");
+      el.setAttribute("tabindex", "0");
+      el.setAttribute("aria-label", truck.id + " to " + truck.label.split(" → ").slice(-1)[0] + ", " + truck.status);
+      el.setAttribute("title", truck.id + " · " + truck.label);
+      if (!el.dataset.keyed) {
+        el.dataset.keyed = "1";
+        el.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openTruckDrawer(truck.id);
+          }
+        });
+      }
+    };
+    namePin();
+    marker.on("add", namePin);
   }
 
   map.fitBounds(points, { padding: [40, 40] });
@@ -2274,15 +2296,19 @@ function viewWaitlist() {
   </div>
   <section class="card">
     <div class="card-head"><div><h2>Waiting for a slot</h2><small>Best fit first</small></div>
-      <span class="chip uv">${CLIENT.waitlist.length} waiting</span></div>
+      <span class="chip uv">${WAITLIST_LIVE.filter((w) => !w.offered).length} waiting</span></div>
     <div class="card-body waitlist">
-      ${CLIENT.waitlist
+      ${WAITLIST_LIVE
         .map(
-          (w) => `<div class="wait-row">
-            <span class="wait-main"><strong>${w.name}</strong><small>${w.need} · ${w.site} · waiting ${w.waiting}</small></span>
+          (w) => `<div class="wait-row ${w.offered ? "offered" : ""}">
+            <span class="wait-main"><strong>${w.name}</strong><small>${w.need} · ${w.site} · ${w.offered ? "offer sent just now" : `waiting ${w.waiting}`}</small></span>
             <span class="wait-fit"><i style="width:${w.fit}%"></i></span>
             <span class="wait-score">${w.fit}% fit</span>
-            <button class="btn sm" data-offer="${w.name}">Offer slot</button>
+            ${
+              w.offered
+                ? '<span class="chip good">Offer sent</span>'
+                : `<button class="btn sm" data-offer="${w.name}">Offer slot</button>`
+            }
           </div>`,
         )
         .join("")}
@@ -2336,7 +2362,7 @@ function osBody() {
 
   if (view === "people")
     return `<section class="card">
-      <div class="card-head"><div><h2>People & access</h2><small>4 of 12 seats · changes go through Ayesha</small></div>
+      <div class="card-head"><div><h2>People & access</h2><small>4 of 12 seats · changes go through ${ENGINEER.name.split(" ")[0]}</small></div>
         <button class="btn sm" data-invite>${I("i-plus")}Invite</button></div>
       <div class="card-body people-grid">
         ${PEOPLE.map(
@@ -2482,7 +2508,7 @@ function osBody() {
         <div class="fact"><span>Billing</span><strong>Monthly · ${CLIENT.currency} 9,800</strong></div>
         <div class="fact"><span>Support</span><strong>Named engineer</strong></div>
       </div>
-      <div class="card-foot"><span>Plan changes go through Ayesha</span></div>
+      <div class="card-foot"><span>Plan changes go through ${ENGINEER.name.split(" ")[0]}</span></div>
     </section>
     <section class="card">
       <div class="card-head"><div><h2>Invoices</h2><small>Last three months</small></div></div>
@@ -2516,7 +2542,7 @@ function osBody() {
       <div class="fact"><span>Active solutions</span><strong>4</strong></div>
       <div class="fact"><span>Your engineer</span><strong>${ENGINEER.name}</strong></div>
     </div>
-    <div class="card-foot"><span>Anything you need changed, ask Ayesha</span>
+    <div class="card-foot"><span>Anything you need changed, ask ${ENGINEER.name.split(" ")[0]}</span>
       <button class="btn quiet sm" data-new-request>Request a change${I("i-arrow")}</button></div>
   </section>
   <section class="card">
@@ -2779,8 +2805,26 @@ function wireStage() {
       });
       document.querySelector("[data-claim-decision]")?.addEventListener("click", () => {
         closeDrawer();
+        const id = "D-" + (4400 + Math.floor(Math.random() * 99));
+        const exists = state.decisions.some((d) => d.title.startsWith("Resubmit " + claim.denied));
+        if (!exists)
+          state.decisions.unshift({
+            id: "D-" + (4910 + claim.denied),
+            area: "Billing",
+            title: "Resubmit " + claim.denied + " denied claims with " + claim.payer,
+            why: claim.payer + " is denying " + claim.denied + " of " + claim.submitted + " this month. The billing agent has the resubmission drafted and needs a person to send it.",
+            impact: CLIENT.currency + " " + fmt.money(Math.round(claim.value * 0.11)),
+            impactNote: "recoverable",
+            risk: "Medium",
+            deadline: "2 days",
+            agent: "Billing",
+            evidence: claim.denied + " denials · same code",
+            status: "pending",
+          });
+        state.decisionFilter = "All";
         openTab("decisions");
-        toast("Billing denials are waiting in Decisions");
+        renderTabs();
+        toast(`${claim.denied} denials for ${claim.payer} sent to Decisions — demo only`);
       });
     });
   });
@@ -2967,7 +3011,12 @@ function wireStage() {
   });
 
   stage.querySelectorAll("[data-offer]").forEach((el) =>
-    el.addEventListener("click", () => toast(`Offer sent to ${el.dataset.offer}`)),
+    el.addEventListener("click", () => {
+      const person = WAITLIST_LIVE.find((w) => w.name === el.dataset.offer);
+      if (person) person.offered = true;
+      renderStage();
+      toast(`Offer sent to ${el.dataset.offer} — demo only`);
+    }),
   );
 
   stage.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", () => newRequestModal()));
@@ -3032,7 +3081,7 @@ function wireStage() {
   );
   stage.querySelectorAll("[data-export-orders]").forEach((el) =>
     el.addEventListener("click", () =>
-      csv("meridian-orders.csv", [["Order", "Customer", "City", "Items", "Value", "Stage"], ...ORDERS.map((o) => [o.id, o.customer, o.city, o.items, o.value, o.stage])]),
+      csv("meridian-orders.csv", [["Order", "Customer", "City", "Items", "Value", "Stage"], ...ORDERS_LIVE.map((o) => [o.id, o.customer, o.city, o.items, o.value, o.stage])]),
     ),
   );
   stage.querySelectorAll("[data-export-savings]").forEach((el) =>
@@ -3044,7 +3093,7 @@ function wireStage() {
     el.addEventListener("click", () => {
       state.selectedStock.clear();
       renderStage();
-      toast("Sent to Ayesha as a request");
+      toast(`Sent to ${ENGINEER.name.split(" ")[0]} as a request`);
     }),
   );
   stage.querySelectorAll("[data-stock]").forEach((box) =>
@@ -3054,7 +3103,7 @@ function wireStage() {
       const button = stage.querySelector("[data-send-reorder]");
       if (button) {
         button.disabled = state.selectedStock.size === 0;
-        button.textContent = state.selectedStock.size ? `Send ${state.selectedStock.size} to Ayesha` : "Send to Ayesha";
+        button.textContent = state.selectedStock.size ? `Send ${state.selectedStock.size} to ${ENGINEER.name.split(" ")[0]}` : `Send to ${ENGINEER.name.split(" ")[0]}`;
       }
     }),
   );
@@ -3116,7 +3165,7 @@ function wireStage() {
       document.getElementById("inviteForm").addEventListener("submit", (event) => {
         event.preventDefault();
         closeModal();
-        toast("Invite queued — Ayesha will confirm access");
+        toast(`Invite queued — ${ENGINEER.name.split(" ")[0]} will confirm access`);
       });
     }),
   );
@@ -3193,7 +3242,7 @@ function wireStage() {
         typing.remove();
         log.insertAdjacentHTML(
           "beforeend",
-          `<div class="msg agent"><div class="bubble">For changes I'd raise it with Ayesha — she owns anything that alters the workspace. Ask me about the work itself and I'll show you what I have.</div><div class="msg-meta">${agent.name} · now</div></div>`,
+          `<div class="msg agent"><div class="bubble">For changes I'd raise it with ${ENGINEER.name.split(" ")[0]} — they own anything that alters the workspace. Ask me about the work itself and I'll show you what I have.</div><div class="msg-meta">${agent.name} · now</div></div>`,
         );
         log.scrollTop = log.scrollHeight;
       }, 900);
@@ -3201,7 +3250,7 @@ function wireStage() {
 }
 
 function openOrder(id) {
-  const order = ORDERS.find((o) => o.id === id);
+  const order = ORDERS_LIVE.find((o) => o.id === id);
   if (!order) return;
   openDrawer(
     order.id,
@@ -3232,11 +3281,14 @@ function openOrder(id) {
   );
   document.querySelector("[data-order-release]")?.addEventListener("click", () => {
     closeDrawer();
-    toast("Order released · fulfilment notified");
+    order.stage = "In fulfilment";
+    order.age = "just now";
+    if (state.active === "orders") renderStage();
+    toast(`${order.id} released to fulfilment — demo only`);
   });
   document.querySelector("[data-order-message]")?.addEventListener("click", () => {
     closeDrawer();
-    toast("Draft message queued for Jordan to review");
+    toast(`Message sent to ${order.customer} — demo only`);
   });
 }
 
@@ -3248,7 +3300,7 @@ function wireDrawer() {
       const text = form.querySelector("textarea").value.trim();
       if (!text) return;
       closeDrawer();
-      toast("Reply sent to Ayesha");
+      toast(`Reply sent to ${ENGINEER.name.split(" ")[0]}`);
     }),
   );
   document.querySelectorAll("[data-slot]").forEach((button) =>
