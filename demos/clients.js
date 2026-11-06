@@ -2,6 +2,10 @@
    Each one is a different company in a different operation — same Omnia, not the
    same screenshots. Data is illustrative throughout. */
 
+/* Each demo company gets its own mark — invented, but consistent across the
+   index, the workspace nav and the account menu. */
+export const CLIENT_MARKS = {"meridian":"<svg viewBox=\"0 0 32 32\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M5 25V12.5L11.5 19 16 13l4.5 6L27 12.5V25h-4.5v-6.6L16 25l-6.5-6.6V25Z\"/><circle cx=\"27\" cy=\"7\" r=\"3\" fill=\"#69E3C0\"/></svg>","northline":"<svg viewBox=\"0 0 32 32\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M4 22 13 8l6 9.5L24 11h4l-9 13-5.8-9.2L8 22Z\"/><circle cx=\"26\" cy=\"24\" r=\"3.4\" fill=\"currentColor\" opacity=\".45\"/></svg>","cedar":"<svg viewBox=\"0 0 32 32\" aria-hidden=\"true\"><path fill=\"currentColor\" d=\"M13 5h6v8h8v6h-8v8h-6v-8H5v-6h8Z\"/><circle cx=\"16\" cy=\"16\" r=\"3\" fill=\"#F2F0FA\"/></svg>"};
+
 export const TICKET_TEMPLATES = {
   "New dashboard": {
     reply:
@@ -28,6 +32,7 @@ export const TICKET_TEMPLATES = {
 export const PROFILES = {
   meridian: {
     slug: "meridian",
+    logo: `<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M5 25V12.5L11.5 19 16 13l4.5 6L27 12.5V25h-4.5v-6.6L16 25l-6.5-6.6V25Z"/><circle cx="27" cy="7" r="3" fill="#69E3C0"/></svg>`,
     name: "Meridian Outfitters",
     industry: "Retail & e-commerce",
     region: "United Arab Emirates",
@@ -270,6 +275,7 @@ export const PROFILES = {
 
   northline: {
     slug: "northline",
+    logo: `<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M4 22 13 8l6 9.5L24 11h4l-9 13-5.8-9.2L8 22Z"/><circle cx="26" cy="24" r="3.4" fill="currentColor" opacity=".45"/></svg>`,
     name: "Northline Freight",
     industry: "Logistics & freight",
     region: "Gulf corridor",
@@ -548,6 +554,7 @@ export const PROFILES = {
 
   cedar: {
     slug: "cedar",
+    logo: `<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M13 5h6v8h8v6h-8v8h-6v-8H5v-6h8Z"/><circle cx="16" cy="16" r="3" fill="#F2F0FA"/></svg>`,
     name: "Cedar Clinics",
     industry: "Healthcare · outpatient",
     region: "United Arab Emirates",
