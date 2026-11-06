@@ -2463,3 +2463,45 @@ body { padding-top: var(--bar); }
   .shell { grid-template-columns: minmax(0, 1fr); }
   .agent-rail { display: none; }
 }
+
+.rail-mark { background: var(--uv); }
+.rail-mark svg { width: 18px; height: 18px; }
+.rail-copy span { color: var(--faint); }
+
+/* ---------- the map, made to look like a map ---------- */
+
+.tracker-map { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); background: #f7f4fd; }
+.tracker-map svg { display: block; width: 100%; height: auto; }
+.map-city { font: 650 11px Manrope, sans-serif; fill: #7b7398; }
+.map-truck-id { font: 800 9px Manrope, sans-serif; fill: #6b5bb6; letter-spacing: 0.04em; }
+.truck circle:nth-child(2) { transition: r 0.16s var(--ease); }
+.truck:hover circle:nth-child(2) { r: 10; }
+.tracker-legend {
+  position: absolute; left: 14px; bottom: 14px;
+  display: flex; gap: 12px; padding: 7px 11px;
+  border-radius: 999px; background: rgba(255,255,255,0.86);
+  border: 1px solid var(--line); font-size: 10px; color: var(--muted);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.tracker-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.tracker-legend .dot { width: 7px; height: 7px; border-radius: 50%; }
+.tracker-legend .dot.uv { background: var(--uv); }
+.tracker-legend .dot.warn { background: #d9a353; }
+.tracker-legend .dot.good { background: var(--mint-deep); }
+
+.tracker-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.truck-row { display: grid; gap: 5px; }
+.truck-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.truck-progress { height: 4px; border-radius: 999px; background: #f2effa; overflow: hidden; }
+.truck-progress i { display: block; height: 100%; border-radius: 999px; background: var(--uv); }
+@media (max-width: 1100px) { .tracker-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .tracker-cards { grid-template-columns: minmax(0, 1fr); } }
+
+/* the rail takes width, so tiles reflow instead of squeezing */
+@media (max-width: 1500px) {
+  .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1501px) {
+  .tile-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.tile-foot { white-space: nowrap; overflow: hidden; }
