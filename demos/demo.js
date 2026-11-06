@@ -1238,26 +1238,54 @@ function railContext() {
 }
 
 function railBubble(role, text) {
-  return `<div class="rail-msg ${role}"><div class="bubble">${text}</div><span class="who">${role === "user" ? "You" : "Omnia agent"}</span></div>`;
+  if (role === "user") return `<div class="rail-msg user"><div class="bubble">${text}</div></div>`;
+  return `<div class="rail-msg assistant"><span class="rail-avatar">${I("i-spark")}</span><div class="bubble">${text}</div></div>`;
 }
 
 function railPaint(actions = []) {
   const thread = document.getElementById("railThread");
   if (!thread) return;
+
+  const greeting = railHistory.length
+    ? ""
+    : `<div class="rail-msg assistant">
+        <span class="rail-avatar">${I("i-spark")}</span>
+        <div class="bubble">Hi ${firstName()} — I'm the agent on this workspace. I can open a dashboard, explain a decision, or tell you what an agent is doing.</div>
+      </div>
+      <div class="rail-chips">
+        ${[
+          "What needs my decision?",
+          `Show me ${(CLIENT.views[0] || {}).label || "my dashboard"}`,
+          "Which agent is busiest?",
+        ]
+          .map((q) => `<button class="rail-chip" data-rail-ask="${q}">${q}</button>`)
+          .join("")}
+      </div>`;
+
   thread.innerHTML =
+    greeting +
     railHistory.map((m) => railBubble(m.role, m.content)).join("") +
-    (railPending ? '<div class="rail-msg assistant"><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div></div>' : "");
+    (railPending
+      ? '<div class="rail-msg assistant"><span class="rail-avatar">' +
+        I("i-spark") +
+        '</span><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div></div>'
+      : "") +
+    (actions.length
+      ? '<div class="rail-actions">' +
+        actions
+          .map(
+            (a, i) =>
+              `<button class="rail-action" data-rail-action="${i}">${I("i-arrow")}${a.label}</button>`,
+          )
+          .join("") +
+        "</div>"
+      : "");
   thread.scrollTop = thread.scrollHeight;
 
-  const bar = document.getElementById("railActions");
-  if (!bar) return;
-  bar.innerHTML = actions
-    .map(
-      (a, i) =>
-        `<button class="rail-action" data-rail-action="${i}">${I("i-arrow")}${a.label}<span class="rail-action-kind">${a.type.replace("_", " ")}</span></button>`,
-    )
-    .join("");
-  bar.querySelectorAll("[data-rail-action]").forEach((button) =>
+  thread.querySelectorAll("[data-rail-ask]").forEach((chip) =>
+    chip.addEventListener("click", () => railSend(chip.dataset.railAsk)),
+  );
+  thread.querySelectorAll("[data-rail-action]").forEach((button) =>
     button.addEventListener("click", () => runRailAction(actions[Number(button.dataset.railAction)])),
   );
 }
@@ -2591,7 +2619,7 @@ function wireStage() {
         b.setAttribute("aria-pressed", String(b.dataset.period === state.period)),
       );
       const tiles = document.getElementById("kpiGrid");
-      if (tiles) tiles.innerHTML = kpiTiles();
+      if (tiles) tiles.innerHTML = kpiTiles().replace(/^<div class="tile-grid"[^>]*>/, "").replace(/<\/div>$/, "");
       renderMainChart();
       const legend = document.querySelector(".chart-card .card-foot > span:last-child");
       if (legend) legend.textContent = `${PERIODS[state.period].label} · sample data`;
@@ -3009,9 +3037,9 @@ function init() {
   const pillAccount = document.getElementById("accountButton");
   if (pillAccount) pillAccount.setAttribute("aria-label", admin.name);
   const brand = document.getElementById("navBrand");
-  if (brand) brand.textContent = CLIENT.name.slice(0, 1);
+  if (brand && CLIENT.logo) brand.innerHTML = CLIENT.logo;
   const wsMark = document.querySelector('#accountMenu [data-action="workspace"] .workspace-mark');
-  if (wsMark) wsMark.textContent = CLIENT.name.slice(0, 1);
+  if (wsMark && CLIENT.logo) wsMark.innerHTML = CLIENT.logo;
   const wsName = document.querySelector('#accountMenu [data-action="workspace"] span:nth-child(2)');
   if (wsName) wsName.textContent = CLIENT.name;
   const menuHead = document.querySelector("#accountMenu .menu-head span");

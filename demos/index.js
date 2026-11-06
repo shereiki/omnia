@@ -11,7 +11,7 @@ const cards = Object.values(PROFILES)
     const tone = client.slug === "meridian" ? "retail" : client.slug === "northline" ? "logistics" : "healthcare";
     return `<a class="launch-card" href="/demos/workspace?client=${client.slug}">
       <span class="launch-card-top">
-        <span class="launch-mark" data-brand="${client.slug}">${client.name.slice(0, 1)}</span>
+        <span class="launch-mark" data-brand="${client.slug}">${client.logo}</span>
         <span class="launch-meta">
           <strong>${client.name}</strong>
           <small>${client.industry} · ${client.region}</small>
