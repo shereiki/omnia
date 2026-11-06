@@ -2729,3 +2729,30 @@ body { padding-top: var(--bar); }
 .modal-workspace:hover { border-color: #cdc0f4; color: var(--uv); }
 .modal-workspace.current { background: #f6f2ff; border-color: #ddd2f8; color: var(--uv); }
 .modal-workspace b { font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--faint); }
+
+/* ---------- the agents page: three columns that hold their own height ---------- */
+
+.agents-page { align-items: start; }
+.agents-side { align-content: start; }
+.agents-side .card { align-self: start; }
+.agents-side .rows { align-content: start; }
+.agents-chat { align-self: start; }
+.agents-chat .chat-body {
+  max-height: min(46vh, 340px);
+  overflow-y: auto;
+  /* a bubble must never be sliced by the card edge */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14px, #000 calc(100% - 4px), transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 14px, #000 calc(100% - 4px), transparent 100%);
+  padding-top: 12px;
+}
+.agents-chat .chat-body::-webkit-scrollbar { width: 6px; }
+.agents-chat .chat-body::-webkit-scrollbar-thumb { background: #e4ddf4; border-radius: 999px; }
+
+@media (min-width: 1101px) {
+  .agents-page { grid-template-columns: 210px minmax(0, 1fr) 260px; }
+}
+
+/* the board should look like a board, not a row of short cards */
+.board { align-items: stretch; }
+.board-col { display: flex; flex-direction: column; min-height: calc(100vh - 300px); }
+@media (max-width: 1100px) { .board-col { min-height: 0; } }
