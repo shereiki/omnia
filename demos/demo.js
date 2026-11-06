@@ -255,6 +255,7 @@ const state = {
   period: "7d",
   connectorQuery: "",
   connectorCategory: "All",
+  connectorExpanded: false,
   chats: {},
   agentPending: false,
   agentId: "coordinator",
@@ -282,8 +283,9 @@ const pendingDecisions = () => state.decisions.filter((d) => d.status === "pendi
 const openRequests = () => state.requests.filter((r) => r.status !== "Closed");
 const unread = () => state.notifications.filter((n) => !n.read).length;
 
-function toast(message) {
+function toast(message, tone = "") {
   const el = document.getElementById("toast");
+  el.className = `toast${tone ? ` ${tone}` : ""}`;
   el.innerHTML = `<i></i>${message}`;
   el.hidden = false;
   if (window.gsap) gsap.fromTo(el, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.26, ease: "power2.out" });
@@ -815,13 +817,13 @@ function viewGeneral() {
     </div>
   </div>
 
-  <section class="ask-banner">
-    <span class="ask-banner-mark">${I("i-spark")}</span>
-    <div class="ask-banner-copy">
-      <strong>Ask Omnia anything</strong>
-      <span>What we would build next, how a decision gets made, what connects to what — it answers live.</span>
+  <section class="demo-banner">
+    <span class="demo-badge">Demo</span>
+    <div class="demo-banner-copy">
+      <strong>This is an agent-run workspace</strong>
+      <span>Sample data throughout. The agents are live — talk to one and it answers about its own work.</span>
     </div>
-    <button class="btn primary sm" data-open-ask>Try it now${I("i-arrow")}</button>
+    <button class="btn primary sm" data-open-ask>Talk to an agent${I("i-arrow")}</button>
   </section>
 
   ${kpiTiles()}
@@ -1144,29 +1146,8 @@ function dockAgents() {
           <strong>${agent.name}</strong>
           <span id="agentChatStatus">${control.paused ? "Paused" : agent.status === "live" ? "Working now" : "Idle"}</span>
         </div>
-        <button class="icon-button" data-toggle-controls aria-expanded="false" aria-label="Rules and controls">
-          ${I("i-gear")}
-        </button>
+        <button class="chip ghost" data-open-os-agents>${I("i-gear")}Settings</button>
       </header>
-
-      <div class="chat-sheet" id="agentControls" hidden>
-        <label class="control">
-          <span>How much it does alone</span>
-          <select data-autonomy="${agent.id}">
-            ${["Ask me first", "Act, then tell me", "Act on its own"]
-              .map(
-                (o) =>
-                  `<option ${control.autonomy === o ? "selected" : ""} ${o === "Act on its own" ? "disabled" : ""}>${o}${o === "Act on its own" ? " — needs Omnia" : ""}</option>`,
-              )
-              .join("")}
-          </select>
-        </label>
-        <div class="control-row"><span>Paused</span>
-          <button class="toggle" aria-pressed="${control.paused}" aria-label="Pause ${agent.name}" data-pause="${agent.id}"></button></div>
-        <div class="control-row"><span>Quiet hours · 21:00–07:00</span>
-          <button class="toggle" aria-pressed="${control.quiet}" aria-label="Quiet hours" data-quiet="${agent.id}"></button></div>
-        <p class="control-note">Anything beyond these is applied by your engineer.</p>
-      </div>
 
       <div class="chat-body" id="agentChatLog"></div>
 
@@ -1181,6 +1162,60 @@ function dockAgents() {
         <button type="submit" aria-label="Send">${I("i-send")}</button>
       </form>
     </div>`;
+}
+
+/* ---------------------------------------------------------- live assistant */
+
+const askHistory = [];
+let askPending = false;
+let askTargetId = "askThread";
+
+function chatBubble(role, text) {
+  return `<div class="ask-msg ${role}">${text}</div>`;
+}
+
+async function askAssistant(messages, agent) {
+  try {
+    const response = await fetch("/api/demo/ask", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ messages, agent, session: "omnia-demo" }),
+      signal: AbortSignal.timeout(40000),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok)
+      return { error: data.error || "The assistant did not answer.", code: data.code };
+    return { reply: data.reply };
+  } catch {
+    return { error: "Could not reach the assistant. Try again in a moment.", code: "network" };
+  }
+}
+
+function renderAskThread() {
+  const target = document.getElementById(askTargetId) || document.getElementById("askThread");
+  if (!target) return;
+  target.innerHTML =
+    askHistory.map((m) => chatBubble(m.role === "user" ? "user" : "assistant", m.content)).join("") +
+    (askPending
+      ? '<div class="ask-msg assistant typing"><span class="dots"><i></i><i></i><i></i></span></div>'
+      : "");
+  target.scrollTop = target.scrollHeight;
+}
+
+async function sendTo(logEl, text) {
+  if (askPending || !text.trim()) return;
+  askTargetId = logEl?.id || "askThread";
+  askPending = true;
+  askHistory.push({ role: "user", content: text.trim() });
+  renderAskThread();
+
+  const result = await askAssistant(askHistory.slice(-8));
+  askPending = false;
+  askHistory.push({
+    role: "assistant",
+    content: result.error || result.reply,
+  });
+  renderAskThread();
 }
 
 function dockAsk() {
@@ -1255,15 +1290,15 @@ function renderDock() {
 
   if (view === "agents") {
     paintAgentChat();
-    body.querySelectorAll("[data-toggle-controls]").forEach((button) =>
-      button.addEventListener("click", () => {
-        const sheet = document.getElementById("agentControls");
-        const open = sheet.hidden;
-        sheet.hidden = !open;
-        button.setAttribute("aria-expanded", String(!open));
-      }),
-    );
-    body.querySelectorAll("[data-agent-ask]").forEach((chip) =>
+    body.querySelectorAll("[data-open-os-agents]").forEach((el) =>
+    el.addEventListener("click", () => {
+      closeDock();
+      state.os = true;
+      state.osView = "agents";
+      renderStage();
+    }),
+  );
+  body.querySelectorAll("[data-agent-ask]").forEach((chip) =>
       chip.addEventListener("click", () => askAgentBody(chip.dataset.agentAsk)),
     );
   }
@@ -1742,24 +1777,30 @@ function osBody() {
       <div class="card-foot"><span>We add and maintain connections. Ask and it goes on the list.</span></div>
     </section>
 
-    <section class="card">
+    <section class="card connect-apps">
       <div class="card-head">
-        <div><h2>Connector catalogue</h2><small>1,000+ connectors · anything we don't have is a request</small></div>
-        <div class="catalog-tools">
-          <input class="table-search" id="connectorSearch" type="search" placeholder="Search connectors" />
-          <button class="btn sm" data-help>${I("i-mail")}Ask for help</button>
-        </div>
+        <div><h2>Connect apps</h2><small>We wire them up for you — pick the system and we build it</small></div>
+        <span class="connect-count"><b>6</b> connected</span>
       </div>
       <div class="card-body">
-        <div class="filter-chips catalog-cats" id="connectorCats">
+        <div class="connect-toolbar">
+          <input class="connect-search" id="connectorSearch" type="search" placeholder="Search across apps and skills" />
+          <button class="btn sm" data-help>${I("i-mail")}Ask for help</button>
+        </div>
+        <div class="filter-chips connect-cats" id="connectorCats">
           ${CONNECTOR_CATEGORIES.map(
-            (c) => `<button class="chip ${c === state.connectorCategory ? "uv" : "ghost"}" data-cat="${c}">${c}</button>`,
+            (c) => `<button class="chip ${c === state.connectorCategory ? "sun" : "ghost"}" data-cat="${c}">${c}</button>`,
           ).join("")}
         </div>
-        <div class="connector-grid" id="connectorGrid"></div>
+
+        <div class="connect-section head-row">
+          <h3>Recommended for you</h3>
+          <button class="connect-link" data-connect-more>${state.connectorExpanded ? "Show less" : "View all 1,000+ connectors"}</button>
+        </div>
+        <div class="connect-list" id="connectRecommended"></div>
+
+        <div class="connect-more" id="connectorGrid" ${state.connectorExpanded ? "" : "hidden"}></div>
       </div>
-      <div class="card-foot"><span>Wiring is ours. You pick the system, we do the build.</span>
-        <span id="connectorCount" class="muted"></span></div>
     </section>`;
 
   if (view === "modules")
@@ -1780,20 +1821,40 @@ function osBody() {
 
   if (view === "agents")
     return `<section class="card">
-      <div class="card-head"><div><h2>Agents</h2><small>What each one may decide alone</small></div>
-        </div>
+      <div class="card-head"><div><h2>Agents</h2><small>What each one may do on its own. Everything else comes to you.</small></div>
+        <button class="btn sm" data-new-request>Ask for a change</button></div>
       <div class="card-body agent-settings">
-        ${AGENTS.map(
-          (a) => `<article class="agent-setting">
+        ${AGENTS.map((a) => {
+          const control = controlFor(a.id);
+          return `<article class="agent-setting">
             <span class="agent-avatar">${I(a.icon)}</span>
-            <div><strong>${a.name}</strong><p>${a.scope}</p>
-              <div class="guardrails">${["Approval on money", a.autonomy].map((g) => `<span class="guard">${I("i-shield")}${g}</span>`).join("")}</div>
+            <div class="agent-setting-body">
+              <span class="agent-setting-top"><strong>${a.name}</strong>
+                <span class="chip ${a.status === "live" ? "good" : "ghost"}">${a.status === "live" ? "Running" : "Idle"}</span></span>
+              <p>${a.scope}</p>
+              <div class="guardrails">${a.tools.slice(0, 3).map((t) => `<span class="tool-chip">${t}</span>`).join("")}</div>
             </div>
-            <button class="toggle" aria-pressed="${a.status === "live"}" aria-label="Toggle ${a.name}" data-module="${a.name}"></button>
-          </article>`,
-        ).join("")}
+            <div class="agent-setting-controls">
+              <label class="control">
+                <span>How much it does alone</span>
+                <select data-autonomy="${a.id}">
+                  ${["Ask me first", "Act, then tell me", "Act on its own"]
+                    .map(
+                      (o) =>
+                        `<option ${control.autonomy === o ? "selected" : ""} ${o === "Act on its own" ? "disabled" : ""}>${o}${o === "Act on its own" ? " — needs Omnia" : ""}</option>`,
+                    )
+                    .join("")}
+                </select>
+              </label>
+              <div class="control-row"><span>Paused</span>
+                <button class="toggle" aria-pressed="${control.paused}" aria-label="Pause ${a.name}" data-pause="${a.id}"></button></div>
+              <div class="control-row"><span>Quiet hours · 21:00–07:00</span>
+                <button class="toggle" aria-pressed="${control.quiet}" aria-label="Quiet hours" data-quiet="${a.id}"></button></div>
+            </div>
+          </article>`;
+        }).join("")}
       </div>
-      <div class="card-foot"><span>Every consequential action still lands in Decisions</span></div>
+      <div class="card-foot"><span>Anything beyond these three is applied by your engineer</span></div>
     </section>`;
 
   if (view === "activity")
@@ -1977,39 +2038,58 @@ function connectorMark(name, colour) {
   return `<span class="connector-mark" style="--brand:${colour}">${name.slice(0, 2).toUpperCase()}</span>`;
 }
 
+const RECOMMENDED = [
+  "Shopify",
+  "Stripe",
+  "HubSpot",
+  "Salesforce",
+  "QuickBooks",
+  "Slack",
+];
+
+function connectorRow([name, cat, colour], { recommended = false } = {}) {
+  return `<div class="connect-row">
+    ${connectorMark(name, colour)}
+    <span class="connect-copy"><strong>${name}</strong><small>${cat}</small></span>
+    <button class="connect-btn" data-connect="${name}">Connect</button>
+  </div>`;
+}
+
 function renderConnectors() {
+  const recommended = document.getElementById("connectRecommended");
   const grid = document.getElementById("connectorGrid");
-  if (!grid) return;
+  if (!recommended) return;
+
+  recommended.innerHTML = RECOMMENDED.map((name) => {
+    const entry = EXPANDED.find(([n]) => n === name) || [name, "Commerce", "#5b45d6"];
+    return connectorRow(entry, { recommended: true });
+  }).join("");
+
   const q = state.connectorQuery.toLowerCase();
   const list = EXPANDED.filter(
     ([name, cat]) =>
       (state.connectorCategory === "All" || cat === state.connectorCategory) &&
       (!q || name.toLowerCase().includes(q) || cat.toLowerCase().includes(q)),
   );
+  grid.innerHTML = list.map((entry) => connectorRow(entry)).join("");
+  grid.hidden = !state.connectorExpanded && !q;
 
-  grid.innerHTML = list
-    .map(
-      ([name, cat, color]) => `<button class="connector" data-connector="${name}">
-        ${connectorMark(name, color)}
-        <span class="connector-copy"><strong>${name}</strong><small>${cat}</small></span>
-      </button>`,
-    )
-    .join("");
+  document.querySelectorAll("[data-connect]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const name = button.dataset.connect;
+      button.textContent = "Not in the demo";
+      button.classList.add("denied");
+      document.querySelector(".card-foot")?.setAttribute("data-flash", "1");
+      toast(`${name} would be connected by your Omnia team — this demo can't reach external systems.`, "error");
+      setTimeout(() => {
+        button.textContent = "Connect";
+        button.classList.remove("denied");
+      }, 2600);
+    }),
+  );
 
   const count = document.getElementById("connectorCount");
   if (count) count.textContent = `Showing ${list.length}`;
-
-  grid.querySelectorAll("[data-connector]").forEach((el) =>
-    el.addEventListener("click", () => newRequestModal("integration", el.dataset.connector)),
-  );
-
-  if (window.gsap && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    gsap.fromTo(
-      grid.querySelectorAll(".connector"),
-      { opacity: 0, y: 8 },
-      { opacity: 1, y: 0, duration: 0.3, stagger: 0.008, ease: "power1.out", overwrite: true },
-    );
-  }
 }
 
 function wireStage() {
@@ -2220,6 +2300,12 @@ function wireStage() {
       renderConnectors();
     });
   }
+  stage.querySelectorAll("[data-connect-more]").forEach((el) =>
+    el.addEventListener("click", () => {
+      state.connectorExpanded = !state.connectorExpanded;
+      renderStage();
+    }),
+  );
   stage.querySelectorAll("[data-cat]").forEach((el) =>
     el.addEventListener("click", () => {
       state.connectorCategory = el.dataset.cat;
@@ -2518,12 +2604,12 @@ function init() {
 
   const accountButton = document.getElementById("accountButton");
   const accountMenu = document.getElementById("accountMenu");
-  accountButton.addEventListener("click", () => {
+  accountButton?.addEventListener("click", () => {
     const open = accountMenu.hidden;
     accountMenu.hidden = !open;
     accountButton.setAttribute("aria-expanded", String(!open));
   });
-  accountMenu.addEventListener("click", (event) => {
+  accountMenu?.addEventListener("click", (event) => {
     const action = event.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     accountMenu.hidden = true;
@@ -2536,7 +2622,7 @@ function init() {
     if (action === "requests") openDock("requests");
   });
 
-  document.querySelector('[data-action="workspace"]').addEventListener("click", () =>
+  document.querySelector('[data-action="workspace"]')?.addEventListener("click", () =>
     openModal(`
       <div class="modal-head"><div><h2>${CLIENT.name}</h2><p>${CLIENT.industry} · ${CLIENT.region} · live since ${CLIENT.since}</p></div>
         <button class="icon-button" data-close-modal aria-label="Close">${I("i-x")}</button></div>
@@ -2547,28 +2633,28 @@ function init() {
         <div><span>Engineer</span><strong>${ENGINEER.name}</strong></div>
       </div></div>`),
   );
-  document.querySelector('[data-action="notify"]').addEventListener("click", renderNotifications);
+  document.querySelector('[data-action="notify"]')?.addEventListener("click", renderNotifications);
 
-  document.getElementById("askButton").addEventListener("click", () => {
+  document.getElementById("askButton")?.addEventListener("click", () => {
     if (state.dock.open && state.dock.view === "ask") return closeDock();
     state.dock.thread = null;
     openDock("ask");
   });
 
   const agentsButton = document.getElementById("agentsButton");
-  agentsButton.addEventListener("click", () => {
+  agentsButton?.addEventListener("click", () => {
     if (state.dock.open && state.dock.view === "agents") return closeDock();
     state.dock.thread = null;
     openDock("agents");
   });
 
   const dockButton = document.getElementById("dockButton");
-  dockButton.addEventListener("click", () => {
+  dockButton?.addEventListener("click", () => {
     if (state.dock.open && state.dock.view === "requests") return closeDock();
     state.dock.thread = null;
     openDock("requests");
   });
-  document.querySelector("[data-dock-close]").addEventListener("click", closeDock);
+  document.querySelector("[data-dock-close]")?.addEventListener("click", closeDock);
 
   // compact bar hides on scroll down, returns on scroll up
   let lastY = window.scrollY;
@@ -2636,7 +2722,7 @@ function init() {
     backdrop.hidden = true;
   }
 
-  document.querySelector('[data-action="search"]').addEventListener("click", openPalette);
+  document.getElementById("searchButton")?.addEventListener("click", openPalette);
   input.addEventListener("input", () => renderResults(input.value));
   backdrop.addEventListener("click", (event) => {
     if (event.target === backdrop) closePalette();
@@ -2676,7 +2762,7 @@ function init() {
     }
   });
 
-  document.getElementById("tabs").addEventListener("keydown", (event) => {
+  document.getElementById("tabs")?.addEventListener("keydown", (event) => {
     if (!["ArrowRight", "ArrowLeft"].includes(event.key)) return;
     if (event.altKey) {
       const focused = event.target.closest("[data-tab]");
