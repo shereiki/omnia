@@ -339,6 +339,8 @@ const pendingDecisions = () => state.decisions.filter((d) => d.status === "pendi
 
 /* the demo's own copy, so an action can change it */
 const ORDERS_LIVE = (ORDERS || []).map((o) => ({ ...o }));
+const ROOMS_LIVE = (CLIENT.rooms || []).map((r) => ({ ...r, slots: r.slots.map((slot) => [...slot]) }));
+const CLAIMS_LIVE = (CLIENT.claims || []).map((c) => ({ ...c }));
 const WAITLIST_LIVE = (CLIENT.waitlist || []).map((w) => ({ ...w }));
 const openRequests = () => state.requests.filter((r) => r.status !== "Closed");
 const unread = () => state.notifications.filter((n) => !n.read).length;
@@ -2116,7 +2118,7 @@ function viewRooms() {
     <div><h1>Rooms</h1><p>What is occupied, what is free, and how hard each room is working.</p></div>
   </div>
   <div class="rooms">
-    ${CLIENT.rooms
+    ${ROOMS_LIVE
       .map(
         (room) => `<section class="room-card">
           <header><strong>${room.name}</strong><span>${room.used}% used</span></header>
@@ -2125,7 +2127,7 @@ function viewRooms() {
             ${room.slots
               .map(
                 (slot) => `<button class="room-slot ${slot[2]}" data-room-slot="${room.name} · ${slot[0]}"
-                  aria-label="${room.name} at ${slot[0]} — ${slot[2] === "free" ? "free, bookable" : slot[1]}">
+                  aria-label="${room.name} at ${slot[0]} — ${slot[2] === "free" ? "free, bookable" : "booked by " + slot[1]}">
                   <span>${slot[0]}</span><strong>${slot[2] === "free" ? "Free" : slot[1]}</strong>
                 </button>`,
               )
@@ -2143,7 +2145,7 @@ function viewRooms() {
     </div>
     <div class="card-body">
       <div class="room-free-list">
-        ${CLIENT.rooms
+        ${ROOMS_LIVE
           .flatMap((room) =>
             room.slots
               .filter((slot) => slot[2] === "free")
@@ -2349,7 +2351,7 @@ function viewClaims() {
     <div class="card-head"><div><h2>This month</h2><small>${CLIENT.currency} ${fmt.money(submitted)} submitted</small></div>
       <span class="chip warn">${denied} denied</span></div>
     <div class="card-body claims">
-      ${CLIENT.claims
+      ${CLAIMS_LIVE
         .map((c) => {
           const approved = Math.round((c.approved / c.submitted) * 100);
           return `<button class="claim-row" data-claim="${c.payer}">
@@ -2357,6 +2359,7 @@ function viewClaims() {
             <span class="claim-bar"><i style="width:${approved}%"></i></span>
             <span class="claim-pct">${approved}%</span>
             <span class="claim-value">${fmt.money(c.value)}</span>
+            ${c.queued ? '<span class="chip good">Queued</span>' : ""}
             <span class="row-chev">${I("i-chevron")}</span>
           </button>`;
         })
@@ -2467,7 +2470,7 @@ function osBody() {
             <span class="agent-avatar">${I(a.icon)}</span>
             <div class="agent-setting-body">
               <span class="agent-setting-top"><strong>${a.name}</strong>
-                <span class="chip ${a.status === "live" ? "good" : "ghost"}">${a.status === "live" ? "Running" : "Idle"}</span></span>
+                <span class="chip ${control.paused ? "warn" : a.status === "live" ? "good" : "ghost"}">${control.paused ? "Paused" : a.status === "live" ? "Running" : "Idle"}</span></span>
               <p>${a.scope}</p>
               <div class="guardrails">${a.tools.slice(0, 3).map((t) => `<span class="tool-chip">${t}</span>`).join("")}</div>
             </div>
@@ -2485,7 +2488,7 @@ function osBody() {
               </label>
               <div class="control-row"><span>Paused</span>
                 <button class="toggle" aria-pressed="${control.paused}" aria-label="Pause ${a.name}" data-pause="${a.id}"></button></div>
-              <div class="control-row"><span>Quiet hours · 21:00–07:00</span>
+              <div class="control-row"><span>Quiet hours · 21:00–07:00${control.quiet ? " · on" : ""}</span>
                 <button class="toggle" aria-pressed="${control.quiet}" aria-label="Quiet hours" data-quiet="${a.id}"></button></div>
             </div>
           </article>`;
@@ -2804,7 +2807,7 @@ function wireStage() {
   );
   stage.querySelectorAll("[data-claim]").forEach((el) => {
     el.addEventListener("click", () => {
-      const claim = (CLIENT.claims || []).find((c) => c.payer === el.dataset.claim);
+      const claim = CLAIMS_LIVE.find((c) => c.payer === el.dataset.claim);
       if (!claim) return;
       const approved = Math.round((claim.approved / claim.submitted) * 100);
       openDrawer(
@@ -2818,7 +2821,9 @@ function wireStage() {
         <p class="muted">Denials are worked by the billing agent; anything it cannot clear comes to you as a decision.</p>
         <div class="drawer-actions">
           <button class="btn primary sm" data-claim-resubmit>Resubmit the denials</button>
-          <button class="btn sm" data-claim-decision>Send to Decisions</button>
+          ${claim.queued
+            ? '<span class="chip good">Sent to Decisions</span>'
+            : '<button class="btn sm" data-claim-decision>Send to Decisions</button>'}
         </div>`,
       );
       document.querySelector("[data-claim-resubmit]")?.addEventListener("click", () => {
@@ -2826,6 +2831,8 @@ function wireStage() {
         toast("Resubmission drafted for " + claim.payer + " — demo only");
       });
       document.querySelector("[data-claim-decision]")?.addEventListener("click", () => {
+        if (claim.queued) return;
+        claim.queued = true;
         closeDrawer();
         const id = "D-" + (4400 + Math.floor(Math.random() * 99));
         const exists = state.decisions.some((d) => d.title.startsWith("Resubmit " + claim.denied));
@@ -2916,7 +2923,9 @@ function wireStage() {
       const parts = el.dataset.roomSlot.split(" · ");
       const time = parts.pop();
       const room = parts.join(" · ");
-      const free = el.classList.contains("free");
+      const liveRoom = ROOMS_LIVE.find((r) => r.name === room);
+      const liveSlot = liveRoom?.slots.find((x) => x[0] === time);
+      const free = liveSlot ? liveSlot[2] === "free" : el.classList.contains("free");
       openDrawer(
         time,
         room,
@@ -2926,12 +2935,15 @@ function wireStage() {
         </div>`,
       );
       document.querySelector("[data-book-slot]")?.addEventListener("click", () => {
-        el.classList.remove("free");
-        el.classList.add("busy");
-        const name = el.querySelector("strong");
-        if (name) name.textContent = firstName();
+        const live = ROOMS_LIVE.find((r) => r.name === room);
+        const slot = live?.slots.find((x) => x[0] === time);
+        if (slot) {
+          slot[1] = firstName();
+          slot[2] = "busy";
+        }
         closeDrawer();
-        toast(`Booked ${room} at ${time} — demo only`);
+        renderStage();
+        toast(`Booked ${room} at ${time} for ${firstName()} — demo only`);
       });
       document.querySelector("[data-slot-message]")?.addEventListener("click", () => {
         closeDrawer();
@@ -3225,6 +3237,7 @@ function wireStage() {
       control.paused = !control.paused;
       toggle.setAttribute("aria-pressed", String(control.paused));
       const agent = AGENTS.find((a) => a.id === toggle.dataset.pause);
+      renderStage();
       toast(`${agent?.name || "Agent"} ${control.paused ? "paused" : "running again"} — demo only`);
     }),
   );
