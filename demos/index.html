@@ -41,6 +41,7 @@
         <symbol id="i-logout" viewBox="0 0 24 24"><path d="M14 4.5H6.5a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5H14"/><path d="M17 8.5 20.5 12 17 15.5M10 12h10"/></symbol>
         <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4.5 21 19.5H3z"/><path d="M12 10v4M12 17v.5"/></symbol>
         <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m4 7 8 6 8-6"/></symbol>
+        <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5m6 6-6-6 6-6"/></symbol>
         <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4"/></symbol>
       </defs>
     </svg>
@@ -67,6 +68,11 @@
 
       <button class="icon-button" type="button" aria-label="Search" data-action="search">
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search" /></svg>
+      </button>
+
+      <button class="icon-button desk-button" id="dockButton" type="button" aria-label="Ayesha and agents" aria-expanded="false" aria-controls="dock">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ticket" /></svg>
+        <i class="badge" id="dockBadge" hidden></i>
       </button>
 
       <button class="icon-button" id="bell" type="button" aria-label="Notifications" data-action="notify">
@@ -96,10 +102,26 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus" /></svg>
       </button>
       <div class="menu solutions-menu" id="solutionsMenu" role="menu" hidden></div>
+      <button class="tab-collapse" id="tabCollapse" type="button" aria-expanded="true" aria-label="Collapse the dashboard tabs">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron" /></svg>
+      </button>
       <div class="tabstrip-meta"><span class="sync"><i></i>Synced 2 min ago</span></div>
     </div>
 
     <main class="stage" id="stage" tabindex="-1"></main>
+
+    <aside class="dock" id="dock" aria-label="Ayesha and agents" hidden>
+      <div class="dock-head">
+        <div class="dock-seg" role="tablist" aria-label="Desk">
+          <button type="button" role="tab" data-dock="requests" aria-selected="true">Ayesha</button>
+          <button type="button" role="tab" data-dock="agents" aria-selected="false">Agents</button>
+        </div>
+        <button class="icon-button" type="button" data-dock-close aria-label="Close the desk">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x" /></svg>
+        </button>
+      </div>
+      <div class="dock-body" id="dockBody"></div>
+    </aside>
 
     <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
     <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Details" hidden></aside>
