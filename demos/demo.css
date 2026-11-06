@@ -2525,3 +2525,7 @@ body { padding-top: var(--bar); }
 }
 .rail-fab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 .shell.rail-collapsed ~ .rail-fab, body.rail-collapsed .rail-fab { display: inline-flex; }
+
+.rail-composer button { background: #1d1740; }
+.rail-composer button:hover { background: var(--uv); }
+.rail-composer button svg { stroke-width: 2.2; }
