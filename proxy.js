@@ -6,7 +6,8 @@ import { guardDemoRequest } from "./server/demos.js";
 // /server/*. The proxy runs first, so this is the only place that can answer
 // with a real status code. api/ imports these modules at build time and is
 // untouched by this guard.
-const INTERNAL = /^\/server(?:\/|$)/;
+const INTERNAL =
+  /^\/(?:server|db|docs|tests|archive|scripts)(?:\/|$)|^\/(?:proxy\.js|package(?:-lock)?\.json|vercel\.json|README\.md|\.vercelignore)$/;
 
 export default async function proxy(request) {
   if (INTERNAL.test(new URL(request.url).pathname))
