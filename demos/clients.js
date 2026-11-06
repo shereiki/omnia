@@ -44,6 +44,7 @@ export const PROFILES = {
     views: [
       { id: "orders", label: "Order Operations", icon: "i-bag" },
       { id: "inventory", label: "Inventory Control", icon: "i-boxes" },
+      { id: "skus", label: "Stock matrix", icon: "i-layers" },
       { id: "savings", label: "Savings Report", icon: "i-chart" },
     ],
     units: { orders: "orders", item: "items" },
@@ -285,11 +286,23 @@ export const PROFILES = {
     highlights: ["Load intake and dispatch", "Border and customs exceptions", "Quote turnaround", "Cost per lane report"],
     niche: "logistics",
     views: [
+      { id: "tracker", label: "Live map", icon: "i-pulse" },
       { id: "dispatch", label: "Dispatch board", icon: "i-boxes" },
       { id: "fleet", label: "Fleet & drivers", icon: "i-team" },
       { id: "lanes", label: "Lane margin", icon: "i-chart" },
     ],
     units: { orders: "loads", item: "loads" },
+    skus: [
+      { name: "Linen overshirt", sell: 82, cover: 4, margin: 58 },
+      { name: "Canvas tote", sell: 74, cover: 6, margin: 61 },
+      { name: "Desert boot · 42", sell: 41, cover: 22, margin: 44 },
+      { name: "Cotton cap", sell: 33, cover: 31, margin: 52 },
+      { name: "Merino scarf", sell: 56, cover: 9, margin: 67 },
+      { name: "Trainer · White 41", sell: 94, cover: 2, margin: 39 },
+      { name: "Linen shirt · Clay", sell: 48, cover: 14, margin: 55 },
+      { name: "Wide trouser · Navy", sell: 62, cover: 11, margin: 57 },
+      { name: "Leather belt", sell: 27, cover: 40, margin: 71 },
+    ],
     loads: [
       { id: "NL-8841", customer: "Gulf Foods", from: "Jebel Ali", to: "Riyadh", weight: "18t", status: "Unassigned", eta: "Tomorrow 06:00", driver: "—", rate: 1480 },
       { id: "NL-8840", customer: "Al Noor Trading", from: "Jebel Ali", to: "Dammam", weight: "12t", status: "Unassigned", eta: "Tomorrow 09:30", driver: "—", rate: 1120 },
@@ -298,6 +311,22 @@ export const PROFILES = {
       { id: "NL-8837", customer: "Cedar Retail", from: "Abu Dhabi", to: "Riyadh", weight: "6t", status: "In transit", eta: "Today 18:40", driver: "Lina T.", rate: 640 },
       { id: "NL-8836", customer: "Gulf Foods", from: "Dammam", to: "Jebel Ali", weight: "20t", status: "Delivered", eta: "Delivered 07:12", driver: "Omar N.", rate: 1610 },
       { id: "NL-8835", customer: "Noon Trading", from: "Jebel Ali", to: "Doha", weight: "14t", status: "Delivered", eta: "Delivered 06:20", driver: "Hassan R.", rate: 1240 },
+    ],
+    trucks: [
+      { id: "NL-8839", from: [92, 210], to: [430, 96], progress: 0.42, status: "In transit", label: "Sharjah → Muscat" },
+      { id: "NL-8838", from: [92, 210], to: [520, 300], progress: 0.61, status: "At border", label: "Jebel Ali → Salalah" },
+      { id: "NL-8837", from: [140, 300], to: [430, 96], progress: 0.28, status: "In transit", label: "Abu Dhabi → Riyadh" },
+      { id: "NL-8836", from: [430, 96], to: [92, 210], progress: 1, status: "Delivered", label: "Dammam → Jebel Ali" },
+    ],
+    cities: [
+      { name: "Jebel Ali", x: 92, y: 210 },
+      { name: "Abu Dhabi", x: 140, y: 300 },
+      { name: "Sharjah", x: 130, y: 180 },
+      { name: "Riyadh", x: 430, y: 96 },
+      { name: "Dammam", x: 505, y: 70 },
+      { name: "Doha", x: 300, y: 150 },
+      { name: "Muscat", x: 610, y: 240 },
+      { name: "Salalah", x: 520, y: 380 },
     ],
     drivers: [
       { name: "Samir Hachem", hours: 41, cap: 48, status: "On the road", load: "NL-8839" },
@@ -565,6 +594,7 @@ export const PROFILES = {
     niche: "clinic",
     views: [
       { id: "schedule", label: "Today's list", icon: "i-clock" },
+      { id: "rooms", label: "Rooms", icon: "i-layers" },
       { id: "waitlist", label: "Waitlist", icon: "i-team" },
       { id: "claims", label: "Claims", icon: "i-card" },
     ],
@@ -603,6 +633,12 @@ export const PROFILES = {
           { time: "11:40", patient: "—", type: "Open", state: "open" },
         ],
       },
+    ],
+    rooms: [
+      { name: "Room 1 · Derm", used: 92, slots: [["09:00", "Yasmin H.", "busy"], ["09:40", "Omar F.", "busy"], ["10:20", "—", "free"], ["11:00", "Rana K.", "busy"], ["11:40", "—", "free"]] },
+      { name: "Room 2 · GP", used: 78, slots: [["09:00", "Hala M.", "busy"], ["09:40", "—", "free"], ["10:20", "Mona S.", "busy"], ["11:00", "—", "free"], ["11:40", "Fadi R.", "busy"]] },
+      { name: "Room 3 · Paeds", used: 86, slots: [["09:00", "Adam K.", "busy"], ["09:40", "Lily A.", "busy"], ["10:20", "Zayn H.", "busy"], ["11:00", "Nour T.", "busy"], ["11:40", "—", "free"]] },
+      { name: "Treatment", used: 64, slots: [["09:00", "—", "free"], ["09:40", "Rana K.", "busy"], ["10:20", "—", "free"], ["11:00", "—", "free"], ["11:40", "Bilal H.", "busy"]] },
     ],
     waitlist: [
       { name: "Amina Qasim", need: "Urgent referral", waiting: "1 day", site: "Jumeirah", fit: 92 },

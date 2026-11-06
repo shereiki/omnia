@@ -2293,3 +2293,70 @@ body { padding-top: var(--bar); }
   .agents-rail-item { width: auto; }
   .agents-side { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ==========================================================================
+   Signature screens: a map, a room board, a stock matrix — each its own shape
+   ========================================================================== */
+
+.tracker { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; align-items: start; }
+.tracker-map { border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: #f7f4fd; }
+.tracker-map svg { display: block; width: 100%; height: auto; }
+.map-city { font: 600 10.5px Manrope, sans-serif; fill: #7b7398; }
+.truck { cursor: pointer; }
+.truck:hover circle:nth-child(2) { r: 10; }
+.tracker-list { display: grid; gap: 6px; }
+.truck-row {
+  display: grid; gap: 2px; padding: 11px 12px; text-align: left;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--paper);
+  transition: border-color 0.16s var(--ease), transform 0.16s var(--ease);
+}
+.truck-row:hover { border-color: #d8cdf5; transform: translateY(-1px); }
+.truck-row.warn { border-color: #f0dfc6; background: #fffdf9; }
+.truck-id { font-size: 9px; font-weight: 700; letter-spacing: 0.05em; color: var(--faint); }
+.truck-row strong { font-size: 12px; font-weight: 650; }
+.truck-meta { font-size: 10.5px; color: var(--muted); }
+
+.rooms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.room-card { padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); display: grid; gap: 9px; }
+.room-card header { display: flex; align-items: center; justify-content: space-between; }
+.room-card strong { font-size: 13px; font-weight: 700; }
+.room-card header span { font-size: 10.5px; color: var(--faint); }
+.room-usage { height: 5px; border-radius: 999px; background: #f2effa; overflow: hidden; }
+.room-usage i { display: block; height: 100%; border-radius: 999px; background: var(--uv); }
+.room-slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.room-slot {
+  display: grid; gap: 2px; padding: 8px 6px; text-align: left;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+}
+.room-slot span { font-size: 9px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.room-slot strong { font-size: 10.5px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.room-slot.busy { background: #f4f1fd; border-color: #e2d9fa; }
+.room-slot.free { border-style: dashed; background: #fbfaff; }
+.room-slot.free strong { color: var(--faint); font-weight: 600; }
+
+.matrix { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 8px; }
+.matrix-cell {
+  display: grid; gap: 3px; padding: 14px; text-align: left;
+  border-radius: 16px; border: 1px solid var(--line); background: var(--paper);
+  transition: transform 0.16s var(--ease), box-shadow 0.16s var(--ease);
+}
+.matrix-cell:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -26px rgba(29, 23, 64, 0.6); }
+.matrix-name { font-size: 11.5px; font-weight: 650; }
+.matrix-cell strong { font-size: 24px; font-weight: 700; letter-spacing: -0.04em; }
+.matrix-cover { font-size: 10px; color: var(--muted); }
+.matrix-cell.hot { background: #fdf1ee; border-color: #f3d6cc; }
+.matrix-cell.hot strong { color: #a8452f; }
+.matrix-cell.warm { background: #fdf6ea; border-color: #f2e2c8; }
+.matrix-cell.warm strong { color: #9a6420; }
+.matrix-cell.cool { background: #f5fbf8; border-color: #dcf1e8; }
+.matrix-cell.cool strong { color: var(--mint-deep); }
+.matrix-legend { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--faint); }
+.matrix-legend span { width: 8px; height: 8px; border-radius: 3px; display: inline-block; margin-left: 8px; }
+.matrix-legend .hot { background: #f3d6cc; }
+.matrix-legend .warm { background: #f2e2c8; }
+.matrix-legend .cool { background: #dcf1e8; }
+
+@media (max-width: 1000px) {
+  .tracker { grid-template-columns: minmax(0, 1fr); }
+  .rooms { grid-template-columns: minmax(0, 1fr); }
+}
