@@ -1307,8 +1307,8 @@ function railContext() {
 }
 
 function railBubble(role, text) {
-  if (role === "user") return `<div class="rail-msg user"><div class="bubble">${text}</div></div>`;
-  return `<div class="rail-msg assistant"><span class="rail-avatar">${I("i-spark")}</span><div class="bubble">${text}</div></div>`;
+  if (role === "user") return `<div class="rail-msg user"><div class="bubble">${railText(text)}</div></div>`;
+  return `<div class="rail-msg assistant"><span class="rail-avatar">${I("i-spark")}</span><div class="bubble">${railText(text)}</div></div>`;
 }
 
 function railPaint(actions = []) {
@@ -1375,6 +1375,30 @@ function runRailAction(action) {
   document.querySelectorAll("[data-rail-action]").forEach((b) => b.remove());
 }
 
+/* a view the agent chose should already be open when the reply lands */
+function autoRunActions(actions = []) {
+  const navigation = actions.find((a) => a.type === "navigate" || a.type === "open_decision");
+  if (navigation) runRailAction(navigation);
+  const rest = actions.filter((a) => a !== navigation);
+  if (rest.length) railPaint(rest);
+}
+
+/* replies arrive with markdown; render it, and never show a raw link */
+function railText(text) {
+  const safe = String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return safe
+    .replace(/\[([^\]]{1,80})\]\([^)]{0,200}\)/g, "$1")
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/\*\*([^*]{1,140})\*\*/g, "<b>$1</b>")
+    .replace(/`([^`]{1,140})`/g, "<code>$1</code>")
+    .replace(/\n{2,}/g, "<br><br>")
+    .replace(/\n/g, "<br>")
+    .trim();
+}
+
 async function railSend(text) {
   if (railPending || !text.trim()) return;
   railPending = true;
@@ -1394,7 +1418,8 @@ async function railSend(text) {
 
   railPending = false;
   railHistory.push({ role: "assistant", content: response.reply || response.error || "No answer." });
-  railPaint(response.actions || []);
+  railPaint([]);
+  autoRunActions(response.actions || []);
 }
 
 /* ---------------------------------------------------------- live assistant */
@@ -1477,6 +1502,14 @@ function viewAgentsPage() {
     </aside>
 
     <section class="agents-main">
+      <div class="agents-note">
+        <span class="agents-note-mark">${I("i-spark")}</span>
+        <div>
+          <strong>These four are demo agents, working on sample data.</strong>
+          <p>In your workspace they become <b>Omnia AI</b> — one assistant that knows your operation and will <em>ask anything, anywhere, anytime</em>. Same place: the rail beside every dashboard.</p>
+        </div>
+      </div>
+
       <header class="agents-head">
         <div><strong>${agent.name}</strong><span>${control.paused ? "Paused" : agent.status === "live" ? "Working now" : "Idle"} · ${agent.autonomy}</span></div>
         <span class="chip ${agent.status === "live" ? "good" : "ghost"}">${agent.status === "live" ? "Running" : "Idle"}</span>
@@ -3249,7 +3282,10 @@ function init() {
     if (document.body.classList.contains("rail-open")) closeRailSheet();
     closeBoardSheet();
   });
-  document.getElementById("railFab")?.addEventListener("click", openRailSheet);
+  document.getElementById("railFab")?.addEventListener("click", () => {
+    if (window.matchMedia("(max-width: 1180px)").matches) openRailSheet();
+    else setRail(false);
+  });
 
   document.getElementById("navBoard")?.addEventListener("click", (event) => {
     event.stopPropagation();
