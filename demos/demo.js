@@ -1743,6 +1743,7 @@ function viewRooms() {
 }
 
 function viewSkus() {
+  const skus = CLIENT.skus || [];
   const risk = (sku) => (sku.cover <= 5 ? "hot" : sku.cover <= 12 ? "warm" : "cool");
   return `
   <div class="view-head">
@@ -1752,7 +1753,7 @@ function viewSkus() {
     <div class="card-head"><div><h2>Every SKU, by pressure</h2><small>Red means selling faster than it can be replaced</small></div>
       <div class="matrix-legend"><span class="hot"></span>under 5 days<span class="warm"></span>5–12<span class="cool"></span>12+</div></div>
     <div class="card-body matrix">
-      ${CLIENT.skus
+      ${skus
         .map(
           (sku) => `<button class="matrix-cell ${risk(sku)}" data-sku="${sku.name}">
             <span class="matrix-name">${sku.name}</span>
