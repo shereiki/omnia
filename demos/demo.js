@@ -1245,7 +1245,6 @@ function railBubble(role, text) {
 function railPaint(actions = []) {
   const thread = document.getElementById("railThread");
   if (!thread) return;
-
   const greeting = railHistory.length
     ? ""
     : `<div class="rail-msg assistant">
@@ -1253,11 +1252,7 @@ function railPaint(actions = []) {
         <div class="bubble">Hi ${firstName()} — I'm the agent on this workspace. I can open a dashboard, explain a decision, or tell you what an agent is doing.</div>
       </div>
       <div class="rail-chips">
-        ${[
-          "What needs my decision?",
-          `Show me ${(CLIENT.views[0] || {}).label || "my dashboard"}`,
-          "Which agent is busiest?",
-        ]
+        ${["What needs my decision?", `Show me ${(CLIENT.views[0] || {}).label || "my dashboard"}`, "Which agent is busiest?"]
           .map((q) => `<button class="rail-chip" data-rail-ask="${q}">${q}</button>`)
           .join("")}
       </div>`;
@@ -2398,6 +2393,7 @@ function renderStage() {
   stage.innerHTML = render();
   document.getElementById("topbar").classList.toggle("os-mode", Boolean(state.os));
   railContext();
+  railPaint();
   wireStage();
   initFleetMap();
   renderConnectors();
