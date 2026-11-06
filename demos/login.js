@@ -17,7 +17,7 @@ form.addEventListener("submit", async (event) => {
     if (response.ok) {
       const params = new URLSearchParams(location.search);
       const next = params.get("next");
-      location.replace(next && next.startsWith("/demos") ? next : "/demos/");
+      location.replace(next && next.startsWith("/demos") ? next : "/demos");
       return;
     }
     status.textContent =

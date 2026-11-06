@@ -42,6 +42,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/demos/:slug", "destination": "/demos/workspace.html" },
     { "source": "/server/:path*", "destination": "/404" },
     { "source": "/docs/:path*", "destination": "/404" },
     { "source": "/tests/:path*", "destination": "/404" },
