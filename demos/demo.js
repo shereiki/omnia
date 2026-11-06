@@ -2623,6 +2623,7 @@ const VIEWS = {
 
 function renderStage() {
   const stage = document.getElementById("stage");
+  renderTabs();
   const render = state.os ? viewOs : VIEWS[state.active] || viewGeneral;
   stage.innerHTML = render();
   document.getElementById("topbar").classList.toggle("os-mode", Boolean(state.os));
