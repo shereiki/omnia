@@ -7806,12 +7806,12 @@ details[open] summary:hover .detail-plus {
   }
   .header .brand {
     min-height: 44px;
-    font-size: 27px;
-    gap: 8px;
+    font-size: 22px;
+    gap: 7px;
   }
   .header .brand svg {
-    width: 27px;
-    height: 30px;
+    width: 34px;
+    height: 37px;
   }
   .header .small-cta {
     min-height: 44px;
@@ -8265,12 +8265,12 @@ details[open] summary:hover .detail-plus {
     gap: 10px;
   }
   .header .brand {
-    font-size: 26px;
+    font-size: 22px;
     gap: 7px;
   }
   .header .brand svg {
-    width: 26px;
-    height: 28px;
+    width: 34px;
+    height: 37px;
   }
   .header .small-cta {
     min-height: 44px;
