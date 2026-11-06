@@ -2651,3 +2651,33 @@ body { padding-top: var(--bar); }
   .nav-dashboards { overflow: visible; }
   .board-sheet { max-height: 62vh; overflow-y: auto; }
 }
+
+/* ---------- what these agents are, said plainly ---------- */
+
+.agents-note {
+  display: flex; gap: 12px; align-items: flex-start;
+  margin-bottom: 12px; padding: 14px 16px;
+  border: 1px solid #e4dcfa; border-radius: 18px;
+  background: linear-gradient(180deg, #f8f5ff, #fdfcff);
+}
+.agents-note-mark {
+  display: grid; place-items: center; flex: 0 0 auto;
+  width: 30px; height: 30px; border-radius: 10px;
+  background: var(--uv); color: #fff;
+}
+.agents-note-mark svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.agents-note strong { display: block; font-size: 12.5px; color: var(--ink); }
+.agents-note p { margin: 3px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--muted); }
+.agents-note em { font-style: normal; color: var(--uv); font-weight: 650; }
+
+@media (max-width: 760px) {
+  .agents-note { padding: 12px 13px; }
+  .agents-note-mark { width: 26px; height: 26px; border-radius: 9px; }
+}
+
+/* replies keep their shape, never their links */
+.rail-msg .bubble b { font-weight: 700; color: var(--ink); }
+.rail-msg .bubble code {
+  padding: 1px 5px; border-radius: 6px; background: #f2effb;
+  font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px;
+}

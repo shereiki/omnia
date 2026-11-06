@@ -44,6 +44,8 @@ How to answer:
 - Never invent client-specific numbers beyond the demo's own data; if asked about something you cannot know, say what you would check or who would.
 - If someone asks for a change (a new dashboard, a connector, a different workflow), say it goes to their engineer as a request, and that it is built for them rather than configured by them.
 - No buzzwords, no "I am an AI" framing. You are Omnia's assistant, speaking plainly.
+- Never write a link, a URL, a file path or markdown of any kind. No "click here", no "[Open X](...)". To show someone something, use the actions block and the workspace opens it for you.
+- If they ask to see, open or go to something, that is a navigation: answer in one short sentence and emit the navigate action.
 
 You can act inside the demo. When an action helps, end your reply with one JSON
 block on its own line, and nothing after it:
@@ -133,6 +135,22 @@ export default {
 
       // the model may end with an actions block; validate before anything runs
       const NAV = new Set(["general","agents","decisions","orders","inventory","skus","savings","dispatch","fleet","lanes","schedule","rooms","waitlist","claims"]);
+      const NAV_HINTS = [
+        ["\b(live map|map|tracker|where.*truck|on the road)\b", "tracker", "Live map"],
+        ["\b(dispatch)\b", "dispatch", "Dispatch board"],
+        ["\b(fleet|drivers?)\b", "fleet", "Fleet & drivers"],
+        ["\b(lane|lane margin|corridor|rate)\b", "lanes", "Lane margin"],
+        ["\b(order operations|orders?)\b", "orders", "Order Operations"],
+        ["\b(inventory control)\b", "inventory", "Inventory Control"],
+        ["\b(stock|sku|stock matrix)\b", "skus", "Stock matrix"],
+        ["\b(savings|saved|roi|cost saving)\b", "savings", "Savings Report"],
+        ["\b(agents?|what.*working on)\b", "agents", "Agents"],
+        ["\b(decisions?|approvals?)\b", "decisions", "Decisions"],
+        ["\b(schedule|today'?s list|appointments?)\b", "schedule", "Today's list"],
+        ["\b(rooms?|slots?|booking)\b", "rooms", "Rooms"],
+        ["\b(waitlist|waiting list)\b", "waitlist", "Waitlist"],
+        ["\b(claims?|insurance)\b", "claims", "Claims"],
+      ];
       let reply = raw;
       let actions = [];
       const match = raw.match(/\{[\s\S]*"actions"[\s\S]*\}\s*$/);
@@ -155,6 +173,27 @@ export default {
           reply = raw;
         }
       }
+      // no link ever reaches a client, even if the model writes one
+      const stripLinks = (text) =>
+        String(text)
+          .replace(/\[([^\]]{1,80})\]\([^)]*\)/g, "$1")
+          .replace(/https?:\/\/[^\s)]+/g, "")
+          .replace(/\*\*([^*]+)\*\*/g, "$1")
+          .replace(/\s{2,}/g, " ")
+          .trim();
+      reply = stripLinks(reply);
+
+      // if they asked to see something and no action came back, open it anyway
+      const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content || "";
+      if (!actions.length && /\b(show|open|take me|go to|see|where)\b/i.test(lastUser)) {
+        for (const [pattern, target, label] of NAV_HINTS) {
+          if (new RegExp(pattern, "i").test(lastUser)) {
+            actions = [{ type: "navigate", target, label: "Open " + label }];
+            break;
+          }
+        }
+      }
+
       return json({ reply, actions });
     } catch {
       return json({ error: "The assistant timed out. Try again.", code: "timeout" }, 504);
