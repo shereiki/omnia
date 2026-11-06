@@ -1665,6 +1665,106 @@ function viewSavings() {
    Logistics and clinics are not retail with new words on it: each brings its
    own boards. */
 
+/* ------------------------------------------------ one signature each */
+
+function viewTracker() {
+  const point = (t) => [
+    t.from[0] + (t.to[0] - t.from[0]) * t.progress,
+    t.from[1] + (t.to[1] - t.from[1]) * t.progress,
+  ];
+  return `
+  <div class="view-head">
+    <div><h1>Live map</h1><p>Every load on the road, where it actually is.</p></div>
+    <div class="head-actions"><span class="chip good">${CLIENT.trucks.filter((t) => t.status !== "Delivered").length} moving</span></div>
+  </div>
+  <div class="tracker">
+    <section class="tracker-map">
+      <svg viewBox="0 0 700 430" role="img" aria-label="Loads moving between cities">
+        <rect x="0" y="0" width="700" height="430" rx="18" fill="#f7f4fd" />
+        ${CLIENT.trucks
+          .map((t) => `<line x1="${t.from[0]}" y1="${t.from[1]}" x2="${t.to[0]}" y2="${t.to[1]}"
+            stroke="#ded5f8" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round" />`)
+          .join("")}
+        ${CLIENT.cities
+          .map(
+            (c) => `<g><circle cx="${c.x}" cy="${c.y}" r="6" fill="#fff" stroke="#c9bff0" stroke-width="2" />
+              <text x="${c.x + 11}" y="${c.y + 4}" class="map-city">${c.name}</text></g>`,
+          )
+          .join("")}
+        ${CLIENT.trucks
+          .map((t) => {
+            const [x, y] = point(t);
+            return `<g class="truck" data-truck="${t.id}" tabindex="0" role="button" aria-label="${t.id} ${t.label}">
+              <circle cx="${x}" cy="${y}" r="13" fill="#efeaff" />
+              <circle cx="${x}" cy="${y}" r="7" fill="${t.status === "At border" ? "#d9a353" : t.status === "Delivered" ? "#1e7f66" : "#5b45d6"}" />
+            </g>`;
+          })
+          .join("")}
+      </svg>
+    </section>
+    <aside class="tracker-list">
+      ${CLIENT.trucks
+        .map(
+          (t) => `<button class="truck-row ${t.status === "At border" ? "warn" : ""}" data-truck="${t.id}">
+            <span class="truck-id">${t.id}</span>
+            <strong>${t.label}</strong>
+            <span class="truck-meta">${t.status} · ${Math.round(t.progress * 100)}% of the way</span>
+          </button>`,
+        )
+        .join("")}
+    </aside>
+  </div>`;
+}
+
+function viewRooms() {
+  return `
+  <div class="view-head">
+    <div><h1>Rooms</h1><p>What is occupied, what is free, and how hard each room is working.</p></div>
+  </div>
+  <div class="rooms">
+    ${CLIENT.rooms
+      .map(
+        (room) => `<section class="room-card">
+          <header><strong>${room.name}</strong><span>${room.used}% used</span></header>
+          <div class="room-usage"><i style="width:${room.used}%"></i></div>
+          <div class="room-slots">
+            ${room.slots
+              .map(
+                (slot) => `<button class="room-slot ${slot[2]}" data-room-slot="${room.name} · ${slot[0]}">
+                  <span>${slot[0]}</span><strong>${slot[1]}</strong>
+                </button>`,
+              )
+              .join("")}
+          </div>
+        </section>`,
+      )
+      .join("")}
+  </div>`;
+}
+
+function viewSkus() {
+  const risk = (sku) => (sku.cover <= 5 ? "hot" : sku.cover <= 12 ? "warm" : "cool");
+  return `
+  <div class="view-head">
+    <div><h1>Stock matrix</h1><p>Sell-through against cover, so the problem SKUs are obvious.</p></div>
+  </div>
+  <section class="card">
+    <div class="card-head"><div><h2>Every SKU, by pressure</h2><small>Red means selling faster than it can be replaced</small></div>
+      <div class="matrix-legend"><span class="hot"></span>under 5 days<span class="warm"></span>5–12<span class="cool"></span>12+</div></div>
+    <div class="card-body matrix">
+      ${CLIENT.skus
+        .map(
+          (sku) => `<button class="matrix-cell ${risk(sku)}" data-sku="${sku.name}">
+            <span class="matrix-name">${sku.name}</span>
+            <strong>${sku.sell}%</strong>
+            <span class="matrix-cover">${sku.cover}d cover · ${sku.margin}% margin</span>
+          </button>`,
+        )
+        .join("")}
+    </div>
+  </section>`;
+}
+
 function viewDispatch() {
   const columns = ["Unassigned", "Assigned", "In transit", "At border", "Delivered"];
   return `
@@ -2078,6 +2178,9 @@ function viewOs() {
 
 const VIEWS = {
   agents: () => viewAgentsPage(),
+  tracker: () => viewTracker(),
+  rooms: () => viewRooms(),
+  skus: () => viewSkus(),
   general: () => viewGeneral(),
   decisions: () => viewDecisions(),
   orders: () => viewOrders(),
@@ -2235,6 +2338,27 @@ function wireStage() {
     });
     if (document.getElementById("agentChatLog")) paintAgentChat();
   }
+
+  stage.querySelectorAll("[data-truck]").forEach((el) =>
+    el.addEventListener("click", () => {
+      const truck = CLIENT.trucks.find((t) => t.id === el.dataset.truck);
+      if (!truck) return;
+      openDrawer(truck.id, truck.label, `<div class="drawer-facts">
+        <div><span>Status</span><strong>${truck.status}</strong></div>
+        <div><span>Progress</span><strong>${Math.round(truck.progress * 100)}%</strong></div>
+      </div><div class="drawer-actions"><button class="btn primary sm" data-truck-act>Call driver</button></div>`);
+      document.querySelector("[data-truck-act]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast("Calling the driver — this demo cannot dial out.");
+      });
+    }),
+  );
+  stage.querySelectorAll("[data-room-slot]").forEach((el) =>
+    el.addEventListener("click", () => toast(`${el.dataset.roomSlot} · booking changes go through your engineer`)),
+  );
+  stage.querySelectorAll("[data-sku]").forEach((el) =>
+    el.addEventListener("click", () => toast(`${el.dataset.sku} · reorder draft goes to Decisions for your approval`)),
+  );
 
   stage.querySelectorAll("[data-load]").forEach((el) =>
     el.addEventListener("click", () => {
