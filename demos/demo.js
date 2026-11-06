@@ -1393,7 +1393,8 @@ function runRailAction(action) {
   } else if (action.type === "pause_agent") {
     const control = controlFor(action.target);
     control.paused = !control.paused;
-    toast(`${action.target} ${control.paused ? "paused" : "resumed"}`);
+    const who = (AGENTS.find((a) => a.id === action.target) || {}).name || action.target;
+    toast(`${who} ${control.paused ? "is paused" : "is running again"} — demo only`);
   } else if (action.type === "open_decision") {
     state.decisionFilter = "All";
     openTab("decisions");
@@ -2090,7 +2091,31 @@ function viewRooms() {
         </section>`,
       )
       .join("")}
-  </div>`;
+  </div>
+
+  <section class="card rooms-next">
+    <div class="card-head">
+      <div><h2>Still free today</h2><small>The gaps the front desk can fill from the waitlist</small></div>
+      <button class="btn sm" data-open="waitlist">Offer to the waitlist${I("i-arrow")}</button>
+    </div>
+    <div class="card-body">
+      <div class="room-free-list">
+        ${CLIENT.rooms
+          .flatMap((room) =>
+            room.slots
+              .filter((slot) => slot[2] === "free")
+              .map(
+                (slot) =>
+                  `<button class="room-free" data-room-slot="${room.name} · ${slot[0]}">
+                    <span>${slot[0]}</span><strong>${room.name}</strong><small>open</small>
+                  </button>`,
+              ),
+          )
+          .join("")}
+      </div>
+    </div>
+    <div class="card-foot"><span>Booking here moves a patient off the waitlist</span><span>Sample data</span></div>
+  </section>`;
 }
 
 function viewSkus() {
