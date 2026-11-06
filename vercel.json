@@ -55,6 +55,6 @@
   ],
   "proxy": {
     "entrypoint": "proxy.js",
-    "matcher": ["/server", "/server/:path*", "/admin", "/admin/:path*", "/api/admin/:path*", "/demos", "/demos/:path*"]
+    "matcher": ["/server", "/server/:path*", "/db", "/db/:path*", "/docs", "/docs/:path*", "/tests", "/tests/:path*", "/archive", "/archive/:path*", "/scripts", "/scripts/:path*", "/proxy.js", "/package.json", "/package-lock.json", "/vercel.json", "/README.md", "/.vercelignore", "/admin", "/admin/:path*", "/api/admin/:path*", "/demos", "/demos/:path*"]
   }
 }
