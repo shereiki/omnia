@@ -1339,7 +1339,7 @@ function railPaint(actions = []) {
         actions
           .map(
             (a, i) =>
-              `<button class="rail-action" data-rail-action="${i}">${I("i-arrow")}${a.label}</button>`,
+              `<button class="rail-action" data-rail-action="${i}">${I(a.type === "pause_agent" ? "i-shield" : "i-arrow")}${a.label}<span class="rail-action-kind">${a.type === "pause_agent" ? "agent" : a.type === "request_change" ? "request" : "open"}</span></button>`,
           )
           .join("") +
         "</div>"
