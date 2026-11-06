@@ -3246,6 +3246,7 @@ function wireStage() {
       const control = controlFor(toggle.dataset.quiet);
       control.quiet = !control.quiet;
       toggle.setAttribute("aria-pressed", String(control.quiet));
+      renderStage();
       toast(`Quiet hours ${control.quiet ? "on" : "off"} for this agent — demo only`);
     }),
   );
