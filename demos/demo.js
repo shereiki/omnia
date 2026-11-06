@@ -261,6 +261,7 @@ function controlFor(id) {
 const state = {
   tabs: [
     { id: "general", pinned: true },
+    { id: "agents" },
     { id: "decisions" },
     ...CLIENT.views.map((v) => ({ id: v.id })),
   ],
@@ -564,6 +565,7 @@ function solution(id) {
 }
 
 const SOLUTIONS = [
+  { id: "agents", label: "Agents", icon: "i-agent" },
   { id: "decisions", label: "Decisions", icon: "i-shield" },
   ...CLIENT.views.map((v) => ({ id: v.id, label: v.label, icon: v.icon })),
 ];
@@ -694,7 +696,7 @@ function setupTabDrag() {
     const drag = dragState.active;
     if (!drag || event.pointerId !== drag.pointerId) return;
     if (!drag.moved) {
-      if (Math.abs(event.clientX - drag.startX) < 6) return;
+      if (Math.abs(event.clientX - drag.startX) < 14) return;
       drag.moved = true;
       drag.tab.classList.add("dragging");
       drag.tab.setAttribute("aria-grabbed", "true");
@@ -719,6 +721,7 @@ function setupTabDrag() {
     const currentNext = drag.tab.nextElementSibling;
     if (reference === currentNext || (!reference && !currentNext)) return;
 
+    drag.reordered = true;
     const before = new Map(
       [...strip.querySelectorAll("[data-tab]")].map((el) => [el, el.getBoundingClientRect().left]),
     );
@@ -740,7 +743,7 @@ function setupTabDrag() {
   const finish = (event) => {
     const drag = dragState.active;
     if (!drag || event.pointerId !== drag.pointerId) return;
-    if (drag.moved) {
+    if (drag.moved && drag.reordered) {
       dragState.justDragged = true;
       setTimeout(() => (dragState.justDragged = false), 60);
       syncOrderFromDom(strip);
@@ -1247,6 +1250,85 @@ async function sendTo(logEl, text) {
   renderAskThread();
 }
 
+function viewAgentsPage() {
+  const agent = AGENTS.find((a) => a.id === state.agentId) || AGENTS[0];
+  const work = AGENT_WORK[agent.id] || { task: "Working through today's queue", steps: [], queue: [] };
+  const control = controlFor(agent.id);
+  return `
+  <div class="view-head">
+    <div><h1>Agents</h1><p>Four agents working this workspace. Each shows what it is doing, and stops at a decision.</p></div>
+    <div class="head-actions">
+      <span class="chip good">${AGENTS.filter((a) => a.status === "live").length} running</span>
+      <button class="btn sm" data-os-open="agents">${I("i-gear")}Settings</button>
+    </div>
+  </div>
+
+  <div class="agents-page">
+    <aside class="agents-rail">
+      ${AGENTS.map(
+        (a) => `<button class="agents-rail-item ${a.id === agent.id ? "selected" : ""}" data-dock-agent="${a.id}">
+          <span class="agent-avatar">${I(a.icon)}</span>
+          <span class="agents-rail-copy"><strong>${a.name}</strong><small>${a.scope}</small></span>
+          <i class="status-dot ${a.status === "idle" ? "idle" : "live"}"></i>
+        </button>`,
+      ).join("")}
+      <p class="agents-rail-note">Agents can be paused or given more autonomy in Settings.</p>
+    </aside>
+
+    <section class="agents-main">
+      <header class="agents-head">
+        <div><strong>${agent.name}</strong><span>${control.paused ? "Paused" : agent.status === "live" ? "Working now" : "Idle"} · ${agent.autonomy}</span></div>
+        <span class="chip ${agent.status === "live" ? "good" : "ghost"}">${agent.status === "live" ? "Running" : "Idle"}</span>
+      </header>
+
+      <div class="agents-work">
+        <span class="agent-work-label"><i class="live-dot"></i>Working on</span>
+        <strong>${work.task}</strong>
+        <ol class="agent-steps">
+          ${work.steps.map((step, i) => `<li class="${i < work.steps.length - 1 ? "done" : "current"}"><i></i>${step}</li>`).join("")}
+        </ol>
+        <div class="agent-queue">${work.queue.map((q) => `<span class="agent-queue-chip">${q}</span>`).join("")}</div>
+      </div>
+
+      <div class="agents-chat">
+        <div class="chat-body" id="agentChatLog"></div>
+        <div class="chat-quick">
+          ${["What are you working on?", "What needs my decision?", "What would you do next?"]
+            .map((q) => `<button data-agent-ask="${q}">${q}</button>`)
+            .join("")}
+        </div>
+        <form class="chat-composer" id="agentAskForm">
+          <input id="agentAskInput" placeholder="Message ${agent.name}…" autocomplete="off" />
+          <button type="submit" aria-label="Send">${I("i-send")}</button>
+        </form>
+      </div>
+    </section>
+
+    <aside class="agents-side">
+      <section class="card">
+        <div class="card-head"><div><h2>Today</h2><small>${agent.name}</small></div></div>
+        <div class="card-body rows">
+          <div class="row row-static"><span class="muted">Runs</span><strong>${fmt.n(agent.stats.runs)}</strong></div>
+          <div class="row row-static"><span class="muted">Raised to you</span><strong>${agent.stats.approval}</strong></div>
+          <div class="row row-static"><span class="muted">Success</span><strong>${agent.stats.success}</strong></div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="card-head"><div><h2>Rules</h2><small>What it may decide alone</small></div></div>
+        <div class="card-body">
+          <div class="guardrails">
+            <span class="guard">${I("i-shield")}${agent.autonomy}</span>
+            <span class="guard">${I("i-shield")}Cost and customers go to Decisions</span>
+          </div>
+          <div class="agent-tools-list" style="margin-top:10px">
+            ${agent.tools.map((t) => `<span class="tool-chip">${t}</span>`).join("")}
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>`;
+}
+
 function dockAsk() {
   return `
     <div class="ask-head">
@@ -1317,8 +1399,7 @@ function renderDock() {
           ? dockThread()
           : dockRequests();
 
-  if (view === "agents") {
-    paintAgentChat();
+  if (false) {
     body.querySelectorAll("[data-open-os-agents]").forEach((el) =>
     el.addEventListener("click", () => {
       closeDock();
@@ -1996,6 +2077,7 @@ function viewOs() {
 /* ----------------------------------------------------------------- render */
 
 const VIEWS = {
+  agents: () => viewAgentsPage(),
   general: () => viewGeneral(),
   decisions: () => viewDecisions(),
   orders: () => viewOrders(),
@@ -2132,6 +2214,28 @@ function wireStage() {
       openDock("ask");
     }),
   );
+  stage.querySelectorAll("[data-dock-agent]").forEach((el) =>
+    el.addEventListener("click", () => {
+      state.agentId = el.dataset.dockAgent;
+      renderStage();
+    }),
+  );
+  stage.querySelectorAll("[data-agent-ask]").forEach((chip) =>
+    chip.addEventListener("click", () => askAgentBody(chip.dataset.agentAsk)),
+  );
+  {
+    const agentForm = document.getElementById("agentAskForm");
+    agentForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = document.getElementById("agentAskInput");
+      const text = input?.value.trim();
+      if (!text) return;
+      input.value = "";
+      askAgentBody(text);
+    });
+    if (document.getElementById("agentChatLog")) paintAgentChat();
+  }
+
   stage.querySelectorAll("[data-load]").forEach((el) =>
     el.addEventListener("click", () => {
       const load = CLIENT.loads.find((l) => l.id === el.dataset.load);
@@ -2675,11 +2779,7 @@ function init() {
   });
 
   const agentsButton = document.getElementById("agentsButton");
-  agentsButton?.addEventListener("click", () => {
-    if (state.dock.open && state.dock.view === "agents") return closeDock();
-    state.dock.thread = null;
-    openDock("agents");
-  });
+  agentsButton?.addEventListener("click", () => openTab("agents"));
 
   const dockButton = document.getElementById("dockButton");
   dockButton?.addEventListener("click", () => {
