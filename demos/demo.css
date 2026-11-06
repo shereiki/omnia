@@ -2708,3 +2708,24 @@ body { padding-top: var(--bar); }
 .claim-row:hover { background: #faf8ff; }
 .claim-row .row-chev { margin-left: 2px; }
 .slot-card.started { box-shadow: inset 0 0 0 1.5px var(--mint-deep); }
+
+.palette-empty {
+  padding: 22px 16px; margin: 0;
+  font-size: 12px; line-height: 1.55; color: var(--muted); text-align: center;
+}
+
+/* the other demo workspaces, from inside one of them */
+.modal-workspaces { margin-top: 14px; }
+.modal-workspaces-label {
+  display: block; margin-bottom: 7px;
+  font-size: 9.5px; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint);
+}
+.modal-workspace-row { display: grid; gap: 6px; }
+.modal-workspace {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--paper); color: var(--ink-2); font-size: 12px; font-weight: 650; text-decoration: none;
+}
+.modal-workspace:hover { border-color: #cdc0f4; color: var(--uv); }
+.modal-workspace.current { background: #f6f2ff; border-color: #ddd2f8; color: var(--uv); }
+.modal-workspace b { font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--faint); }

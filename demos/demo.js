@@ -2034,10 +2034,13 @@ function initFleetMap() {
       iconSize: [16, 16],
       iconAnchor: [8, 8],
     });
-    L.marker([lat, lng], { icon })
+    const marker = L.marker([lat, lng], { icon, alt: truck.id + " · " + truck.label, keyboard: true });
+    marker
       .addTo(map)
       .bindTooltip(truck.id + " · " + truck.label, { direction: "top", offset: [0, -8], className: "map-tip" })
       .on("click", () => openTruckDrawer(truck.id));
+    marker.getElement()?.setAttribute("role", "button");
+    marker.getElement()?.setAttribute("aria-label", truck.id + " · " + truck.label);
   }
 
   map.fitBounds(points, { padding: [40, 40] });
@@ -3072,7 +3075,7 @@ function wireStage() {
     toggle.addEventListener("click", () => {
       const next = toggle.getAttribute("aria-pressed") !== "true";
       toggle.setAttribute("aria-pressed", String(next));
-      toast(`${toggle.dataset.module} ${next ? "enabled" : "paused"} for the demo`);
+      toast(`${toggle.dataset.module} ${next ? "switched on" : "switched off"} — demo only. Your Omnia team makes that change for real.`);
     }),
   );
   stage.querySelectorAll("[data-invite]").forEach((el) =>
@@ -3438,7 +3441,19 @@ function init() {
         <div><span>Systems</span><strong>${SYSTEMS.length} connected</strong></div>
         <div><span>Agents</span><strong>${AGENTS.length} configured</strong></div>
         <div><span>Engineer</span><strong>${ENGINEER.name}</strong></div>
-      </div></div>`),
+      </div>
+      <div class="modal-workspaces">
+        <span class="modal-workspaces-label">The other demo workspaces</span>
+        <div class="modal-workspace-row">
+          ${[["meridian", "Meridian Outfitters"], ["northline", "Northline Freight"], ["cedar", "Cedar Clinics"]]
+            .map(
+              ([id, name]) => `<a class="modal-workspace ${SLUG === id ? "current" : ""}" href="/demos/workspace?client=${id}">
+                <span>${name}</span>${SLUG === id ? "<b>You are here</b>" : ""}</a>`,
+            )
+            .join("")}
+        </div>
+      </div>
+    </div>`),
   );
   document.querySelector('[data-action="notify"]')?.addEventListener("click", renderNotifications);
 
@@ -3527,13 +3542,11 @@ function init() {
   const items = [
     ["General", "Overview", "i-grid", () => openTab("general")],
     ["Decisions", "Waiting on you", "i-shield", () => openTab("decisions")],
-    ["Ayesha", "Your engineer · requests", "i-ticket", () => openDock("requests")],
-    ["New request", "Ask Ayesha for a change", "i-plus", newRequestModal],
-    ["Agents", "What is running", "i-agent", () => openDock("agents")],
-    ["Order Operations", "Orders", "i-bag", () => openTab("orders")],
-    ["Inventory Control", "Stock", "i-boxes", () => openTab("inventory")],
-    ["Savings Report", "Cost recovered", "i-chart", () => openTab("savings")],
-    ["Manage Omnia OS", "Settings", "i-gear", () => { state.os = true; state.osView = "overview"; renderStage(); }],
+    ["Agents", "What is running", "i-agent", () => openTab("agents")],
+    ...(CLIENT.views || []).map((v) => [v.label, "Dashboard", v.icon, () => openTab(v.id)]),
+    [CLIENT.engineer.name, "Your engineer · requests", "i-ticket", () => openDock("requests")],
+    ["New request", `Ask ${CLIENT.engineer.name.split(" ")[0]} for a change`, "i-plus", newRequestModal],
+    ["Manage Omnia OS", "Settings and systems", "i-gear", () => { state.os = true; state.osView = "overview"; renderStage(); }],
   ];
   let activeIndex = 0;
 
@@ -3541,13 +3554,15 @@ function init() {
     const q = query.toLowerCase();
     const matches = items.filter(([label, meta]) => label.toLowerCase().includes(q) || meta.toLowerCase().includes(q));
     activeIndex = 0;
-    results.innerHTML = matches
-      .map(
-        ([label, meta, icon], index) =>
-          `<button class="palette-item ${index === 0 ? "active" : ""}" data-index="${items.indexOf(matches[index])}">
-            ${I(icon)}<span>${label}</span><small>${meta}</small></button>`,
-      )
-      .join("");
+    results.innerHTML = matches.length
+      ? matches
+          .map(
+            ([label, meta, icon], index) =>
+              `<button class="palette-item ${index === 0 ? "active" : ""}" data-index="${items.indexOf(matches[index])}">
+                ${I(icon)}<span>${label}</span><small>${meta}</small></button>`,
+          )
+          .join("")
+      : `<p class="palette-empty">Nothing matches “${query}”. Try a dashboard, a decision, or ${CLIENT.engineer.name.split(" ")[0]}.</p>`;
     results.querySelectorAll(".palette-item").forEach((button) =>
       button.addEventListener("click", () => {
         closePalette();
