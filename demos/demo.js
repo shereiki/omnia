@@ -30,6 +30,16 @@ const SLUG =
 
 export const CLIENT = PROFILES[SLUG] || PROFILES.meridian;
 
+// Each workspace has its own shape. Anything a client does not have is an empty
+// list, so a stray link to another industry's dashboard cannot break the page.
+for (const key of [
+  "orders", "inventory", "people", "systems", "modules", "decisions", "requests",
+  "agents", "skus", "rooms", "clinicians", "drivers", "loads", "trucks", "lanes",
+  "waitlist", "claims", "activity", "days", "hours", "weeks",
+]) {
+  if (!Array.isArray(CLIENT[key])) CLIENT[key] = [];
+}
+
 const {
   days: DAYS,
   hours: HOURS,
@@ -324,6 +334,7 @@ const state = {
 
 const sum = (list, key) => list.reduce((total, item) => total + item[key], 0);
 const period = () => PERIODS[state.period];
+const VIEW_IDS = new Set(["general", "agents", "decisions", ...(CLIENT.views || []).map((v) => v.id)]);
 const pendingDecisions = () => state.decisions.filter((d) => d.status === "pending");
 
 /* the demo's own copy, so an action can change it */
@@ -855,6 +866,7 @@ function setupTabDrag() {
 }
 
 function openTab(id) {
+  if (!VIEW_IDS.has(id)) return;
   if (!state.tabs.some((t) => t.id === id)) state.tabs.push({ id });
   state.active = id;
   state.os = false;
@@ -1370,20 +1382,21 @@ function viewLabel(id) {
 /* if the person named a dashboard, that is the one they meant */
 function intentView(text) {
   const said = String(text || "").toLowerCase();
+  const available = new Set(["general", "agents", "decisions", ...(CLIENT.views || []).map((v) => v.id)]);
   const views = [...(CLIENT.views || []), { id: "agents", label: "Agents" }, { id: "decisions", label: "Decisions" }];
-  const hit = views.find((v) => v.label && said.includes(v.label.toLowerCase()));
+  const hit = views.find((v) => v.label && said.includes(v.label.toLowerCase()) && available.has(v.id));
   if (hit) return hit.id;
-  if (/\b(live\s*map|where.*(truck|load)|on the road)\b/.test(said)) return "tracker";
-  if (/\b(stock|sku)\b/.test(said)) return "skus";
-  if (/\b(savings|roi|saved)\b/.test(said)) return "savings";
-  if (/\b(lane|corridor)\b/.test(said)) return "lanes";
-  if (/\b(fleet|driver)\b/.test(said)) return "fleet";
-  if (/\b(dispatch)\b/.test(said)) return "dispatch";
-  if (/\b(room|slot)\b/.test(said)) return "rooms";
-  if (/\b(waitlist)\b/.test(said)) return "waitlist";
-  if (/\b(claim|insurance)\b/.test(said)) return "claims";
-  if (/\b(inventory)\b/.test(said)) return "inventory";
-  if (/\b(order)\b/.test(said)) return "orders";
+  if (/\b(live\s*map|where.*(truck|load)|on the road)\b/.test(said)) return available.has("tracker") ? "tracker" : "";
+  if (/\b(stock|sku)\b/.test(said)) return available.has("skus") ? "skus" : "";
+  if (/\b(savings|roi|saved)\b/.test(said)) return available.has("savings") ? "savings" : "";
+  if (/\b(lane|corridor)\b/.test(said)) return available.has("lanes") ? "lanes" : "";
+  if (/\b(fleet|driver)\b/.test(said)) return available.has("fleet") ? "fleet" : "";
+  if (/\b(dispatch)\b/.test(said)) return available.has("dispatch") ? "dispatch" : "";
+  if (/\b(room|slot)\b/.test(said)) return available.has("rooms") ? "rooms" : "";
+  if (/\b(waitlist)\b/.test(said)) return available.has("waitlist") ? "waitlist" : "";
+  if (/\b(claim|insurance)\b/.test(said)) return available.has("claims") ? "claims" : "";
+  if (/\b(inventory)\b/.test(said)) return available.has("inventory") ? "inventory" : "";
+  if (/\b(order)\b/.test(said)) return available.has("orders") ? "orders" : "";
   return "";
 }
 
@@ -2197,7 +2210,7 @@ function viewDispatch() {
 }
 
 function viewFleet() {
-  const available = CLIENT.drivers.filter((d) => d.status === "Available").length;
+  const available = (CLIENT.drivers || []).filter((d) => d.status === "Available").length;
   const nearCap = CLIENT.drivers.filter((d) => d.hours / d.cap > 0.85).length;
   const onRoad = (CLIENT.loads || []).filter((l) => ["Assigned", "In transit"].includes(l.status)).length;
   return `
@@ -2212,7 +2225,7 @@ function viewFleet() {
   <section class="card">
     <div class="card-head"><div><h2>Driver hours this week</h2><small>Cap is 48 hours</small></div></div>
     <div class="card-body driver-list">
-      ${CLIENT.drivers
+      ${(CLIENT.drivers || [])
         .map(
           (d) => `<button class="driver-row" data-driver="${d.name}">
             <span class="driver-name"><strong>${d.name}</strong><small>${d.status}${d.load !== "—" ? ` · ${d.load}` : ""}</small></span>
