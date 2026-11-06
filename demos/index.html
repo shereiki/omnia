@@ -9,7 +9,7 @@
     <link rel="icon" href="/assets/omnia-mark.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/demos/demo.css" />
     <script src="/assets/vendor/gsap.min.js" defer></script>
-    <script src="/demos/demo.js" defer></script>
+    <script type="module" src="/demos/demo.js"></script>
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -206,6 +206,12 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+    <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Details" hidden></aside>
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+      <div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+    </div>
+
     <div class="palette-backdrop" id="paletteBackdrop" hidden>
       <div class="palette" role="dialog" aria-modal="true" aria-label="Search workspace">
         <div class="palette-field">
