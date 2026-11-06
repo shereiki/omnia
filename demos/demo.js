@@ -1458,6 +1458,8 @@ async function railSend(text) {
     body: JSON.stringify({
       messages: railHistory.map((m) => ({ role: m.role, content: m.content })).slice(-8),
       session: "omnia-demo-rail",
+      views: (CLIENT.views || []).map((v) => v.label),
+      workspace: CLIENT.name,
     }),
   })
     .then((r) => r.json().catch(() => ({})))
@@ -1490,7 +1492,13 @@ async function askAssistant(messages, agent) {
     const response = await fetch("/api/demo/ask", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ messages, agent, session: "omnia-demo" }),
+      body: JSON.stringify({
+        messages,
+        agent,
+        session: "omnia-demo",
+        views: (CLIENT.views || []).map((v) => v.label),
+        workspace: CLIENT.name,
+      }),
       signal: AbortSignal.timeout(40000),
     });
     const data = await response.json().catch(() => ({}));
