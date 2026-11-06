@@ -3059,6 +3059,50 @@ function wireStage() {
       if (legend) legend.textContent = `${PERIODS[state.period].label} · sample data`;
     }),
   );
+  stage.querySelectorAll("[data-decision]").forEach((cardEl) => {
+    cardEl.addEventListener("click", (event) => {
+      if (event.target.closest("button, a, select, input")) return;
+      const decision = state.decisions.find((d) => d.id === cardEl.dataset.decision);
+      if (!decision) return;
+      openDrawer(
+        decision.id,
+        decision.area + " · " + decision.risk + " risk",
+        `<h3 class="drawer-title">${decision.title}</h3>
+        <p class="muted">${decision.why}</p>
+        <div class="drawer-facts">
+          <div><span>Impact</span><strong>${decision.impact}</strong></div>
+          <div><span>Decide by</span><strong>${decision.deadline}</strong></div>
+          <div><span>Raised by</span><strong>${decision.agent}</strong></div>
+          <div><span>Status</span><strong>${decision.status === "pending" ? "Waiting on you" : decision.status}</strong></div>
+        </div>
+        <p class="muted">${decision.evidence}</p>
+        ${
+          decision.status === "pending"
+            ? `<div class="drawer-actions">
+                <button class="btn primary sm" data-drawer-approve>Approve</button>
+                <button class="btn sm" data-drawer-decline>Decline</button>
+                <button class="btn quiet sm" data-drawer-ask>Ask ${decision.agent}</button>
+              </div>`
+            : `<p class="chip ${decision.status === "approved" ? "good" : "warn"}">${decision.status === "approved" ? "Approved" : "Declined"} by you</p>`
+        }`,
+      );
+      document.querySelector("[data-drawer-approve]")?.addEventListener("click", () => {
+        closeDrawer();
+        decide(decision.id, "approved");
+      });
+      document.querySelector("[data-drawer-decline]")?.addEventListener("click", () => {
+        closeDrawer();
+        decide(decision.id, "declined");
+      });
+      document.querySelector("[data-drawer-ask]")?.addEventListener("click", () => {
+        closeDrawer();
+        const agent = AGENTS.find((a) => a.name === decision.agent);
+        if (agent) state.agentId = agent.id;
+        openDock("agents");
+      });
+    });
+  });
+
   stage.querySelectorAll("[data-filter]").forEach((el) =>
     el.addEventListener("click", () => {
       state.decisionFilter = el.dataset.filter;
@@ -3145,6 +3189,32 @@ function wireStage() {
       }, 900);
     }),
   );
+  stage.querySelectorAll("[data-autonomy]").forEach((select) =>
+    select.addEventListener("change", () => {
+      const control = controlFor(select.dataset.autonomy);
+      control.autonomy = select.value;
+      const agent = AGENTS.find((a) => a.id === select.dataset.autonomy);
+      toast(`${agent?.name || "Agent"} set to ${select.value.toLowerCase()} — demo only`);
+    }),
+  );
+  stage.querySelectorAll("[data-pause]").forEach((toggle) =>
+    toggle.addEventListener("click", () => {
+      const control = controlFor(toggle.dataset.pause);
+      control.paused = !control.paused;
+      toggle.setAttribute("aria-pressed", String(control.paused));
+      const agent = AGENTS.find((a) => a.id === toggle.dataset.pause);
+      toast(`${agent?.name || "Agent"} ${control.paused ? "paused" : "running again"} — demo only`);
+    }),
+  );
+  stage.querySelectorAll("[data-quiet]").forEach((toggle) =>
+    toggle.addEventListener("click", () => {
+      const control = controlFor(toggle.dataset.quiet);
+      control.quiet = !control.quiet;
+      toggle.setAttribute("aria-pressed", String(control.quiet));
+      toast(`Quiet hours ${control.quiet ? "on" : "off"} for this agent — demo only`);
+    }),
+  );
+
   stage.querySelectorAll("[data-module]").forEach((toggle) =>
     toggle.addEventListener("click", () => {
       const next = toggle.getAttribute("aria-pressed") !== "true";
