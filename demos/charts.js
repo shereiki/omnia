@@ -111,6 +111,7 @@ export function initLine({ id, data, barLabel = "Orders" }) {
       plugins: { legend: { display: false }, tooltip: tooltipStyle() },
       scales: {
         x: {
+          offset: false,
           grid: { display: false },
           border: { display: false },
           ticks: { color: C.axis, font: { ...font(), size: 10 } },

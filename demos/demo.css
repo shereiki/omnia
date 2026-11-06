@@ -2365,3 +2365,101 @@ body { padding-top: var(--bar); }
 .chart-box { position: relative; width: 100%; }
 .chart-box canvas { width: 100% !important; height: 100% !important; }
 .donut-box { margin: 0 auto; }
+
+/* ==========================================================================
+   The agent is part of the shell: a rail beside every dashboard
+   ========================================================================== */
+
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 14px;
+  width: min(1560px, 100%);
+  margin: 0 auto;
+  align-items: start;
+}
+.shell .stage { width: 100%; margin: 0; }
+
+.agent-rail {
+  position: sticky;
+  top: calc(var(--bar) + 8px);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--bar) - 24px);
+  margin: 8px 14px 0 0;
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 22px;
+  box-shadow: 0 24px 60px -40px rgba(29, 23, 64, 0.55);
+  overflow: hidden;
+  transition: width 0.3s var(--ease);
+}
+.shell.rail-collapsed { grid-template-columns: minmax(0, 1fr) 64px; }
+.shell.rail-collapsed .agent-rail { width: 56px; }
+.shell.rail-collapsed .rail-copy,
+.shell.rail-collapsed .rail-thread,
+.shell.rail-collapsed .rail-actions,
+.shell.rail-collapsed .rail-composer,
+.shell.rail-collapsed .rail-hint { display: none; }
+.shell.rail-collapsed .rail-top { flex-direction: column; padding: 10px 6px; gap: 6px; }
+.shell.rail-collapsed .rail-top .icon-button svg { transform: rotate(180deg); }
+
+.rail-top { display: flex; align-items: center; gap: 9px; padding: 12px 12px 10px; border-bottom: 1px solid var(--line-soft); }
+.rail-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; background: var(--uv); color: #fff; flex: 0 0 auto; }
+.rail-mark svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.rail-copy { display: grid; min-width: 0; flex: 1; }
+.rail-copy strong { font-size: 12.5px; font-weight: 700; }
+.rail-copy span { font-size: 10px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-thread { flex: 1; overflow-y: auto; display: grid; gap: 10px; align-content: start; padding: 12px; scrollbar-width: thin; scrollbar-color: #e2dcf1 transparent; }
+.rail-thread::-webkit-scrollbar { width: 6px; }
+.rail-thread::-webkit-scrollbar-thumb { background: #e2dcf1; border-radius: 999px; }
+
+.rail-msg { display: grid; gap: 4px; max-width: 94%; }
+.rail-msg.user { justify-self: end; }
+.rail-msg .bubble {
+  padding: 10px 12px;
+  border-radius: 14px 14px 14px 5px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.rail-msg.user .bubble { background: #f1ecfd; border-color: #e2d8fa; border-radius: 14px 14px 5px 14px; color: var(--ink); }
+.rail-msg .who { font-size: 9.5px; color: var(--faint); }
+.rail-msg.user .who { text-align: right; }
+
+.rail-actions { display: grid; gap: 6px; padding: 0 12px 10px; }
+.rail-action {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 11px;
+  border: 1px solid #ddd3f8; border-radius: 11px;
+  background: #f8f4ff; color: var(--uv);
+  font-size: 11.5px; font-weight: 650; text-align: left;
+  transition: background 0.15s var(--ease), transform 0.15s var(--ease);
+}
+.rail-action:hover { background: #f1e9ff; transform: translateY(-1px); }
+.rail-action svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
+.rail-action .rail-action-kind { margin-left: auto; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+
+.rail-composer { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--line-soft); }
+.rail-composer input {
+  flex: 1; height: 38px; padding: 0 13px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--paper); font-size: 12px; outline: none;
+}
+.rail-composer input:focus { border-color: #cfc4f2; box-shadow: 0 0 0 3px rgba(91, 69, 214, 0.08); }
+.rail-composer button {
+  width: 38px; height: 38px; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: var(--uv); color: #fff;
+}
+.rail-composer button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.rail-hint { display: flex; align-items: center; gap: 5px; padding: 0 12px 11px; font-size: 9.5px; color: var(--faint); }
+.rail-hint i { width: 4px; height: 4px; border-radius: 50%; background: var(--mint-deep); }
+
+@media (max-width: 1180px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .agent-rail { display: none; }
+}

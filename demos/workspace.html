@@ -62,13 +62,6 @@
       </div>
 
       <div class="nav-right">
-        <button class="nav-bubble nav-ask" id="askButton" type="button" aria-expanded="false" aria-controls="dock">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-spark" /></svg>
-          <span>Ask Omnia</span>
-        </button>
-        <button class="nav-bubble nav-agents" id="agentsButton" type="button" aria-expanded="false" aria-controls="dock">
-          <i></i><b id="agentsChipCount">3</b><span>agents</span>
-        </button>
         <button class="nav-bubble nav-engineer" id="dockButton" type="button" aria-expanded="false" aria-controls="dock">
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mail" /></svg>
           <span>Your engineer</span>
@@ -102,17 +95,29 @@
       </div>
     </nav>
 
-    <main class="stage" id="stage" tabindex="-1"></main>
+    <div class="shell">
+      <main class="stage" id="stage" tabindex="-1"></main>
 
-    <aside class="dock" id="dock" aria-label="Ayesha and agents" hidden>
-      <div class="dock-head">
-        <div class="dock-title" id="dockTitle"></div>
-        <button class="icon-button" type="button" data-dock-close aria-label="Close">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x" /></svg>
-        </button>
-      </div>
-      <div class="dock-body" id="dockBody"></div>
-    </aside>
+      <aside class="agent-rail" id="agentRail" aria-label="Omnia agent">
+        <header class="rail-top">
+          <span class="rail-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-spark" /></svg></span>
+          <div class="rail-copy">
+            <strong>Omnia agent</strong>
+            <span id="railContext">Knows this workspace</span>
+          </div>
+          <button class="icon-button" type="button" id="railToggle" aria-label="Collapse the agent" aria-expanded="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </button>
+        </header>
+        <div class="rail-thread" id="railThread"></div>
+        <div class="rail-actions" id="railActions"></div>
+        <form class="rail-composer" id="railForm">
+          <input id="railInput" placeholder="Ask, or tell it what to do…" autocomplete="off" />
+          <button type="submit" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-send" /></svg></button>
+        </form>
+        <p class="rail-hint"><i></i>It can open dashboards and act in this demo</p>
+      </aside>
+    </div>
 
     <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
     <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Details" hidden></aside>

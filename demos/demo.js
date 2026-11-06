@@ -964,14 +964,6 @@ function viewGeneral() {
           { label: "Email", value: 15, color: C.mint },
           { label: "Phone", value: 8, color: C.lav },
         ]))}
-          [
-            { label: "WhatsApp", value: 46, color: C.uv },
-            { label: "Website", value: 31, color: C.uvSoft },
-            { label: "Email", value: 15, color: C.mint },
-            { label: "Phone", value: 8, color: C.lav },
-          ],
-          { size: 132, thickness: 13, centerValue: fmt.n(sum(p.points, "conversations")), centerLabel: p.label },
-        )}
         <div class="donut-legend">
           ${[["WhatsApp", 46, C.uv], ["Website", 31, C.uvSoft], ["Email", 15, C.mint], ["Phone", 8, C.lav]]
             .map(([label, value, color]) => `<div class="legend-row"><i style="background:${color}"></i><span>${label}</span><b>${value}%</b></div>`)
@@ -1227,6 +1219,90 @@ function dockAgents() {
         <button type="submit" aria-label="Send">${I("i-send")}</button>
       </form>
     </div>`;
+}
+
+/* ------------------------------------------------- the agent, in the shell
+   It sits beside every dashboard, knows which one you are on, and can act. */
+
+const railHistory = [];
+let railPending = false;
+
+function railContext() {
+  const view = state.os
+    ? "Omnia OS"
+    : state.active === "general"
+      ? "General"
+      : (SOLUTIONS.find((s2) => s2.id === state.active) || {}).label || "the workspace";
+  const el = document.getElementById("railContext");
+  if (el) el.textContent = `On ${view} · ${CLIENT.name}`;
+}
+
+function railBubble(role, text) {
+  return `<div class="rail-msg ${role}"><div class="bubble">${text}</div><span class="who">${role === "user" ? "You" : "Omnia agent"}</span></div>`;
+}
+
+function railPaint(actions = []) {
+  const thread = document.getElementById("railThread");
+  if (!thread) return;
+  thread.innerHTML =
+    railHistory.map((m) => railBubble(m.role, m.content)).join("") +
+    (railPending ? '<div class="rail-msg assistant"><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div></div>' : "");
+  thread.scrollTop = thread.scrollHeight;
+
+  const bar = document.getElementById("railActions");
+  if (!bar) return;
+  bar.innerHTML = actions
+    .map(
+      (a, i) =>
+        `<button class="rail-action" data-rail-action="${i}">${I("i-arrow")}${a.label}<span class="rail-action-kind">${a.type.replace("_", " ")}</span></button>`,
+    )
+    .join("");
+  bar.querySelectorAll("[data-rail-action]").forEach((button) =>
+    button.addEventListener("click", () => runRailAction(actions[Number(button.dataset.railAction)])),
+  );
+}
+
+function runRailAction(action) {
+  if (!action) return;
+  if (action.type === "navigate") {
+    if (action.target === "agents") openTab("agents");
+    else if (action.target === "decisions") openTab("decisions");
+    else openTab(action.target);
+    toast(`Opened ${action.label.replace(/^Open /, "")}`);
+  } else if (action.type === "pause_agent") {
+    const control = controlFor(action.target);
+    control.paused = !control.paused;
+    toast(`${action.target} ${control.paused ? "paused" : "resumed"}`);
+  } else if (action.type === "open_decision") {
+    state.decisionFilter = "All";
+    openTab("decisions");
+    toast(`Decision ${action.target} is in the list`);
+  } else if (action.type === "request_change") {
+    newRequestModal("", action.target);
+  }
+  document.querySelectorAll("[data-rail-action]").forEach((b) => b.remove());
+}
+
+async function railSend(text) {
+  if (railPending || !text.trim()) return;
+  railPending = true;
+  railHistory.push({ role: "user", content: text.trim() });
+  railPaint();
+
+  const response = await fetch("/api/demo/ask", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      messages: railHistory.map((m) => ({ role: m.role, content: m.content })).slice(-8),
+      session: "omnia-demo-rail",
+    }),
+  })
+    .then((r) => r.json().catch(() => ({})))
+    .catch(() => ({ error: "Could not reach the agent." }));
+
+  railPending = false;
+  railHistory.push({ role: "assistant", content: response.reply || response.error || "No answer." });
+  railPaint(response.actions || []);
 }
 
 /* ---------------------------------------------------------- live assistant */
@@ -2230,6 +2306,7 @@ function renderStage() {
   const render = state.os ? viewOs : VIEWS[state.active] || viewGeneral;
   stage.innerHTML = render();
   document.getElementById("topbar").classList.toggle("os-mode", Boolean(state.os));
+  railContext();
   wireStage();
   renderConnectors();
   renderMainChart();
@@ -2345,8 +2422,7 @@ function wireStage() {
   stage.querySelectorAll("[data-open]").forEach((el) => el.addEventListener("click", () => openTab(el.dataset.open)));
   stage.querySelectorAll("[data-open-ask]").forEach((el) =>
     el.addEventListener("click", () => {
-      state.dock.thread = null;
-      openDock("ask");
+      document.getElementById("railInput")?.focus();
     }),
   );
   stage.querySelectorAll("[data-dock-agent]").forEach((el) =>
@@ -2936,6 +3012,22 @@ function init() {
       </div></div>`),
   );
   document.querySelector('[data-action="notify"]')?.addEventListener("click", renderNotifications);
+
+  const railForm = document.getElementById("railForm");
+  railForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = document.getElementById("railInput");
+    const text = input?.value.trim();
+    if (!text) return;
+    input.value = "";
+    railSend(text);
+  });
+  document.getElementById("railToggle")?.addEventListener("click", (event) => {
+    const shell = document.querySelector(".shell");
+    const collapsed = shell.classList.toggle("rail-collapsed");
+    event.currentTarget.setAttribute("aria-expanded", String(!collapsed));
+  });
+  window.addEventListener("resize", railContext);
 
   document.getElementById("askButton")?.addEventListener("click", () => {
     if (state.dock.open && state.dock.view === "ask") return closeDock();
