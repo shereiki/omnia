@@ -2582,9 +2582,9 @@ body { padding-top: var(--bar); }
   color: var(--ink-2) !important; font-weight: 700;
 }
 
-<<<<<<< HEAD
-=======
 .rail-chips { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 30px; }
 .rail-chip { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,0.9); font-size: 10.5px; font-weight: 600; color: var(--muted); }
 .rail-chip:hover { border-color: #cdbcf3; color: var(--uv); }
->>>>>>> 92c0cd0 (The rail opens with a greeting and client-aware chips)
+.rail-composer button { background: #1d1740; }
+.rail-composer button:hover { background: var(--uv); }
+.rail-composer button svg { stroke-width: 2.2; }

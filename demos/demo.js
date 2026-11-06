@@ -2556,19 +2556,58 @@ function wireStage() {
       openDrawer(truck.id, truck.label, `<div class="drawer-facts">
         <div><span>Status</span><strong>${truck.status}</strong></div>
         <div><span>Progress</span><strong>${Math.round(truck.progress * 100)}%</strong></div>
-      </div><div class="drawer-actions"><button class="btn primary sm" data-truck-act>Call driver</button></div>`);
+      </div><div class="drawer-actions"><button class="btn primary sm" data-truck-act>Message driver</button></div>`);
       document.querySelector("[data-truck-act]")?.addEventListener("click", () => {
         closeDrawer();
-        toast("Calling the driver — this demo cannot dial out.");
+        toast("Message sent to the driver — demo only");
       });
     }),
   );
-  stage.querySelectorAll("[data-room-slot]").forEach((el) =>
-    el.addEventListener("click", () => toast(`${el.dataset.roomSlot} · booking changes go through your engineer`)),
-  );
-  stage.querySelectorAll("[data-sku]").forEach((el) =>
-    el.addEventListener("click", () => toast(`${el.dataset.sku} · reorder draft goes to Decisions for your approval`)),
-  );
+  stage.querySelectorAll("[data-room-slot]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const parts = el.dataset.roomSlot.split(" · ");
+      const time = parts.pop();
+      const room = parts.join(" · ");
+      const free = el.classList.contains("free");
+      openDrawer(
+        time,
+        room,
+        `<p class="muted">${free ? "This slot is free." : "This slot is booked."}</p>
+        <div class="drawer-actions">
+          ${free ? '<button class="btn primary sm" data-book-slot>Book this slot</button>' : '<button class="btn sm" data-slot-message>Message patient</button>'}
+        </div>`,
+      );
+      document.querySelector("[data-book-slot]")?.addEventListener("click", () => {
+        el.classList.remove("free");
+        el.classList.add("busy");
+        const name = el.querySelector("strong");
+        if (name) name.textContent = firstName();
+        closeDrawer();
+        toast(`Booked ${room} at ${time} — demo only`);
+      });
+      document.querySelector("[data-slot-message]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast("Message sent to the patient — demo only");
+      });
+    });
+  });
+  stage.querySelectorAll("[data-sku]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const sku = (CLIENT.skus || []).find((x) => x.name === el.dataset.sku);
+      if (!sku) return;
+      openDrawer(sku.name, `${sku.sell}% sell-through · ${sku.cover} days cover`, `
+        <div class="drawer-facts">
+          <div><span>Sell-through</span><strong>${sku.sell}%</strong></div>
+          <div><span>Cover</span><strong>${sku.cover} days</strong></div>
+          <div><span>Margin</span><strong>${sku.margin}%</strong></div>
+        </div>
+        <div class="drawer-actions"><button class="btn primary sm" data-draft-reorder>Draft a reorder</button></div>`);
+      document.querySelector("[data-draft-reorder]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast(`Reorder drafted for ${sku.name} — demo only`);
+      });
+    });
+  });
 
   stage.querySelectorAll("[data-load]").forEach((el) =>
     el.addEventListener("click", () => {
