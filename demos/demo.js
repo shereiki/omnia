@@ -303,7 +303,13 @@ const ACTIVITY = [
 ];
 
 const state = {
-  tabs: [{ id: "general", pinned: true }, { id: "decisions" }, { id: "requests" }, { id: "agents" }],
+  tabs: [
+    { id: "general", pinned: true },
+    { id: "decisions" },
+    { id: "orders" },
+    { id: "inventory" },
+  ],
+  dock: { open: false, view: "requests", thread: null },
   active: "general",
   os: false,
   osView: "overview",
@@ -363,8 +369,13 @@ function updateBadge() {
   badge.textContent = String(count);
 }
 
+let notifySeq = 0;
 function notify(entry) {
-  state.notifications.unshift({ read: false, ...entry });
+  state.notifications.unshift({
+    read: false,
+    id: entry.id || `n${Date.now()}${notifySeq++}`,
+    ...entry,
+  });
   updateBadge();
 }
 
@@ -395,8 +406,15 @@ function closeDrawer() {
     document.getElementById("drawerBackdrop").hidden = true;
     drawer.innerHTML = "";
   };
-  if (window.gsap) gsap.to(drawer, { x: 28, opacity: 0, duration: 0.18, onComplete: done });
-  else done();
+  if (!window.gsap) return done();
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    done();
+  };
+  gsap.to(drawer, { x: 28, opacity: 0, duration: 0.18, onComplete: finish });
+  setTimeout(finish, 320);
 }
 
 function openModal(html) {
@@ -441,27 +459,6 @@ function requestThread(request) {
       </div>`,
     )
     .join("")}</div>`;
-}
-
-function openRequest(requestId) {
-  const request = state.requests.find((r) => r.id === requestId);
-  if (!request) return;
-  openDrawer(
-    request.title,
-    `${request.id} · ${request.type}`,
-    `<div class="drawer-row"><span class="muted">Status</span>${statusChip(request.status)}</div>
-     <div class="drawer-row"><span class="muted">Your engineer</span><span class="inline-engineer">${engineerAvatar("sm")}${ENGINEER.name}</span></div>
-     ${requestThread(request)}
-     ${
-       request.deliverables
-         ? `<div class="deliverable"><h4>Delivered</h4><ul>${request.deliverables.map((d) => `<li>${I("i-check")}${d}</li>`).join("")}</ul></div>`
-         : ""
-     }
-     <form class="reply-form" data-reply="${request.id}">
-       <textarea rows="2" placeholder="Reply to Ayesha…"></textarea>
-       <button class="btn primary sm" type="submit">Send</button>
-     </form>`,
-  );
 }
 
 function newRequestModal() {
@@ -521,7 +518,7 @@ function submitRequest(type, title, details) {
   };
   state.requests.unshift(request);
   closeModal();
-  if (state.active === "requests" && !state.os) renderStage();
+  if (state.dock.open) renderDock();
   toast(`${id} sent · Ayesha will reply shortly`);
 
   scheduleReply(id, type);
@@ -555,7 +552,7 @@ function deliverReply(id, type) {
   request.thread.push({ from: "engineer", author: ENGINEER.name, when: "Just now", text: template.reply });
   notify({ title: `Ayesha replied to ${id}`, meta: "Your engineer · just now", kind: "request", ref: id });
   toast(`${id} · Ayesha replied`);
-  if (state.active === "requests" && !state.os) renderStage();
+  if (state.dock.open) renderDock();
 }
 
 setInterval(deliverDueReplies, 1000);
@@ -594,8 +591,6 @@ function solution(id) {
 
 const SOLUTIONS = [
   { id: "decisions", label: "Decisions", meta: "Waiting on a person", icon: "i-shield", tone: "", state: "" },
-  { id: "requests", label: "Requests", meta: "Your Omnia engineer", icon: "i-ticket", tone: "lav", state: "" },
-  { id: "agents", label: "Agents", meta: "What is running", icon: "i-agent", tone: "", state: "" },
   { id: "orders", label: "Order Operations", meta: "Intake & fulfilment", icon: "i-bag", tone: "mint", state: "Running" },
   { id: "inventory", label: "Inventory Control", meta: "Stock & replenishment", icon: "i-boxes", tone: "lav", state: "3 need review", review: true },
   { id: "savings", label: "Savings Report", meta: "Cost recovered", icon: "i-chart", tone: "ink", state: "Updated today" },
@@ -615,13 +610,11 @@ function renderTabs() {
         data-tab="${tab.id}" tabindex="${active ? 0 : -1}"
         ${tab.pinned ? "" : 'title="Drag to reorder · Alt + arrow keys"'} aria-grabbed="false">
         ${I(tabIcon(tab.id))}<span>${tabLabel(tab.id)}</span>${count}
-        <span class="tab-close" role="presentation" data-close="${tab.id}" aria-label="Close ${tabLabel(tab.id)}">${I("i-x")}</span>
       </button>`;
     })
     .join("");
   root.querySelectorAll("[data-tab]").forEach((button) =>
     button.addEventListener("click", (event) => {
-      if (event.target.closest("[data-close]")) return;
       if (dragState.justDragged) {
         dragState.justDragged = false;
         return;
@@ -629,13 +622,8 @@ function renderTabs() {
       openTab(button.dataset.tab);
     }),
   );
-  root.querySelectorAll("[data-close]").forEach((el) =>
-    el.addEventListener("click", (event) => {
-      event.stopPropagation();
-      closeTab(el.dataset.close);
-    }),
-  );
 }
+
 
 /* ------------------------------------------------------- tab rearranging */
 
@@ -718,7 +706,6 @@ function setupTabDrag() {
   strip.addEventListener("pointerdown", (event) => {
     const tab = event.target.closest("[data-tab]");
     if (!tab || tab.classList.contains("pinned")) return;
-    if (event.target.closest("[data-close]")) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     dragState.active = {
       tab,
@@ -801,15 +788,6 @@ function openTab(id) {
   if (!state.tabs.some((t) => t.id === id)) state.tabs.push({ id });
   state.active = id;
   state.os = false;
-  renderTabs();
-  renderStage();
-}
-
-function closeTab(id) {
-  const index = state.tabs.findIndex((t) => t.id === id);
-  if (index < 0 || state.tabs[index].pinned) return;
-  state.tabs.splice(index, 1);
-  if (state.active === id) state.active = state.tabs[Math.max(0, index - 1)].id;
   renderTabs();
   renderStage();
 }
@@ -959,7 +937,7 @@ function viewGeneral() {
   <div class="triple">
     <section class="card">
       <div class="card-head"><div><h2>Your requests</h2><small>Handled by Ayesha, your engineer</small></div>
-        <button class="btn quiet sm" data-open="requests">All${I("i-arrow")}</button></div>
+        <button class="btn quiet sm" data-dock-open="requests">Open${I("i-arrow")}</button></div>
       <div class="card-body rows">
         ${openRequests()
           .slice(0, 3)
@@ -977,11 +955,11 @@ function viewGeneral() {
 
     <section class="card">
       <div class="card-head"><div><h2>Agent activity</h2><small>Running right now</small></div>
-        <button class="btn quiet sm" data-open="agents">All${I("i-arrow")}</button></div>
+        <button class="btn quiet sm" data-dock-open="agents">Open${I("i-arrow")}</button></div>
       <div class="card-body rows">
         ${AGENTS.slice(0, 3)
           .map(
-            (a) => `<button class="row row-button" data-agent="${a.id}">
+            (a) => `<button class="row row-button" data-dock-agent-row="${a.id}">
               <span class="row-main"><strong>${a.name}</strong><small>${a.scope}</small></span>
               <span class="row-spark">${sparkline(a.series, { width: 64, height: 20 })}</span>
               <span class="chip ${a.status === "live" ? "good" : ""}">${a.status === "live" ? "Running" : "Idle"}</span>
@@ -1042,111 +1020,188 @@ function viewDecisions() {
   ${shown.length === 0 ? `<p class="empty">Nothing here. Every decision has been made.</p>` : ""}`;
 }
 
-function viewRequests() {
-  return `
-  <div class="view-head">
-    <div><h1>Requests</h1><p>Changes go to your engineer, not to a form. She replies inside 30 minutes.</p></div>
-    <div class="head-actions"><button class="btn primary" data-new-request>${I("i-plus")}New request</button></div>
-  </div>
+/* ----------------------------------------------------------- the desk
+   Requests and agents are not dashboards. They are the relationship and the
+   machinery underneath every dashboard, so they live in one panel that opens
+   over whatever you are looking at and closes without losing your place. */
 
-  <section class="engineer-card">
-    ${engineerAvatar("lg")}
-    <div class="engineer-copy">
-      <h2>${ENGINEER.name}</h2>
-      <p>${ENGINEER.role}</p>
-      <span class="engineer-sla"><i></i>${ENGINEER.sla}</span>
-    </div>
-    <div class="engineer-actions">
-      <button class="btn" data-book-call>${I("i-clock")}Book a call</button>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="card-head"><div><h2>Your requests</h2><small>Newest first</small></div>
-      <span class="chip ghost">${openRequests().length} open</span></div>
-    <div class="card-body rows">
-      ${state.requests
-        .map(
-          (r) => `<button class="row row-button request-row" data-request="${r.id}">
-            <span class="row-main"><strong>${r.title}</strong><small>${r.id} · ${r.type} · updated ${r.updated}</small></span>
-            <span class="request-last">${r.thread[r.thread.length - 1].from === "engineer" ? `${I("i-mail")}Ayesha` : "You"}</span>
-            ${statusChip(r.status)}
-          </button>`,
-        )
-        .join("")}
-    </div>
-    <div class="card-foot"><span>Requests keep their full history — no repeating yourself</span></div>
-  </section>`;
+function openDock(view = "requests", thread = null) {
+  state.dock.open = true;
+  state.dock.view = view;
+  state.dock.thread = thread;
+  renderDock();
+  const panel = document.getElementById("dock");
+  // A close may still be mid-animation; drop it so it cannot hide the panel again.
+  if (window.gsap) gsap.killTweensOf(panel);
+  panel.style.transform = "";
+  panel.style.opacity = "";
+  panel.hidden = false;
+  document.getElementById("dockButton")?.setAttribute("aria-expanded", "true");
+  if (window.gsap) {
+    gsap.fromTo(
+      document.getElementById("dock"),
+      { x: 30, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.3, ease: "power3.out" },
+    );
+  }
 }
 
-function viewAgents() {
-  const agent = AGENTS.find((a) => a.id === state.agentId) || AGENTS[0];
+function closeDock() {
+  const dock = document.getElementById("dock");
+  if (window.gsap) gsap.killTweensOf(dock);
+  const done = () => {
+    dock.hidden = true;
+    document.getElementById("dockButton")?.setAttribute("aria-expanded", "false");
+  };
+  state.dock.open = false;
+  state.dock.thread = null;
+  if (!window.gsap) return done();
+  // Fall back to a timer so a stalled ticker (background tab) cannot leave it half-closed.
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    done();
+  };
+  gsap.to(dock, { x: 24, opacity: 0, duration: 0.18, onComplete: finish });
+  setTimeout(finish, 320);
+}
+
+function dockRequests() {
+  const waiting = state.requests.filter((r) => r.status === "Open" || r.status === "With your engineer").length;
   return `
-  <div class="view-head">
-    <div><h1>Agents</h1><p>What your agents are doing, and what they are allowed to do on their own.</p></div>
-    <div class="head-actions">
-      <button class="btn" data-os-open="agents">${I("i-gear")}Configure</button>
-      <button class="btn primary" data-new-request>${I("i-ticket")}Request a change</button>
-    </div>
-  </div>
-
-  <div class="agents">
-    <section class="card agent-list">
-      ${AGENTS.map(
-        (a) => `<button class="agent-item" data-agent="${a.id}" ${a.id === agent.id ? 'aria-current="true"' : ""}>
-          <span class="agent-avatar">${I(a.icon)}</span>
-          <span class="agent-main"><strong>${a.name}</strong><small>${a.scope}</small></span>
-          <i class="status-dot ${a.status === "idle" ? "idle" : "live"}"></i>
-        </button>`,
-      ).join("")}
-    </section>
-
-    <section class="card chat">
-      <div class="chat-head">
-        <span class="agent-avatar">${I(agent.icon)}</span>
-        <div><strong>${agent.name}</strong><small>${agent.scope}</small></div>
-        <span class="chip uv">${agent.autonomy}</span>
+    <div class="dock-person">
+      ${engineerAvatar("md")}
+      <div>
+        <strong>${ENGINEER.name}</strong>
+        <span>${ENGINEER.role}</span>
+        <b class="dock-sla"><i></i>${ENGINEER.sla}</b>
       </div>
-      <div class="chat-log" id="chatLog">
-        ${agent.thread
+      <button class="btn sm" data-book-call>${I("i-clock")}Call</button>
+    </div>
+    <div class="dock-section">
+      <div class="dock-section-head">
+        <span>${waiting ? `${waiting} in progress` : "Nothing waiting"}</span>
+        <button class="btn quiet sm" data-new-request>${I("i-plus")}New request</button>
+      </div>
+      <div class="dock-list">
+        ${state.requests
           .map(
-            (m) =>
-              `<div class="msg ${m.from}"><div class="bubble">${m.text}
-                ${m.tool ? `<div class="tool">${I("i-check")}<strong>${m.tool}</strong><span>${m.toolMeta}</span></div>` : ""}
-                <div class="msg-meta">${m.meta}</div></div></div>`,
+            (r) => `<button class="dock-row ${r.status === "Answered" ? "answered" : ""}" data-request="${r.id}">
+              <span class="dock-row-top"><strong>${r.title}</strong>${statusChip(r.status)}</span>
+              <span class="dock-row-meta">${r.id} · ${r.type} · ${r.updated}</span>
+            </button>`,
           )
           .join("")}
       </div>
-      <div class="chat-foot">
-        <form class="composer" id="composer">
-          <input id="composerInput" type="text" placeholder="Ask ${agent.name} about its work…" autocomplete="off" />
-          <button class="send" type="submit" aria-label="Send">${I("i-send")}</button>
-        </form>
-        <p class="chat-hint"><i></i>Agents answer questions here. Changes go to Ayesha through Requests.</p>
-      </div>
-    </section>
+    </div>
+    <p class="dock-note">Changes go to Ayesha. You get a reply, not another chat window to manage.</p>`;
+}
 
-    <aside class="agent-rail">
-      <section class="card">
-        <div class="card-head"><div><h2>Today</h2><small>${agent.name}</small></div></div>
-        <div class="card-body rows">
-          <div class="row row-static"><span class="muted">Runs</span><strong>${fmt.n(agent.stats.runs)}</strong></div>
-          <div class="row row-static"><span class="muted">Decisions raised</span><strong>${agent.stats.approval}</strong></div>
-          <div class="row row-static"><span class="muted">Success</span><strong>${agent.stats.success}</strong></div>
-        </div>
-        <div class="card-body rail-chart">
-          ${columns(
-            agent.series.map((v, i) => ({ label: ["F", "S", "S", "M", "T", "W", "T"][i], value: v })),
-            { width: 236, height: 104 },
-          )}
-        </div>
-      </section>
-      <section class="card">
-        <div class="card-head"><div><h2>Tools</h2><small>What it may call</small></div></div>
-        <div class="card-body tool-list">${agent.tools.map((t) => `<span class="tool-chip">${t}</span>`).join("")}</div>
-      </section>
-    </aside>
-  </div>`;
+function dockThread() {
+  const request = state.requests.find((r) => r.id === state.dock.thread);
+  if (!request) return dockRequests();
+  return `
+    <button class="dock-back" data-dock-back>${I("i-back")}All requests</button>
+    <div class="dock-thread-head">
+      <h3>${request.title}</h3>
+      <span class="dock-row-meta">${request.id} · ${request.type}</span>
+      ${statusChip(request.status)}
+    </div>
+    ${requestThread(request)}
+    ${
+      request.deliverables
+        ? `<div class="deliverable"><h4>Delivered</h4><ul>${request.deliverables.map((d) => `<li>${I("i-check")}${d}</li>`).join("")}</ul></div>`
+        : ""
+    }
+    <form class="reply-form" data-reply="${request.id}">
+      <textarea rows="2" placeholder="Reply to Ayesha…"></textarea>
+      <button class="btn primary sm" type="submit">Send</button>
+    </form>`;
+}
+
+function dockAgents() {
+  const agent = AGENTS.find((a) => a.id === state.agentId) || AGENTS[0];
+  const live = AGENTS.filter((a) => a.status === "live").length;
+  return `
+    <div class="dock-live"><i></i>${live} agents running · anything consequential comes to you</div>
+    <div class="dock-list agents-dock">
+      ${AGENTS.map(
+        (a) => `<button class="dock-agent ${a.id === agent.id ? "selected" : ""}" data-dock-agent="${a.id}">
+          <span class="agent-avatar">${I(a.icon)}</span>
+          <span class="dock-agent-main">
+            <strong>${a.name}</strong>
+            <small>${a.scope}</small>
+          </span>
+          <i class="status-dot ${a.status === "idle" ? "idle" : "live"}"></i>
+        </button>`,
+      ).join("")}
+    </div>
+    <div class="dock-section">
+      <div class="dock-section-head"><span>Latest from ${agent.name}</span>
+        <span class="chip ${agent.status === "live" ? "good" : "ghost"}">${agent.status === "live" ? "Running" : "Idle"}</span></div>
+      <div class="dock-messages">
+        ${agent.thread
+          .slice(-2)
+          .map((m) => `<div class="dock-msg ${m.from}">${m.text}<span>${m.meta}</span></div>`)
+          .join("")}
+      </div>
+      <div class="dock-stats">
+        <div><span>Runs today</span><strong>${fmt.n(agent.stats.runs)}</strong></div>
+        <div><span>Raised</span><strong>${agent.stats.approval}</strong></div>
+        <div><span>Success</span><strong>${agent.stats.success}</strong></div>
+      </div>
+    </div>
+    <p class="dock-note">Agents work inside the rules you approved. Cost, customers and access land in Decisions.</p>`;
+}
+
+function renderDock() {
+  const body = document.getElementById("dockBody");
+  if (!body) return;
+  const view = state.dock.view;
+  body.innerHTML = view === "agents" ? dockAgents() : state.dock.thread ? dockThread() : dockRequests();
+
+  document.querySelectorAll("[data-dock]").forEach((button) =>
+    button.setAttribute("aria-selected", String(button.dataset.dock === view)),
+  );
+
+  const count = state.requests.filter((r) => r.status === "Open").length;
+  const badge = document.getElementById("dockBadge");
+  if (badge) {
+    badge.hidden = count === 0;
+    badge.textContent = String(count);
+  }
+
+  body.querySelectorAll("[data-request]").forEach((el) =>
+    el.addEventListener("click", () => {
+      state.dock.thread = el.dataset.request;
+      renderDock();
+    }),
+  );
+  body.querySelectorAll("[data-dock-agent]").forEach((el) =>
+    el.addEventListener("click", () => {
+      state.agentId = el.dataset.dockAgent;
+      renderDock();
+    }),
+  );
+  body.querySelector("[data-dock-back]")?.addEventListener("click", () => {
+    state.dock.thread = null;
+    renderDock();
+  });
+  body.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", newRequestModal));
+  body.querySelectorAll("[data-book-call]").forEach((el) => el.addEventListener("click", bookACall));
+  body.querySelectorAll("[data-reply]").forEach((form) =>
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const text = form.querySelector("textarea").value.trim();
+      if (!text) return;
+      const request = state.requests.find((r) => r.id === form.dataset.reply);
+      request.thread.push({ from: "client", author: "Maya Ortiz", when: "Just now", text });
+      request.updated = "just now";
+      renderDock();
+      toast("Reply sent to Ayesha");
+    }),
+  );
 }
 
 function filteredOrders() {
@@ -1547,11 +1602,7 @@ function renderStage() {
       ? viewGeneral()
       : state.active === "decisions"
         ? viewDecisions()
-        : state.active === "requests"
-          ? viewRequests()
-          : state.active === "agents"
-            ? viewAgents()
-            : state.active === "orders"
+        : state.active === "orders"
               ? viewOrders()
               : state.active === "inventory"
                 ? viewInventory()
@@ -1595,7 +1646,16 @@ function wireStage() {
   stage.querySelectorAll("[data-agent]").forEach((el) =>
     el.addEventListener("click", () => {
       state.agentId = el.dataset.agent;
-      openTab("agents");
+      openDock("agents", null);
+    }),
+  );
+  stage.querySelectorAll("[data-dock-open]").forEach((el) =>
+    el.addEventListener("click", () => openDock(el.dataset.dockOpen)),
+  );
+  stage.querySelectorAll("[data-dock-agent-row]").forEach((el) =>
+    el.addEventListener("click", () => {
+      state.agentId = el.dataset.dockAgentRow;
+      openDock("agents");
     }),
   );
   stage.querySelectorAll("[data-os-open]").forEach((el) =>
@@ -1642,7 +1702,9 @@ function wireStage() {
       });
     }),
   );
-  stage.querySelectorAll("[data-request]").forEach((el) => el.addEventListener("click", () => openRequest(el.dataset.request)));
+  stage.querySelectorAll("[data-request]").forEach((el) =>
+    el.addEventListener("click", () => openDock("requests", el.dataset.request)),
+  );
   stage.querySelectorAll("[data-export-orders]").forEach((el) =>
     el.addEventListener("click", () =>
       csv("meridian-orders.csv", [["Order", "Customer", "City", "Items", "Value", "Stage"], ...ORDERS.map((o) => [o.id, o.customer, o.city, o.items, o.value, o.stage])]),
@@ -1953,6 +2015,7 @@ function renderNotifications() {
   document.querySelectorAll("[data-notify]").forEach((el) =>
     el.addEventListener("click", () => {
       const n = state.notifications.find((x) => x.id === el.dataset.notify);
+      if (!n) return;
       n.read = true;
       updateBadge();
       closeDrawer();
@@ -1961,8 +2024,7 @@ function renderNotifications() {
         state.decisionFilter = decision && decision.status === "pending" ? "Pending" : "All";
         openTab("decisions");
       } else if (n.kind === "request") {
-        openTab("requests");
-        setTimeout(() => openRequest(n.ref), 350);
+        openDock("requests", n.ref);
       } else {
         state.os = true;
         state.osView = "systems";
@@ -1985,6 +2047,20 @@ function init() {
   renderSolutionsMenu();
   renderStage();
   updateBadge();
+
+  document.getElementById("tabCollapse").addEventListener("click", (event) => {
+    const strip = document.getElementById("tabstrip");
+    const collapsed = strip.classList.toggle("collapsed");
+    event.currentTarget.setAttribute("aria-expanded", String(!collapsed));
+    document.body.classList.toggle("tabs-collapsed", collapsed);
+    if (window.gsap) {
+      gsap.fromTo(
+        document.getElementById("tabs"),
+        { opacity: collapsed ? 1 : 0, y: collapsed ? 0 : -4 },
+        { opacity: collapsed ? 0 : 1, y: 0, duration: 0.22, ease: "power2.out" },
+      );
+    }
+  });
 
   document.getElementById("tabAdd").addEventListener("click", (event) => {
     const menu = document.getElementById("solutionsMenu");
@@ -2010,7 +2086,7 @@ function init() {
       state.osView = action === "people" ? "people" : "overview";
       renderStage();
     }
-    if (action === "requests") openTab("requests");
+    if (action === "requests") openDock("requests");
   });
 
   document.querySelector('[data-action="workspace"]').addEventListener("click", () =>
@@ -2025,6 +2101,20 @@ function init() {
       </div></div>`),
   );
   document.querySelector('[data-action="notify"]').addEventListener("click", renderNotifications);
+
+  const dockButton = document.getElementById("dockButton");
+  dockButton.addEventListener("click", () => {
+    if (state.dock.open) closeDock();
+    else openDock(state.dock.view);
+  });
+  document.querySelectorAll("[data-dock]").forEach((button) =>
+    button.addEventListener("click", () => {
+      state.dock.view = button.dataset.dock;
+      state.dock.thread = null;
+      renderDock();
+    }),
+  );
+  document.querySelector("[data-dock-close]").addEventListener("click", closeDock);
 
   // compact bar hides on scroll down, returns on scroll up
   let lastY = window.scrollY;
@@ -2054,9 +2144,9 @@ function init() {
   const items = [
     ["General", "Overview", "i-grid", () => openTab("general")],
     ["Decisions", "Waiting on you", "i-shield", () => openTab("decisions")],
-    ["Requests", "Your engineer", "i-ticket", () => openTab("requests")],
+    ["Ayesha", "Your engineer · requests", "i-ticket", () => openDock("requests")],
     ["New request", "Ask Ayesha for a change", "i-plus", newRequestModal],
-    ["Agents", "What is running", "i-agent", () => openTab("agents")],
+    ["Agents", "What is running", "i-agent", () => openDock("agents")],
     ["Order Operations", "Orders", "i-bag", () => openTab("orders")],
     ["Inventory Control", "Stock", "i-boxes", () => openTab("inventory")],
     ["Savings Report", "Cost recovered", "i-chart", () => openTab("savings")],
@@ -2109,6 +2199,7 @@ function init() {
     }
     if (event.key === "Escape") {
       closePalette();
+      if (state.dock.open) closeDock();
       closeModal();
       closeDrawer();
       accountMenu.hidden = true;
