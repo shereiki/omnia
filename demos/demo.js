@@ -257,6 +257,8 @@ const state = {
   period: "7d",
   connectorQuery: "",
   connectorCategory: "All",
+  chats: {},
+  agentPending: false,
   agentId: "coordinator",
   decisionFilter: "All",
   stageFilter: "All",
@@ -817,6 +819,15 @@ function viewGeneral() {
     </div>
   </div>
 
+  <section class="ask-banner">
+    <span class="ask-banner-mark">${I("i-spark")}</span>
+    <div class="ask-banner-copy">
+      <strong>Ask Omnia anything</strong>
+      <span>What we would build next, how a decision gets made, what connects to what — it answers live.</span>
+    </div>
+    <button class="btn primary sm" data-open-ask>Try it now${I("i-arrow")}</button>
+  </section>
+
   ${kpiTiles()}
 
   <div class="split wide-left">
@@ -1054,180 +1065,126 @@ function dockThread() {
     </form>`;
 }
 
+function agentHistory(agent) {
+  if (!state.chats[agent.id]) {
+    state.chats[agent.id] = agent.thread.slice(-2).map((m) => ({
+      role: m.from === "user" ? "user" : "assistant",
+      content: m.text,
+      meta: m.meta,
+      tool: m.tool,
+    }));
+  }
+  return state.chats[agent.id];
+}
+
+function agentBubble(message) {
+  const who = message.role === "user" ? "Maya" : "Agent";
+  return `<div class="chat-line ${message.role}">
+    <div class="chat-bubble">
+      ${message.tool ? `<div class="chat-tool">${I("i-check")}${message.tool}</div>` : ""}
+      ${message.content}
+      <span class="chat-meta">${message.meta || who}</span>
+    </div>
+  </div>`;
+}
+
+function paintAgentChat() {
+  const log = document.getElementById("agentChatLog");
+  const agent = AGENTS.find((a) => a.id === state.agentId) || AGENTS[0];
+  if (!log) return;
+  const control = controlFor(agent.id);
+  log.innerHTML =
+    agentHistory(agent).map(agentBubble).join("") +
+    (state.agentPending ? '<div class="chat-line assistant"><div class="chat-bubble typing"><span class="dots"><i></i><i></i><i></i></span></div></div>' : "");
+  log.scrollTop = log.scrollHeight;
+  const status = document.getElementById("agentChatStatus");
+  if (status)
+    status.textContent = control.paused ? "Paused" : agent.status === "live" ? "Working now" : "Idle";
+}
+
+function askAgentBody(text) {
+  const agent = AGENTS.find((a) => a.id === state.agentId) || AGENTS[0];
+  const history = agentHistory(agent);
+  history.push({ role: "user", content: text, meta: "You · now" });
+  state.agentPending = true;
+  paintAgentChat();
+
+  askAssistant(
+    history.map((m) => ({ role: m.role, content: m.content })).slice(-8),
+    agent.name,
+  )
+    .then((result) => {
+      history.push({
+        role: "assistant",
+        content: result.error || result.reply,
+        meta: `${agent.name} · now`,
+      });
+    })
+    .catch(() => {
+      history.push({ role: "assistant", content: "Could not reach the assistant.", meta: "now" });
+    })
+    .finally(() => {
+      state.agentPending = false;
+      paintAgentChat();
+    });
+}
+
 function dockAgents() {
   const agent = AGENTS.find((a) => a.id === state.agentId) || AGENTS[0];
-  const live = AGENTS.filter((a) => a.status === "live").length;
+  const control = controlFor(agent.id);
   return `
-    <div class="agent-panel">
-      <div class="agent-banner">
-        <span class="agent-banner-live"><i></i>${live} running</span>
-        <p>Agents do the work. Anything with a cost, a customer or access comes to you as a decision.</p>
-      </div>
-
-      <div class="agent-cards">
+    <div class="chat-shell">
+      <div class="chat-picks" role="tablist" aria-label="Agents">
         ${AGENTS.map(
-          (a) => `<button class="agent-card ${a.id === agent.id ? "selected" : ""}" data-dock-agent="${a.id}">
-            <span class="agent-card-avatar">${I(a.icon)}</span>
-            <span class="agent-card-body">
-              <span class="agent-card-top"><strong>${a.name}</strong>
-                <i class="status-dot ${a.status === "idle" ? "idle" : "live"}"></i></span>
-              <small>${a.scope}</small>
-              <span class="agent-card-meta"><b>${fmt.n(a.stats.runs)}</b> runs · <b>${a.stats.approval}</b> raised</span>
-            </span>
+          (a) => `<button class="chat-pick ${a.id === agent.id ? "selected" : ""}" data-dock-agent="${a.id}" role="tab" aria-selected="${a.id === agent.id}">
+            <i class="status-dot ${a.status === "idle" ? "idle" : "live"}"></i>${a.name}
           </button>`,
         ).join("")}
       </div>
 
-      <section class="agent-detail">
-        <header class="agent-detail-head">
-          <span class="agent-card-avatar lg">${I(agent.icon)}</span>
-          <div>
-            <h3>${agent.name}</h3>
-            <p>${agent.scope}</p>
-          </div>
-          <span class="chip ${agent.status === "live" ? "good" : "ghost"}">${agent.status === "live" ? "Running" : "Idle"}</span>
-        </header>
-
-        <div class="agent-detail-stats">
-          <div><span>Runs today</span><strong>${fmt.n(agent.stats.runs)}</strong></div>
-          <div><span>Raised to you</span><strong>${agent.stats.approval}</strong></div>
-          <div><span>Success</span><strong>${agent.stats.success}</strong></div>
+      <header class="chat-top">
+        <span class="agent-avatar">${I(agent.icon)}</span>
+        <div class="chat-top-copy">
+          <strong>${agent.name}</strong>
+          <span id="agentChatStatus">${control.paused ? "Paused" : agent.status === "live" ? "Working now" : "Idle"}</span>
         </div>
+        <button class="icon-button" data-toggle-controls aria-expanded="false" aria-label="Rules and controls">
+          ${I("i-gear")}
+        </button>
+      </header>
 
-        <h4 class="agent-detail-label">Latest</h4>
-        <div class="agent-thread">
-          ${agent.thread
-            .slice(-2)
-            .map(
-              (m) => `<div class="agent-msg ${m.from}">
-                <span class="agent-msg-who">${m.from === "user" ? firstName() : agent.name}</span>
-                <p>${m.text}</p>
-                <span class="agent-msg-when">${m.meta}</span>
-              </div>`,
-            )
-            .join("")}
-        </div>
+      <div class="chat-sheet" id="agentControls" hidden>
+        <label class="control">
+          <span>How much it does alone</span>
+          <select data-autonomy="${agent.id}">
+            ${["Ask me first", "Act, then tell me", "Act on its own"]
+              .map(
+                (o) =>
+                  `<option ${control.autonomy === o ? "selected" : ""} ${o === "Act on its own" ? "disabled" : ""}>${o}${o === "Act on its own" ? " — needs Omnia" : ""}</option>`,
+              )
+              .join("")}
+          </select>
+        </label>
+        <div class="control-row"><span>Paused</span>
+          <button class="toggle" aria-pressed="${control.paused}" aria-label="Pause ${agent.name}" data-pause="${agent.id}"></button></div>
+        <div class="control-row"><span>Quiet hours · 21:00–07:00</span>
+          <button class="toggle" aria-pressed="${control.quiet}" aria-label="Quiet hours" data-quiet="${agent.id}"></button></div>
+        <p class="control-note">Anything beyond these is applied by your engineer.</p>
+      </div>
 
-        <h4 class="agent-detail-label">Rules it works inside</h4>
-        <div class="agent-rules">
-          <span class="guard">${I("i-shield")}${agent.autonomy}</span>
-          <span class="guard">${I("i-shield")}Cost and customer exceptions go to Decisions</span>
-        </div>
+      <div class="chat-body" id="agentChatLog"></div>
 
-        <h4 class="agent-detail-label">Tools</h4>
-        <div class="agent-tools-list">
-          ${agent.tools.map((t) => `<span class="tool-chip">${t}</span>`).join("")}
-        </div>
+      <div class="chat-quick">
+        ${["What are you working on?", "What needs my decision?", "What would you do next?"]
+          .map((q) => `<button data-agent-ask="${q}">${q}</button>`)
+          .join("")}
+      </div>
 
-        <h4 class="agent-detail-label">Your control</h4>
-        <div class="agent-controls">
-          <label class="control">
-            <span>How much it does alone</span>
-            <select data-autonomy="${agent.id}">
-              ${["Ask me first", "Act, then tell me", "Act on its own"]
-                .map(
-                  (o) =>
-                    `<option ${controlFor(agent.id).autonomy === o ? "selected" : ""} ${o === "Act on its own" ? "disabled" : ""}>${o}${o === "Act on its own" ? " (needs Omnia)" : ""}</option>`,
-                )
-                .join("")}
-            </select>
-          </label>
-          <div class="control-row">
-            <span>Paused</span>
-            <button class="toggle" aria-pressed="${controlFor(agent.id).paused}" aria-label="Pause ${agent.name}" data-pause="${agent.id}"></button>
-          </div>
-          <div class="control-row">
-            <span>Quiet hours (21:00–07:00)</span>
-            <button class="toggle" aria-pressed="${controlFor(agent.id).quiet}" aria-label="Quiet hours" data-quiet="${agent.id}"></button>
-          </div>
-          <p class="control-note">Changing rules beyond these is applied by your engineer — deliberately.</p>
-        </div>
-
-        <h4 class="agent-detail-label">Ask ${agent.name}</h4>
-        <div class="agent-chat" id="agentChat">
-          <div class="agent-chat-log" id="agentChatLog"></div>
-          <form class="composer" id="agentAskForm">
-            <input id="agentAskInput" placeholder="Ask about its work, or what it would do next…" autocomplete="off" />
-            <button class="send" type="submit" aria-label="Send">${I("i-send")}</button>
-          </form>
-          <p class="chat-hint"><i></i>Live assistant · answers here are generated, actions are not</p>
-        </div>
-      </section>
+      <form class="chat-composer" id="agentAskForm">
+        <input id="agentAskInput" placeholder="Message ${agent.name}…" autocomplete="off" />
+        <button type="submit" aria-label="Send">${I("i-send")}</button>
+      </form>
     </div>`;
-}
-
-/* ------------------------------------------------------------ live help
-   One endpoint, two front doors: Omnia's assistant (what we can do) and an
-   agent's own view (what it would do next). Answers are generated live when the
-   deployment has credit for it; otherwise the UI says so instead of pretending. */
-
-const askHistory = [];
-
-async function askAssistant(messages, agent) {
-  const response = await fetch("/api/demo/ask", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ messages, agent, session: "omnia-demo" }),
-    signal: AbortSignal.timeout(40000),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) return { error: data.error || "The assistant did not answer.", code: data.code };
-  return { reply: data.reply };
-}
-
-function chatBubble(role, text) {
-  return `<div class="ask-msg ${role}">${text}</div>`;
-}
-
-let askPending = false;
-let askTargetId = "askThread";
-
-/* Render from state, never from a captured node: the panel can be re-created
-   between the request and the answer. */
-function renderAskThread() {
-  const target = document.getElementById(askTargetId) || document.getElementById("askThread");
-  if (!target) return;
-  target.innerHTML =
-    askHistory
-      .map((m) => chatBubble(m.role === "user" ? "user" : "assistant", m.content))
-      .join("") +
-    (askPending ? '<div class="ask-msg assistant typing"><span class="dots"><i></i><i></i><i></i></span></div>' : "");
-  target.scrollTop = target.scrollHeight;
-}
-
-async function sendTo(logEl, text, agent) {
-  if (askPending) return;
-  askTargetId = logEl?.id || "askThread";
-  askPending = true;
-  askHistory.push({ role: "user", content: text });
-  renderAskThread();
-
-  let result;
-  try {
-    result = await askAssistant(askHistory.slice(-8), agent);
-  } catch {
-    result = { error: "Could not reach the assistant. Try again in a moment.", code: "network" };
-  }
-  askPending = false;
-
-  if (result.error) {
-    const hint =
-      result.code === "unfunded" || result.code === "not_configured"
-        ? "The live assistant isn't switched on for this deployment. Ask your Omnia team to enable it."
-        : result.error;
-    askHistory.pop();
-    askHistory.push({ role: "assistant", content: hint });
-  } else {
-    askHistory.push({ role: "assistant", content: result.reply });
-  }
-  renderAskThread();
-}
-
-function askAgentBody(text) {
-  const logEl = document.getElementById("agentChatLog");
-  const agent = AGENTS.find((a) => a.id === state.agentId);
-  if (!logEl || !agent) return;
-  sendTo(logEl, text, agent.name);
 }
 
 function dockAsk() {
@@ -1299,6 +1256,21 @@ function renderDock() {
         : state.dock.thread
           ? dockThread()
           : dockRequests();
+
+  if (view === "agents") {
+    paintAgentChat();
+    body.querySelectorAll("[data-toggle-controls]").forEach((button) =>
+      button.addEventListener("click", () => {
+        const sheet = document.getElementById("agentControls");
+        const open = sheet.hidden;
+        sheet.hidden = !open;
+        button.setAttribute("aria-expanded", String(!open));
+      }),
+    );
+    body.querySelectorAll("[data-agent-ask]").forEach((chip) =>
+      chip.addEventListener("click", () => askAgentBody(chip.dataset.agentAsk)),
+    );
+  }
 
   const count = state.requests.filter((r) => r.status === "Open").length;
   const badge = document.getElementById("dockBadge");
@@ -1868,6 +1840,12 @@ function wireStage() {
 
   stage.querySelectorAll("[data-tab]").forEach((el) => el.addEventListener("click", () => openTab(el.dataset.tab)));
   stage.querySelectorAll("[data-open]").forEach((el) => el.addEventListener("click", () => openTab(el.dataset.open)));
+  stage.querySelectorAll("[data-open-ask]").forEach((el) =>
+    el.addEventListener("click", () => {
+      state.dock.thread = null;
+      openDock("ask");
+    }),
+  );
   stage.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", () => newRequestModal()));
   stage.querySelectorAll("[data-request]").forEach((el) =>
     el.addEventListener("click", () => newRequestModal(el.dataset.request)),
