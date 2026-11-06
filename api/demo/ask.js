@@ -203,6 +203,20 @@ export default {
         }
       }
 
+      // a model that answers with only an action block still needs a sentence
+      if (!reply && actions.length) {
+        const first = actions[0];
+        const shown = first.label.replace(/^Open\s+/i, "");
+        reply =
+          first.type === "navigate"
+            ? `Opening ${shown}.`
+            : first.type === "open_decision"
+              ? `Opening decision ${first.target}.`
+              : first.type === "pause_agent"
+                ? `I can pause that agent — say the word and it stops.`
+                : "That one goes to your engineer as a request.";
+      }
+
       return json({ reply, actions });
     } catch {
       return json({ error: "The assistant timed out. Try again.", code: "timeout" }, 504);
