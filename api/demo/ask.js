@@ -92,6 +92,14 @@ export default {
         503,
       );
 
+    const views = Array.isArray(body.views)
+      ? body.views.filter((v) => typeof v === "string" && v.length < 40).slice(0, 12)
+      : [];
+    const workspace =
+      views.length && typeof body.workspace === "string"
+        ? `\n\nThis workspace is ${body.workspace.slice(0, 60)}. Its dashboards are: General, Agents, Decisions and ${views.join(", ")}. Nothing else exists here. If someone asks for a dashboard that is not in that list, say this workspace does not have it and name the closest one that does — never say you are showing something you are not.`
+        : "";
+
     const persona =
       typeof body.agent === "string" && body.agent.trim()
         ? `You are speaking as ${body.agent.trim()}, one of this workspace's agents. Stay inside what that agent knows and does.`
@@ -108,7 +116,7 @@ export default {
         },
         body: JSON.stringify({
           model: MODEL,
-          messages: [{ role: "system", content: persona ? `${SYSTEM}\n\n${persona}` : SYSTEM }, ...messages],
+          messages: [{ role: "system", content: `${SYSTEM}${workspace}${persona ? `\n\n${persona}` : ""}` }, ...messages],
           max_tokens: 400,
           temperature: 0.4,
         }),
