@@ -3009,9 +3009,9 @@ function init() {
   const pillAccount = document.getElementById("accountButton");
   if (pillAccount) pillAccount.setAttribute("aria-label", admin.name);
   const brand = document.getElementById("navBrand");
-  if (brand && CLIENT.logo) brand.innerHTML = CLIENT.logo;
+  if (brand) brand.textContent = CLIENT.name.slice(0, 1);
   const wsMark = document.querySelector('#accountMenu [data-action="workspace"] .workspace-mark');
-  if (wsMark && CLIENT.logo) wsMark.innerHTML = CLIENT.logo;
+  if (wsMark) wsMark.textContent = CLIENT.name.slice(0, 1);
   const wsName = document.querySelector('#accountMenu [data-action="workspace"] span:nth-child(2)');
   if (wsName) wsName.textContent = CLIENT.name;
   const menuHead = document.querySelector("#accountMenu .menu-head span");
@@ -3065,11 +3065,13 @@ function init() {
     input.value = "";
     railSend(text);
   });
-  document.getElementById("railToggle")?.addEventListener("click", (event) => {
-    const shell = document.querySelector(".shell");
-    const collapsed = shell.classList.toggle("rail-collapsed");
-    event.currentTarget.setAttribute("aria-expanded", String(!collapsed));
-  });
+  const setRail = (collapsed) => {
+    document.querySelector(".shell")?.classList.toggle("rail-collapsed", collapsed);
+    document.body.classList.toggle("rail-collapsed", collapsed);
+    document.getElementById("railToggle")?.setAttribute("aria-expanded", String(!collapsed));
+  };
+  document.getElementById("railToggle")?.addEventListener("click", () => setRail(true));
+  document.getElementById("railFab")?.addEventListener("click", () => setRail(false));
   window.addEventListener("resize", railContext);
 
   document.getElementById("askButton")?.addEventListener("click", () => {
