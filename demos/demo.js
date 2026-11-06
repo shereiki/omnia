@@ -1354,13 +1354,42 @@ function railPaint(actions = []) {
   );
 }
 
+/* the workspace names what it opened, never the model */
+function viewLabel(id) {
+  if (id === "agents") return "Agents";
+  if (id === "decisions") return "Decisions";
+  if (id === "general") return "the dashboard";
+  const view = (CLIENT.views || []).find((v) => v.id === id);
+  return view ? view.label : "that dashboard";
+}
+
+/* if the person named a dashboard, that is the one they meant */
+function intentView(text) {
+  const said = String(text || "").toLowerCase();
+  const views = [...(CLIENT.views || []), { id: "agents", label: "Agents" }, { id: "decisions", label: "Decisions" }];
+  const hit = views.find((v) => v.label && said.includes(v.label.toLowerCase()));
+  if (hit) return hit.id;
+  if (/\b(live\s*map|where.*(truck|load)|on the road)\b/.test(said)) return "tracker";
+  if (/\b(stock|sku)\b/.test(said)) return "skus";
+  if (/\b(savings|roi|saved)\b/.test(said)) return "savings";
+  if (/\b(lane|corridor)\b/.test(said)) return "lanes";
+  if (/\b(fleet|driver)\b/.test(said)) return "fleet";
+  if (/\b(dispatch)\b/.test(said)) return "dispatch";
+  if (/\b(room|slot)\b/.test(said)) return "rooms";
+  if (/\b(waitlist)\b/.test(said)) return "waitlist";
+  if (/\b(claim|insurance)\b/.test(said)) return "claims";
+  if (/\b(inventory)\b/.test(said)) return "inventory";
+  if (/\b(order)\b/.test(said)) return "orders";
+  return "";
+}
+
 function runRailAction(action) {
   if (!action) return;
   if (action.type === "navigate") {
     if (action.target === "agents") openTab("agents");
     else if (action.target === "decisions") openTab("decisions");
     else openTab(action.target);
-    toast(`Opened ${action.label.replace(/^Open /, "")}`);
+    toast(`Opened ${viewLabel(action.target === "general" ? "general" : action.target)}`);
   } else if (action.type === "pause_agent") {
     const control = controlFor(action.target);
     control.paused = !control.paused;
@@ -1419,7 +1448,13 @@ async function railSend(text) {
   railPending = false;
   railHistory.push({ role: "assistant", content: response.reply || response.error || "No answer." });
   railPaint([]);
-  autoRunActions(response.actions || []);
+  const wanted = intentView(text);
+  const actions = (response.actions || []).map((a) =>
+    a.type === "navigate" && wanted ? { ...a, target: wanted } : a,
+  );
+  if (!actions.some((a) => a.type === "navigate") && wanted && /\b(show|open|see|go to|take me)\b/i.test(text))
+    actions.push({ type: "navigate", target: wanted, label: `Open ${viewLabel(wanted)}` });
+  autoRunActions(actions);
 }
 
 /* ---------------------------------------------------------- live assistant */
@@ -2601,6 +2636,19 @@ function renderConnectors() {
       }, 2600);
     }),
   );
+
+  [document.getElementById("connectRecommended"), document.getElementById("connectorGrid")].forEach((box) => {
+    if (!box) return;
+    const empties = [...box.querySelectorAll("[data-empty-connector]")];
+    empties.forEach((el) => el.remove());
+    if (box.children.length || box.hidden) return;
+    box.innerHTML = `<div class="connect-empty" data-empty-connector>
+      <strong>Nothing here by that name.</strong>
+      <p>Omnia adds the long tail on request — say the system and it goes on the list.</p>
+      <button class="btn sm" data-request-connector>Ask for it</button>
+    </div>`;
+    box.querySelector("[data-request-connector]")?.addEventListener("click", () => newRequestModal("", "Connect a system"));
+  });
 
   const count = document.getElementById("connectorCount");
   if (count) count.textContent = `Showing ${list.length}`;

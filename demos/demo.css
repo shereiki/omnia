@@ -2681,3 +2681,12 @@ body { padding-top: var(--bar); }
   padding: 1px 5px; border-radius: 6px; background: #f2effb;
   font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px;
 }
+
+.connect-empty {
+  grid-column: 1 / -1;
+  display: grid; gap: 4px; justify-items: start;
+  padding: 18px; border: 1px dashed #ddd4f2; border-radius: 14px; background: #fbfaff;
+}
+.connect-empty strong { font-size: 12.5px; color: var(--ink); }
+.connect-empty p { margin: 0; font-size: 11.5px; color: var(--muted); }
+.connect-empty .btn { margin-top: 6px; }
