@@ -2176,7 +2176,7 @@ body { padding-top: var(--bar); }
 
 /* the nav must never hide a dashboard behind a clipped bubble */
 .nav { flex-wrap: nowrap; }
-.nav-dashboards { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.nav-dashboards { flex: 0 1 auto; min-width: 0; overflow: hidden; }
 .nav-dashboards .tabs { min-width: 0; }
 .nav-right { flex: 0 0 auto; }
 @media (max-width: 1280px) {
@@ -2505,3 +2505,23 @@ body { padding-top: var(--bar); }
   .tile-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 .tile-foot { white-space: nowrap; overflow: hidden; }
+
+
+/* nothing stretches the dashboards bubble */
+.nav-dashboards { padding-right: 8px; }
+.nav-right { margin-left: auto; }
+
+/* collapsed rail leaves no empty column; it becomes a corner button */
+.shell.rail-collapsed { grid-template-columns: minmax(0, 1fr); }
+.shell.rail-collapsed .agent-rail { display: none; }
+.rail-fab {
+  position: fixed; right: 18px; bottom: 18px; z-index: 45;
+  display: none; align-items: center; gap: 8px;
+  height: 46px; padding: 0 16px 0 12px;
+  border: 1px solid rgba(255,255,255,0.9); border-radius: 999px;
+  background: var(--uv); color: #fff;
+  font-size: 12px; font-weight: 700;
+  box-shadow: 0 18px 40px -22px rgba(29,23,64,0.7);
+}
+.rail-fab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.shell.rail-collapsed ~ .rail-fab, body.rail-collapsed .rail-fab { display: inline-flex; }
