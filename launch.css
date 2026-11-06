@@ -35,9 +35,9 @@
 }
 
 .wordmark {
-  font-size: 28px;
+  font-size: 27px;
   font-weight: 750;
-  letter-spacing: -0.07em;
+  letter-spacing: 0.05em;
   color: var(--violet);
 }
 

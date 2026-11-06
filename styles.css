@@ -176,16 +176,16 @@ h1:focus {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 32px;
-  letter-spacing: -0.065em;
+  gap: 9px;
+  font-size: 26px;
+  letter-spacing: 0.05em;
   font-weight: 750;
   color: var(--violet);
   flex-shrink: 0;
 }
 .brand svg {
-  width: 32px;
-  height: 35px;
+  width: 43px;
+  height: 44px;
   fill: currentColor;
   stroke: none;
 }
@@ -1155,11 +1155,11 @@ details[data-expanded="true"] .detail-plus {
   gap: 30px;
 }
 .footer-top > .brand {
-  font-size: 25px;
+  font-size: 22px;
 }
 .footer-top > .brand svg {
-  width: 26px;
-  height: 28px;
+  width: 34px;
+  height: 37px;
 }
 .footer-top > p {
   font-size: 11px;
@@ -1176,7 +1176,7 @@ details[data-expanded="true"] .detail-plus {
   font-size: clamp(150px, 29.2vw, 420px);
   font-weight: 700;
   line-height: 0.96;
-  letter-spacing: -0.075em;
+  letter-spacing: -0.05em;
   color: #ddd5f4;
   padding: 35px 0 0;
   user-select: none;
@@ -1453,11 +1453,11 @@ details[data-expanded="true"] .detail-plus {
 }
 @media (max-width: 800px) and (min-width: 761px) {
   .header .brand {
-    font-size: 27px;
+    font-size: 22px;
   }
   .brand svg {
-    width: 28px;
-    height: 30px;
+    width: 34px;
+    height: 37px;
   }
   .header nav {
     font-size: 10px;
@@ -1568,12 +1568,12 @@ details[data-expanded="true"] .detail-plus {
     gap: 15px;
   }
   .header .brand {
-    font-size: 28px;
-    gap: 8px;
+    font-size: 22px;
+    gap: 7px;
   }
   .header .brand svg {
-    width: 28px;
-    height: 30px;
+    width: 34px;
+    height: 37px;
   }
   .header-actions {
     gap: 10px;
@@ -2024,11 +2024,11 @@ details[data-expanded="true"] .detail-plus {
     width: calc(100% - 32px);
   }
   .header .brand {
-    font-size: 25px;
-    gap: 6px;
+    font-size: 20px;
+    gap: 7px;
   }
   .header .brand svg {
-    width: 25px;
+    width: 30px;
   }
   .header .small-cta {
     padding: 9px 12px;
@@ -11628,7 +11628,7 @@ details[open]:not([data-expanded]) .detail-plus {
   overflow: hidden;
   text-align: center;
   white-space: nowrap;
-  letter-spacing: -0.075em;
+  letter-spacing: -0.05em;
 }
 @media (max-width: 760px) {
   .footer-word {
@@ -11644,7 +11644,7 @@ details[open]:not([data-expanded]) .detail-plus {
 }
 @media (max-width: 760px) {
   .footer-word {
-    font-size: 31vw;
+    font-size: 29vw;
     height: 0.66em;
   }
 }
