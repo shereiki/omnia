@@ -19,10 +19,11 @@ const I = (id) => `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#${id}
 /* ------------------------------------------------------------------ data */
 
 /* Which client this workspace belongs to. /demos/<slug> or ?client=<slug>. */
+const RESERVED = new Set(["workspace", "login", "index", "demo"]);
+const fromPath = (location.pathname.match(/\/demos\/([a-z0-9-]+)\/?$/) || [])[1];
 const SLUG =
-  (location.pathname.match(/\/demos\/([a-z0-9-]+)\/?$/) || [])[1] ||
   new URLSearchParams(location.search).get("client") ||
-  "meridian";
+  (fromPath && !RESERVED.has(fromPath) ? fromPath : "meridian");
 
 export const CLIENT = PROFILES[SLUG] || PROFILES.meridian;
 
