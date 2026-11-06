@@ -55,6 +55,6 @@
   ],
   "proxy": {
     "entrypoint": "proxy.js",
-    "matcher": ["/admin", "/admin/:path*", "/api/admin/:path*", "/demos", "/demos/:path*"]
+    "matcher": ["/server", "/server/:path*", "/admin", "/admin/:path*", "/api/admin/:path*", "/demos", "/demos/:path*"]
   }
 }
