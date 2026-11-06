@@ -2690,3 +2690,21 @@ body { padding-top: var(--bar); }
 .connect-empty strong { font-size: 12.5px; color: var(--ink); }
 .connect-empty p { margin: 0; font-size: 11.5px; color: var(--muted); }
 .connect-empty .btn { margin-top: 6px; }
+
+/* rows that open something should look and feel like it */
+.driver-row { width: 100%; }
+.row-chev { display: grid; place-items: center; width: 18px; color: var(--faint); }
+.row-chev svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
+.driver-row:hover .row-chev { color: var(--uv); }
+.row-click { cursor: pointer; }
+.row-click:hover td { background: #faf8ff; }
+.row-click:focus-visible { outline: 2px solid var(--uv); outline-offset: -2px; }
+.drawer-meter { display: block; height: 6px; margin: 10px 0 4px; border-radius: 999px; background: #f1eefb; overflow: hidden; }
+.drawer-meter i { display: block; height: 100%; border-radius: 999px; background: var(--uv); }
+.drawer-meter i.hot { background: #d9a353; }
+
+/* cedar rows that open */
+.claim-row { width: 100%; text-align: left; }
+.claim-row:hover { background: #faf8ff; }
+.claim-row .row-chev { margin-left: 2px; }
+.slot-card.started { box-shadow: inset 0 0 0 1.5px var(--mint-deep); }
