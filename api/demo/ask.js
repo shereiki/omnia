@@ -136,20 +136,20 @@ export default {
       // the model may end with an actions block; validate before anything runs
       const NAV = new Set(["general","agents","decisions","orders","inventory","skus","savings","dispatch","fleet","lanes","schedule","rooms","waitlist","claims"]);
       const NAV_HINTS = [
-        ["\b(live map|map|tracker|where.*truck|on the road)\b", "tracker", "Live map"],
-        ["\b(dispatch)\b", "dispatch", "Dispatch board"],
-        ["\b(fleet|drivers?)\b", "fleet", "Fleet & drivers"],
-        ["\b(lane|lane margin|corridor|rate)\b", "lanes", "Lane margin"],
-        ["\b(order operations|orders?)\b", "orders", "Order Operations"],
-        ["\b(inventory control)\b", "inventory", "Inventory Control"],
-        ["\b(stock|sku|stock matrix)\b", "skus", "Stock matrix"],
-        ["\b(savings|saved|roi|cost saving)\b", "savings", "Savings Report"],
-        ["\b(agents?|what.*working on)\b", "agents", "Agents"],
-        ["\b(decisions?|approvals?)\b", "decisions", "Decisions"],
-        ["\b(schedule|today'?s list|appointments?)\b", "schedule", "Today's list"],
-        ["\b(rooms?|slots?|booking)\b", "rooms", "Rooms"],
-        ["\b(waitlist|waiting list)\b", "waitlist", "Waitlist"],
-        ["\b(claims?|insurance)\b", "claims", "Claims"],
+        ["\\b(stock matrix|stock|sku)\\b", "skus", "Stock matrix"],
+        ["\\b(inventory)\\b", "inventory", "Inventory Control"],
+        ["\\b(live map|map|tracker|where.*truck|on the road)\\b", "tracker", "Live map"],
+        ["\\b(dispatch)\\b", "dispatch", "Dispatch board"],
+        ["\\b(fleet|drivers?)\\b", "fleet", "Fleet & drivers"],
+        ["\\b(lane|lane margin|corridor|rate)\\b", "lanes", "Lane margin"],
+        ["\\b(order operations|orders?)\\b", "orders", "Order Operations"],
+        ["\\b(savings|saved|roi|cost saving)\\b", "savings", "Savings Report"],
+        ["\\b(agents?|what.*working on)\\b", "agents", "Agents"],
+        ["\\b(decisions?|approvals?)\\b", "decisions", "Decisions"],
+        ["\\b(schedule|today'?s list|appointments?)\\b", "schedule", "Today's list"],
+        ["\\b(rooms?|slots?|booking)\\b", "rooms", "Rooms"],
+        ["\\b(waitlist|waiting list)\\b", "waitlist", "Waitlist"],
+        ["\\b(claims?|insurance)\\b", "claims", "Claims"],
       ];
       let reply = raw;
       let actions = [];
