@@ -1950,7 +1950,7 @@ function viewTracker() {
   return `
   <div class="view-head">
     <div><h1>Live map</h1><p>Every load on the road, where it actually is.</p></div>
-    <div class="head-actions"><span class="chip good">${CLIENT.trucks.filter((t) => t.status !== "Delivered").length} moving</span></div>
+    <div class="head-actions"><span class="chip good">${(CLIENT.trucks || []).filter((t) => t.status !== "Delivered").length} moving</span></div>
   </div>
 
   <section class="fleet-map-wrap">
@@ -1958,7 +1958,7 @@ function viewTracker() {
   </section>
 
   <div class="tracker-cards">
-    ${CLIENT.trucks
+    ${(CLIENT.trucks || [])
       .map(
         (t) => `<button class="truck-row ${t.status === "At border" ? "warn" : ""}" data-truck="${t.id}">
           <span class="truck-top"><span class="truck-id">${t.id}</span>
@@ -2013,7 +2013,7 @@ function initFleetMap() {
     points.push(coords);
   }
 
-  for (const truck of CLIENT.trucks) {
+  for (const truck of CLIENT.trucks || []) {
     const from = CITY_COORDS[(truck.label.split(" → ")[0] || "").trim()];
     const to = CITY_COORDS[(truck.label.split(" → ")[1] || "").trim()];
     if (!from || !to) continue;
@@ -2037,12 +2037,30 @@ function initFleetMap() {
     L.marker([lat, lng], { icon })
       .addTo(map)
       .bindTooltip(truck.id + " · " + truck.label, { direction: "top", offset: [0, -8], className: "map-tip" })
-      .on("click", () => openLoadDrawer(truck.id));
+      .on("click", () => openTruckDrawer(truck.id));
   }
 
   map.fitBounds(points, { padding: [40, 40] });
   fleetMap = map;
   setTimeout(() => map.invalidateSize(), 200);
+}
+
+function openTruckDrawer(id) {
+  const truck = (CLIENT.trucks || []).find((t) => t.id === id);
+  if (!truck) return;
+  openDrawer(
+    truck.id,
+    truck.label,
+    `<div class="drawer-facts">
+        <div><span>Status</span><strong>${truck.status}</strong></div>
+        <div><span>Progress</span><strong>${Math.round(truck.progress * 100)}%</strong></div>
+      </div>
+      <div class="drawer-actions"><button class="btn primary sm" data-truck-act>Message driver</button></div>`,
+  );
+  document.querySelector("[data-truck-act]")?.addEventListener("click", () => {
+    closeDrawer();
+    toast("Message sent to the driver — demo only");
+  });
 }
 
 function viewRooms() {
@@ -2101,15 +2119,15 @@ function viewDispatch() {
   return `
   <div class="view-head">
     <div><h1>Dispatch board</h1><p>Every load, by where it actually is.</p></div>
-    <div class="head-actions"><span class="chip good">${CLIENT.loads.filter((l) => l.status !== "Delivered").length} open</span></div>
+    <div class="head-actions"><span class="chip good">${(CLIENT.loads || []).filter((l) => l.status !== "Delivered").length} open</span></div>
   </div>
   <div class="board">
     ${columns
       .map(
         (col) => `<section class="board-col">
-          <header><span>${col}</span><b>${CLIENT.loads.filter((l) => l.status === col).length}</b></header>
+          <header><span>${col}</span><b>${(CLIENT.loads || []).filter((l) => l.status === col).length}</b></header>
           <div class="board-cards">
-            ${CLIENT.loads
+            ${(CLIENT.loads || [])
               .filter((l) => l.status === col)
               .map(
                 (l) => `<button class="load-card ${col === "At border" ? "warn" : ""}" data-load="${l.id}">
@@ -2131,7 +2149,7 @@ function viewDispatch() {
 function viewFleet() {
   const available = CLIENT.drivers.filter((d) => d.status === "Available").length;
   const nearCap = CLIENT.drivers.filter((d) => d.hours / d.cap > 0.85).length;
-  const onRoad = CLIENT.loads.filter((l) => ["Assigned", "In transit"].includes(l.status)).length;
+  const onRoad = (CLIENT.loads || []).filter((l) => ["Assigned", "In transit"].includes(l.status)).length;
   return `
   <div class="view-head">
     <div><h1>Fleet &amp; drivers</h1><p>Hours, availability and who is close to the limit.</p></div>
@@ -2146,11 +2164,12 @@ function viewFleet() {
     <div class="card-body driver-list">
       ${CLIENT.drivers
         .map(
-          (d) => `<div class="driver-row">
+          (d) => `<button class="driver-row" data-driver="${d.name}">
             <span class="driver-name"><strong>${d.name}</strong><small>${d.status}${d.load !== "—" ? ` · ${d.load}` : ""}</small></span>
             <span class="driver-bar"><i class="${d.hours / d.cap > 0.85 ? "hot" : ""}" style="width:${Math.round((d.hours / d.cap) * 100)}%"></i></span>
             <span class="driver-hours">${d.hours}/${d.cap}h</span>
-          </div>`,
+            <span class="row-chev">${I("i-chevron")}</span>
+          </button>`,
         )
         .join("")}
     </div>
@@ -2171,7 +2190,8 @@ function viewLanes() {
           ${CLIENT.lanes
             .map((l) => {
               const margin = Math.round(((l.revenue - l.cost) / l.revenue) * 100);
-              return `<tr>
+              const id = l.lane.replace(/\s*→\s*/, "--").replace(/[^A-Za-z0-9-]/g, "");
+              return `<tr class="row-click" data-lane="${id}" tabindex="0" role="button" aria-label="Open ${l.lane}">
                 <td><strong>${l.lane}</strong></td>
                 <td class="mono">${l.loads}</td>
                 <td class="mono">${fmt.money(l.revenue)}</td>
@@ -2257,12 +2277,13 @@ function viewClaims() {
       ${CLIENT.claims
         .map((c) => {
           const approved = Math.round((c.approved / c.submitted) * 100);
-          return `<div class="claim-row">
+          return `<button class="claim-row" data-claim="${c.payer}">
             <span class="claim-name"><strong>${c.payer}</strong><small>${c.submitted} submitted · ${c.denied} denied</small></span>
             <span class="claim-bar"><i style="width:${approved}%"></i></span>
             <span class="claim-pct">${approved}%</span>
             <span class="claim-value">${fmt.money(c.value)}</span>
-          </div>`;
+            <span class="row-chev">${I("i-chevron")}</span>
+          </button>`;
         })
         .join("")}
     </div>
@@ -2703,19 +2724,99 @@ function wireStage() {
   }
 
   stage.querySelectorAll("[data-truck]").forEach((el) =>
-    el.addEventListener("click", () => {
-      const truck = CLIENT.trucks.find((t) => t.id === el.dataset.truck);
-      if (!truck) return;
-      openDrawer(truck.id, truck.label, `<div class="drawer-facts">
-        <div><span>Status</span><strong>${truck.status}</strong></div>
-        <div><span>Progress</span><strong>${Math.round(truck.progress * 100)}%</strong></div>
-      </div><div class="drawer-actions"><button class="btn primary sm" data-truck-act>Message driver</button></div>`);
-      document.querySelector("[data-truck-act]")?.addEventListener("click", () => {
-        closeDrawer();
-        toast("Message sent to the driver — demo only");
-      });
-    }),
+    el.addEventListener("click", () => openTruckDrawer(el.dataset.truck)),
   );
+  stage.querySelectorAll("[data-claim]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const claim = (CLIENT.claims || []).find((c) => c.payer === el.dataset.claim);
+      if (!claim) return;
+      const approved = Math.round((claim.approved / claim.submitted) * 100);
+      openDrawer(
+        claim.payer,
+        `${claim.submitted} submitted · ${claim.denied} denied this month`,
+        `<div class="drawer-facts">
+          <div><span>Approved</span><strong>${approved}%</strong></div>
+          <div><span>Denied</span><strong>${claim.denied}</strong></div>
+          <div><span>Value</span><strong>${CLIENT.currency} ${fmt.money(claim.value)}</strong></div>
+        </div>
+        <p class="muted">Denials are worked by the billing agent; anything it cannot clear comes to you as a decision.</p>
+        <div class="drawer-actions">
+          <button class="btn primary sm" data-claim-resubmit>Resubmit the denials</button>
+          <button class="btn sm" data-claim-decision>Send to Decisions</button>
+        </div>`,
+      );
+      document.querySelector("[data-claim-resubmit]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast("Resubmission drafted for " + claim.payer + " — demo only");
+      });
+      document.querySelector("[data-claim-decision]")?.addEventListener("click", () => {
+        closeDrawer();
+        openTab("decisions");
+        toast("Billing denials are waiting in Decisions");
+      });
+    });
+  });
+
+  stage.querySelectorAll("[data-driver]").forEach((el) => {
+    const open = () => {
+      const driver = (CLIENT.drivers || []).find((d) => d.name === el.dataset.driver);
+      if (!driver) return;
+      const used = Math.round((driver.hours / driver.cap) * 100);
+      openDrawer(
+        driver.name,
+        driver.status + (driver.load !== "—" ? " · " + driver.load : ""),
+        `<div class="drawer-facts">
+          <div><span>Hours this week</span><strong>${driver.hours}/${driver.cap}h</strong></div>
+          <div><span>Of the cap</span><strong>${used}%</strong></div>
+        </div>
+        <span class="drawer-meter"><i class="${used > 85 ? "hot" : ""}" style="width:${used}%"></i></span>
+        <div class="drawer-actions">
+          <button class="btn primary sm" data-driver-message>Message driver</button>
+          <button class="btn sm" data-driver-assign>Assign a load</button>
+        </div>`,
+      );
+      document.querySelector("[data-driver-message]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast("Message sent to " + driver.name + " — demo only");
+      });
+      document.querySelector("[data-driver-assign]")?.addEventListener("click", () => {
+        closeDrawer();
+        openTab("dispatch");
+        toast("Pick the load in the dispatch board");
+      });
+    };
+    el.addEventListener("click", open);
+  });
+
+  stage.querySelectorAll("[data-lane]").forEach((row) => {
+    const open = () => {
+      const lane = (CLIENT.lanes || []).find(
+        (l) => l.lane.replace(/\s*→\s*/, "--").replace(/[^A-Za-z0-9-]/g, "") === row.dataset.lane,
+      );
+      if (!lane) return;
+      const margin = Math.round(((lane.revenue - lane.cost) / lane.revenue) * 100);
+      openDrawer(
+        lane.lane,
+        `${lane.loads} loads this month · ${lane.fill}% filled`,
+        `<div class="drawer-facts">
+          <div><span>Revenue</span><strong>${CLIENT.currency} ${fmt.money(lane.revenue)}</strong></div>
+          <div><span>Cost</span><strong>${CLIENT.currency} ${fmt.money(lane.cost)}</strong></div>
+          <div><span>Margin</span><strong>${margin}%</strong></div>
+        </div>
+        <p class="muted">${margin < 20 ? "This corridor is under 20% — the case for a rate change is here." : "Healthy margin for this corridor."}</p>
+        <div class="drawer-actions"><button class="btn primary sm" data-lane-rate>Ask for a rate change</button></div>`,
+      );
+      document.querySelector("[data-lane-rate]")?.addEventListener("click", () => {
+        closeDrawer();
+        newRequestModal("", "Rate change on " + lane.lane);
+      });
+    };
+    row.addEventListener("click", open);
+    row.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); }
+    });
+  });
+
   stage.querySelectorAll("[data-room-slot]").forEach((el) => {
     el.addEventListener("click", () => {
       const parts = el.dataset.roomSlot.split(" · ");
@@ -2764,7 +2865,7 @@ function wireStage() {
 
   stage.querySelectorAll("[data-load]").forEach((el) =>
     el.addEventListener("click", () => {
-      const load = CLIENT.loads.find((l) => l.id === el.dataset.load);
+      const load = (CLIENT.loads || []).find((l) => l.id === el.dataset.load);
       if (!load) return;
       openDrawer(
         load.id,
@@ -2797,12 +2898,45 @@ function wireStage() {
     }),
   );
 
-  stage.querySelectorAll("[data-slot-detail]").forEach((el) =>
+  stage.querySelectorAll("[data-slot-detail]").forEach((el) => {
     el.addEventListener("click", () => {
       const [who, time] = el.dataset.slotDetail.split(" · ");
-      openDrawer(time, who, `<p class="muted">Slot detail is illustrative in this demo.</p>`);
-    }),
-  );
+      const clinician = (CLIENT.clinicians || []).find((c) => c.name === who);
+      const slot = clinician?.slots.find((x) => x.time === time);
+      if (!slot) return;
+      const state = slot.state === "open" ? "Free" : slot.state === "no-show" ? "No-show" : slot.state === "arrived" ? "Checked in" : "Confirmed";
+      const actions =
+        slot.state === "open"
+          ? '<button class="btn primary sm" data-slot-book>Book this slot</button>'
+          : slot.state === "arrived"
+            ? '<button class="btn primary sm" data-slot-start>Start the visit</button>'
+            : `<button class="btn sm" data-slot-contact>Message ${slot.patient}</button>`;
+      openDrawer(
+        time,
+        `${clinician.name} · ${clinician.role}`,
+        `<div class="drawer-facts">
+          <div><span>Patient</span><strong>${slot.patient === "—" ? "Nobody yet" : slot.patient}</strong></div>
+          <div><span>Visit</span><strong>${slot.type}</strong></div>
+          <div><span>Status</span><strong>${state}</strong></div>
+        </div>
+        <div class="drawer-actions">${actions}</div>`,
+      );
+      document.querySelector("[data-slot-book]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast("Slot booked — pick the patient from the waitlist, demo only");
+        openTab("waitlist");
+      });
+      document.querySelector("[data-slot-start]")?.addEventListener("click", () => {
+        el.classList.add("started");
+        closeDrawer();
+        toast(`Visit started for ${slot.patient} — demo only`);
+      });
+      document.querySelector("[data-slot-contact]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast(`Message sent to ${slot.patient} — demo only`);
+      });
+    });
+  });
 
   stage.querySelectorAll("[data-offer]").forEach((el) =>
     el.addEventListener("click", () => toast(`Offer sent to ${el.dataset.offer}`)),
