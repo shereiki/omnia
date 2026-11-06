@@ -624,6 +624,69 @@ function renderTabs() {
       openTab(button.dataset.tab);
     }),
   );
+  renderBoardSheet();
+}
+
+/* narrow screens get a named switcher instead of a clipped strip of icons */
+/* the rail is a bottom sheet on a phone, where there is no side column */
+function openRailSheet() {
+  const rail = document.getElementById("agentRail");
+  const backdrop = document.getElementById("railBackdrop");
+  if (!rail) return;
+  document.body.classList.add("rail-open");
+  rail.setAttribute("aria-modal", "true");
+  if (backdrop) backdrop.hidden = false;
+  setTimeout(() => document.getElementById("railInput")?.focus({ preventScroll: true }), 260);
+}
+
+function closeRailSheet() {
+  const rail = document.getElementById("agentRail");
+  const backdrop = document.getElementById("railBackdrop");
+  document.body.classList.remove("rail-open");
+  rail?.removeAttribute("aria-modal");
+  if (backdrop) backdrop.hidden = true;
+  document.getElementById("railFab")?.focus({ preventScroll: true });
+}
+
+function renderBoardSheet() {
+  const sheet = document.getElementById("boardSheet");
+  const label = document.getElementById("navBoardLabel");
+  if (!sheet || !label) return;
+  const current = state.tabs.find((t) => t.id === state.active) || state.tabs[0];
+  label.textContent = state.os ? "Manage Omnia OS" : tabLabel(current?.id || "general");
+  const pending = pendingDecisions().length;
+  sheet.innerHTML = state.tabs
+    .map((tab) => {
+      const active = tab.id === state.active && !state.os;
+      const count = tab.id === "decisions" && pending ? `<b class="tab-count">${pending}</b>` : "";
+      return `<button class="board-item" role="menuitem" data-board-tab="${tab.id}" aria-current="${active}">
+        ${I(tabIcon(tab.id))}<span>${tabLabel(tab.id)}</span>${count}
+        ${active ? `<svg class="board-tick" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>` : ""}
+      </button>`;
+    })
+    .join("");
+  sheet.querySelectorAll("[data-board-tab]").forEach((el) =>
+    el.addEventListener("click", () => {
+      closeBoardSheet();
+      openTab(el.dataset.boardTab);
+    }),
+  );
+}
+
+function openBoardSheet() {
+  const sheet = document.getElementById("boardSheet");
+  const button = document.getElementById("navBoard");
+  if (!sheet) return;
+  sheet.hidden = false;
+  button?.setAttribute("aria-expanded", "true");
+}
+
+function closeBoardSheet() {
+  const sheet = document.getElementById("boardSheet");
+  const button = document.getElementById("navBoard");
+  if (!sheet) return;
+  sheet.hidden = true;
+  button?.setAttribute("aria-expanded", "false");
 }
 
 
@@ -1000,7 +1063,13 @@ function viewDecisions() {
     ${shown.map((d) => decisionCard(d)).join("")}
   </div>
 
-  ${shown.length === 0 ? `<p class="empty">Nothing here. Every decision has been made.</p>` : ""}`;
+  ${shown.length === 0
+    ? `<p class="empty">${{
+        Decided: "Nothing has been decided yet. Approve or decline a decision and it lands here.",
+        Pending: "Nothing is waiting on you. The agents are running on their own.",
+        All: "No decisions have come through yet.",
+      }[state.decisionFilter] || "Nothing here."}</p>`
+    : ""}`;
 }
 
 /* ----------------------------------------------------------- the desk
@@ -1922,8 +1991,9 @@ function viewRooms() {
           <div class="room-slots">
             ${room.slots
               .map(
-                (slot) => `<button class="room-slot ${slot[2]}" data-room-slot="${room.name} · ${slot[0]}">
-                  <span>${slot[0]}</span><strong>${slot[1]}</strong>
+                (slot) => `<button class="room-slot ${slot[2]}" data-room-slot="${room.name} · ${slot[0]}"
+                  aria-label="${room.name} at ${slot[0]} — ${slot[2] === "free" ? "free, bookable" : slot[1]}">
+                  <span>${slot[0]}</span><strong>${slot[2] === "free" ? "Free" : slot[1]}</strong>
                 </button>`,
               )
               .join("")}
@@ -2510,7 +2580,8 @@ function wireStage() {
   stage.querySelectorAll("[data-open]").forEach((el) => el.addEventListener("click", () => openTab(el.dataset.open)));
   stage.querySelectorAll("[data-open-ask]").forEach((el) =>
     el.addEventListener("click", () => {
-      document.getElementById("railInput")?.focus();
+      if (window.matchMedia("(max-width: 1180px)").matches) openRailSheet();
+      else document.getElementById("railInput")?.focus();
     }),
   );
   stage.querySelectorAll("[data-dock-agent]").forEach((el) =>
@@ -2536,17 +2607,18 @@ function wireStage() {
   }
 
   if (window.gsap && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    gsap.to(stage.querySelectorAll(".route-line"), {
-      strokeDashoffset: -120,
-      duration: 8,
-      repeat: -1,
-      ease: "none",
-    });
-    gsap.fromTo(
-      stage.querySelectorAll(".truck circle:nth-child(2)"),
-      { scale: 0.85, transformOrigin: "50% 50%" },
-      { scale: 1, duration: 1.4, repeat: -1, yoyo: true, ease: "sine.inOut", stagger: 0.3 },
-    );
+    const routes = stage.querySelectorAll(".route-line");
+    if (routes.length) {
+      gsap.to(routes, { strokeDashoffset: -120, duration: 8, repeat: -1, ease: "none" });
+    }
+    const trucks = stage.querySelectorAll(".truck circle:nth-child(2)");
+    if (trucks.length) {
+      gsap.fromTo(
+        trucks,
+        { scale: 0.85, transformOrigin: "50% 50%" },
+        { scale: 1, duration: 1.4, repeat: -1, yoyo: true, ease: "sine.inOut", stagger: 0.3 },
+      );
+    }
   }
 
   stage.querySelectorAll("[data-truck]").forEach((el) =>
@@ -3010,8 +3082,9 @@ function animateStage() {
 
   if (!window.gsap || reduced) return;
 
-  gsap.fromTo(blocks, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.44, stagger: 0.03, ease: "power3.out", overwrite: true });
-
+  if (blocks.length) {
+    gsap.fromTo(blocks, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.44, stagger: 0.03, ease: "power3.out", overwrite: true });
+  }
   const line = stage.querySelector(".chart .line");
   if (line && line.getTotalLength) {
     const len = line.getTotalLength();
@@ -3169,7 +3242,26 @@ function init() {
     document.getElementById("railToggle")?.setAttribute("aria-expanded", String(!collapsed));
   };
   document.getElementById("railToggle")?.addEventListener("click", () => setRail(true));
-  document.getElementById("railFab")?.addEventListener("click", () => setRail(false));
+  document.getElementById("railClose")?.addEventListener("click", closeRailSheet);
+  document.getElementById("railBackdrop")?.addEventListener("click", closeRailSheet);
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (document.body.classList.contains("rail-open")) closeRailSheet();
+    closeBoardSheet();
+  });
+  document.getElementById("railFab")?.addEventListener("click", openRailSheet);
+
+  document.getElementById("navBoard")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const sheet = document.getElementById("boardSheet");
+    if (sheet && !sheet.hidden) closeBoardSheet();
+    else openBoardSheet();
+  });
+  document.addEventListener("click", (event) => {
+    const sheet = document.getElementById("boardSheet");
+    if (!sheet || sheet.hidden) return;
+    if (!event.target.closest(".nav-dashboards")) closeBoardSheet();
+  });
   window.addEventListener("resize", railContext);
 
   document.getElementById("askButton")?.addEventListener("click", () => {
