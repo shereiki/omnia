@@ -612,7 +612,8 @@ function renderTabs() {
       const active = tab.id === state.active && !state.os;
       const count = tab.id === "decisions" && pending ? `<b class="tab-count">${pending}</b>` : "";
       return `<button class="tab${tab.pinned ? " pinned" : ""}" role="tab" aria-selected="${active}"
-        data-tab="${tab.id}" tabindex="${active ? 0 : -1}">
+        data-tab="${tab.id}" tabindex="${active ? 0 : -1}"
+        ${tab.pinned ? "" : 'title="Drag to reorder · Alt + arrow keys"'} aria-grabbed="false">
         ${I(tabIcon(tab.id))}<span>${tabLabel(tab.id)}</span>${count}
         <span class="tab-close" role="presentation" data-close="${tab.id}" aria-label="Close ${tabLabel(tab.id)}">${I("i-x")}</span>
       </button>`;
@@ -621,6 +622,10 @@ function renderTabs() {
   root.querySelectorAll("[data-tab]").forEach((button) =>
     button.addEventListener("click", (event) => {
       if (event.target.closest("[data-close]")) return;
+      if (dragState.justDragged) {
+        dragState.justDragged = false;
+        return;
+      }
       openTab(button.dataset.tab);
     }),
   );
@@ -630,6 +635,166 @@ function renderTabs() {
       closeTab(el.dataset.close);
     }),
   );
+}
+
+/* ------------------------------------------------------- tab rearranging */
+
+const dragState = { justDragged: false, active: null };
+
+function persistTabOrder() {
+  try {
+    sessionStorage.setItem(
+      "omnia-demo-tabs",
+      JSON.stringify(state.tabs.map((t) => t.id)),
+    );
+  } catch {
+    /* private mode */
+  }
+}
+
+function restoreTabOrder() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem("omnia-demo-tabs") || "null");
+    if (!Array.isArray(saved)) return;
+    const known = new Map(state.tabs.map((t) => [t.id, t]));
+    const restored = saved
+      .map((id) => known.get(id))
+      .filter(Boolean)
+      .map((t) => ({ ...t }));
+    for (const tab of state.tabs) if (!restored.some((t) => t.id === tab.id)) restored.push({ ...tab });
+    const pinned = restored.find((t) => t.pinned);
+    state.tabs = [pinned, ...restored.filter((t) => !t.pinned)].filter(Boolean);
+  } catch {
+    /* ignore malformed storage */
+  }
+}
+
+function moveTab(id, delta) {
+  const index = state.tabs.findIndex((t) => t.id === id);
+  if (index < 0) return;
+  const target = index + delta;
+  if (target < 1 || target >= state.tabs.length) return;
+  if (state.tabs[index].pinned) return;
+  const [tab] = state.tabs.splice(index, 1);
+  state.tabs.splice(target, 0, tab);
+  renderTabs();
+  persistTabOrder();
+  document.querySelector(`[data-tab="${id}"]`)?.focus();
+}
+
+function syncOrderFromDom(root) {
+  const order = [...root.querySelectorAll("[data-tab]")].map((el) => el.dataset.tab);
+  const byId = new Map(state.tabs.map((t) => [t.id, t]));
+  const next = order.map((id) => byId.get(id)).filter(Boolean);
+  for (const tab of state.tabs) if (!order.includes(tab.id)) next.push(tab);
+  const pinned = next.find((t) => t.pinned);
+  state.tabs = [pinned, ...next.filter((t) => !t.pinned)].filter(Boolean);
+}
+
+function setupTabDrag() {
+  const strip = document.getElementById("tabs");
+  if (!strip) return;
+
+  const clearDrag = () => {
+    const { tab } = dragState.active || {};
+    if (tab) {
+      tab.classList.remove("dragging");
+      tab.setAttribute("aria-grabbed", "false");
+      if (window.gsap) {
+        gsap.to(tab, {
+          x: 0,
+          duration: 0.22,
+          ease: "power2.out",
+          onComplete: () => (tab.style.transform = ""),
+        });
+      } else {
+        tab.style.transform = "";
+      }
+    }
+    document.body.classList.remove("tab-dragging");
+    dragState.active = null;
+  };
+
+  strip.addEventListener("pointerdown", (event) => {
+    const tab = event.target.closest("[data-tab]");
+    if (!tab || tab.classList.contains("pinned")) return;
+    if (event.target.closest("[data-close]")) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    dragState.active = {
+      tab,
+      id: tab.dataset.tab,
+      pointerId: event.pointerId,
+      grab: event.clientX - strip.scrollLeft - tab.offsetLeft,
+      startX: event.clientX,
+      moved: false,
+    };
+    tab.setPointerCapture?.(event.pointerId);
+  });
+
+  strip.addEventListener("pointermove", (event) => {
+    const drag = dragState.active;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (!drag.moved) {
+      if (Math.abs(event.clientX - drag.startX) < 6) return;
+      drag.moved = true;
+      drag.tab.classList.add("dragging");
+      drag.tab.setAttribute("aria-grabbed", "true");
+      document.body.classList.add("tab-dragging");
+    }
+
+    const slot = event.clientX - strip.scrollLeft - drag.grab;
+    drag.tab.style.transform = `translateX(${slot - drag.tab.offsetLeft}px)`;
+
+    // Which slot is the pointer over?
+    const others = [...strip.querySelectorAll("[data-tab]")].filter((el) => el !== drag.tab);
+    const pinned = strip.querySelector("[data-tab].pinned");
+    let reference = null;
+    for (const el of others) {
+      const box = el.getBoundingClientRect();
+      if (event.clientX < box.left + box.width / 2) {
+        reference = el;
+        break;
+      }
+    }
+    if (pinned && reference === pinned) return;
+    const currentNext = drag.tab.nextElementSibling;
+    if (reference === currentNext || (!reference && !currentNext)) return;
+
+    const before = new Map(
+      [...strip.querySelectorAll("[data-tab]")].map((el) => [el, el.getBoundingClientRect().left]),
+    );
+    if (reference) strip.insertBefore(drag.tab, reference);
+    else strip.appendChild(drag.tab);
+
+    drag.tab.style.transform = `translateX(${slot - drag.tab.offsetLeft}px)`;
+
+    if (window.gsap) {
+      for (const [el, left] of before) {
+        if (el === drag.tab) continue;
+        const delta = left - el.getBoundingClientRect().left;
+        if (!delta) continue;
+        gsap.fromTo(el, { x: delta }, { x: 0, duration: 0.22, ease: "power2.out", overwrite: true });
+      }
+    }
+  });
+
+  const finish = (event) => {
+    const drag = dragState.active;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (drag.moved) {
+      dragState.justDragged = true;
+      setTimeout(() => (dragState.justDragged = false), 60);
+      syncOrderFromDom(strip);
+      persistTabOrder();
+    }
+    clearDrag();
+  };
+  strip.addEventListener("pointerup", finish);
+  strip.addEventListener("pointercancel", finish);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && dragState.active?.moved) clearDrag();
+  });
 }
 
 function openTab(id) {
@@ -1814,7 +1979,9 @@ function renderNotifications() {
 }
 
 function init() {
+  restoreTabOrder();
   renderTabs();
+  setupTabDrag();
   renderSolutionsMenu();
   renderStage();
   updateBadge();
@@ -1972,6 +2139,14 @@ function init() {
 
   document.getElementById("tabs").addEventListener("keydown", (event) => {
     if (!["ArrowRight", "ArrowLeft"].includes(event.key)) return;
+    if (event.altKey) {
+      const focused = event.target.closest("[data-tab]");
+      if (focused) {
+        event.preventDefault();
+        moveTab(focused.dataset.tab, event.key === "ArrowRight" ? 1 : -1);
+        return;
+      }
+    }
     const index = state.tabs.findIndex((t) => t.id === state.active);
     const next = (index + (event.key === "ArrowRight" ? 1 : -1) + state.tabs.length) % state.tabs.length;
     event.preventDefault();
