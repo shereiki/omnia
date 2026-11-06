@@ -43,7 +43,17 @@ How to answer:
 - Talk about the business outcome first (cost, hours, errors), not the technology.
 - Never invent client-specific numbers beyond the demo's own data; if asked about something you cannot know, say what you would check or who would.
 - If someone asks for a change (a new dashboard, a connector, a different workflow), say it goes to their engineer as a request, and that it is built for them rather than configured by them.
-- No buzzwords, no "I am an AI" framing. You are Omnia's assistant, speaking plainly.`;
+- No buzzwords, no "I am an AI" framing. You are Omnia's assistant, speaking plainly.
+
+You can act inside the demo. When an action helps, end your reply with one JSON
+block on its own line, and nothing after it:
+{"actions":[{"type":"navigate","target":"orders","label":"Open Order Operations"}]}
+Allowed actions only:
+- {"type":"navigate","target":"<general|agents|decisions|orders|inventory|skus|savings|dispatch|fleet|lanes|schedule|rooms|waitlist|claims>","label":"…"}
+- {"type":"open_decision","target":"<decision id>","label":"…"}
+- {"type":"pause_agent","target":"<agent id>","label":"…"}
+- {"type":"request_change","target":"<short title>","label":"…"}
+Use at most two, and only when the person is asking to see or do something.`;
 
 export default {
   async fetch(request) {
@@ -115,12 +125,37 @@ export default {
         return json({ error: "The assistant did not answer. Try again.", code: "upstream" }, 502);
 
       const data = await response.json();
-      const reply =
+      const raw =
         data?.choices?.[0]?.message?.content?.trim() ||
         data?.choices?.[0]?.message?.reasoning_content?.trim() ||
         "";
-      if (!reply) return json({ error: "The assistant returned nothing.", code: "empty" }, 502);
-      return json({ reply });
+      if (!raw) return json({ error: "The assistant returned nothing.", code: "empty" }, 502);
+
+      // the model may end with an actions block; validate before anything runs
+      const NAV = new Set(["general","agents","decisions","orders","inventory","skus","savings","dispatch","fleet","lanes","schedule","rooms","waitlist","claims"]);
+      let reply = raw;
+      let actions = [];
+      const match = raw.match(/\{[\s\S]*"actions"[\s\S]*\}\s*$/);
+      if (match) {
+        try {
+          const parsed = JSON.parse(match[0]);
+          reply = raw.slice(0, match.index).trim();
+          actions = (parsed.actions || [])
+            .filter((a) => a && typeof a.type === "string" && typeof a.label === "string")
+            .map((a) => ({ type: a.type, target: String(a.target || ""), label: a.label.slice(0, 40) }))
+            .filter((a) => {
+              if (a.type === "navigate") return NAV.has(a.target);
+              if (a.type === "open_decision") return /^D-\d+$/.test(a.target);
+              if (a.type === "pause_agent") return /^[a-z]{3,20}$/.test(a.target);
+              if (a.type === "request_change") return a.target.length > 2;
+              return false;
+            })
+            .slice(0, 2);
+        } catch {
+          reply = raw;
+        }
+      }
+      return json({ reply, actions });
     } catch {
       return json({ error: "The assistant timed out. Try again.", code: "timeout" }, 504);
     }
