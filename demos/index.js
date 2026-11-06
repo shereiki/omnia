@@ -9,7 +9,7 @@ const ICONS = {
 const cards = Object.values(PROFILES)
   .map((client) => {
     const tone = client.slug === "meridian" ? "retail" : client.slug === "northline" ? "logistics" : "healthcare";
-    return `<a class="launch-card" href="/demos/${client.slug}">
+    return `<a class="launch-card" href="/demos/workspace?client=${client.slug}">
       <span class="launch-card-top">
         <span class="launch-mark">${client.name.slice(0, 1)}</span>
         <span class="launch-meta">
