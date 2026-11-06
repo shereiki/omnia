@@ -1234,7 +1234,7 @@ function railContext() {
       ? "General"
       : (SOLUTIONS.find((s2) => s2.id === state.active) || {}).label || "the workspace";
   const el = document.getElementById("railContext");
-  if (el) el.textContent = `On ${view} · ${CLIENT.name}`;
+  if (el) el.textContent = `Knows this workspace · ${view}`;
 }
 
 function railBubble(role, text) {
@@ -1783,42 +1783,71 @@ function viewTracker() {
     <div><h1>Live map</h1><p>Every load on the road, where it actually is.</p></div>
     <div class="head-actions"><span class="chip good">${CLIENT.trucks.filter((t) => t.status !== "Delivered").length} moving</span></div>
   </div>
-  <div class="tracker">
-    <section class="tracker-map">
-      <svg viewBox="0 0 700 430" role="img" aria-label="Loads moving between cities">
-        <rect x="0" y="0" width="700" height="430" rx="18" fill="#f7f4fd" />
-        ${CLIENT.trucks
-          .map((t) => `<line x1="${t.from[0]}" y1="${t.from[1]}" x2="${t.to[0]}" y2="${t.to[1]}"
-            stroke="#ded5f8" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round" />`)
-          .join("")}
-        ${CLIENT.cities
-          .map(
-            (c) => `<g><circle cx="${c.x}" cy="${c.y}" r="6" fill="#fff" stroke="#c9bff0" stroke-width="2" />
-              <text x="${c.x + 11}" y="${c.y + 4}" class="map-city">${c.name}</text></g>`,
-          )
-          .join("")}
-        ${CLIENT.trucks
-          .map((t) => {
-            const [x, y] = point(t);
-            return `<g class="truck" data-truck="${t.id}" tabindex="0" role="button" aria-label="${t.id} ${t.label}">
-              <circle cx="${x}" cy="${y}" r="13" fill="#efeaff" />
-              <circle cx="${x}" cy="${y}" r="7" fill="${t.status === "At border" ? "#d9a353" : t.status === "Delivered" ? "#1e7f66" : "#5b45d6"}" />
-            </g>`;
-          })
-          .join("")}
-      </svg>
-    </section>
-    <aside class="tracker-list">
+
+  <section class="tracker-map">
+    <svg viewBox="0 0 760 470" role="img" aria-label="Loads moving between cities">
+      <defs>
+        <radialGradient id="mapGlow" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="100%" stop-color="#f4f0fd" />
+        </radialGradient>
+        <linearGradient id="route" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#c9bcf4" stop-opacity="0.25" />
+          <stop offset="50%" stop-color="#a493ee" stop-opacity="0.75" />
+          <stop offset="100%" stop-color="#c9bcf4" stop-opacity="0.25" />
+        </linearGradient>
+      </defs>
+      <rect width="760" height="470" rx="20" fill="url(#mapGlow)" />
+
       ${CLIENT.trucks
         .map(
-          (t) => `<button class="truck-row ${t.status === "At border" ? "warn" : ""}" data-truck="${t.id}">
-            <span class="truck-id">${t.id}</span>
-            <strong>${t.label}</strong>
-            <span class="truck-meta">${t.status} · ${Math.round(t.progress * 100)}% of the way</span>
-          </button>`,
+          (t) => `<path d="M${t.from[0]} ${t.from[1]} Q${(t.from[0] + t.to[0]) / 2} ${Math.min(t.from[1], t.to[1]) - 45} ${t.to[0]} ${t.to[1]}"
+            fill="none" stroke="url(#route)" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 8" class="route-line" />`,
         )
         .join("")}
-    </aside>
+
+      ${CLIENT.cities
+        .map(
+          (c) => `<g class="city">
+            <circle cx="${c.x}" cy="${c.y}" r="9" fill="#ffffff" opacity="0.9" />
+            <circle cx="${c.x}" cy="${c.y}" r="4.5" fill="#b9a8ea" />
+            <text x="${c.x + 13}" y="${c.y + 4}" class="map-city">${c.name}</text>
+          </g>`,
+        )
+        .join("")}
+
+      ${CLIENT.trucks
+        .map((t) => {
+          const [x, y] = point(t);
+          const colour = t.status === "At border" ? "#d9a353" : t.status === "Delivered" ? "#1e7f66" : "#5b45d6";
+          return `<g class="truck" data-truck="${t.id}" tabindex="0" role="button" aria-label="${t.id} ${t.label}">
+            <circle cx="${x}" cy="${y}" r="16" fill="${colour}" opacity="0.12" />
+            <circle cx="${x}" cy="${y}" r="8" fill="${colour}" stroke="#fff" stroke-width="2.5" />
+            <text x="${x}" y="${y - 15}" text-anchor="middle" class="map-truck-id">${t.id.replace("NL-", "")}</text>
+          </g>`;
+        })
+        .join("")}
+    </svg>
+
+    <div class="tracker-legend">
+      <span><i class="dot uv"></i>In transit</span>
+      <span><i class="dot warn"></i>At border</span>
+      <span><i class="dot good"></i>Delivered</span>
+    </div>
+  </section>
+
+  <div class="tracker-cards">
+    ${CLIENT.trucks
+      .map(
+        (t) => `<button class="truck-row ${t.status === "At border" ? "warn" : ""}" data-truck="${t.id}">
+          <span class="truck-top"><span class="truck-id">${t.id}</span>
+            <span class="chip ${t.status === "At border" ? "warn" : t.status === "Delivered" ? "good" : "uv"}">${t.status}</span></span>
+          <strong>${t.label}</strong>
+          <span class="truck-progress"><i style="width:${Math.round(t.progress * 100)}%"></i></span>
+          <span class="truck-meta">${Math.round(t.progress * 100)}% of the way</span>
+        </button>`,
+      )
+      .join("")}
   </div>`;
 }
 
@@ -2445,6 +2474,20 @@ function wireStage() {
       askAgentBody(text);
     });
     if (document.getElementById("agentChatLog")) paintAgentChat();
+  }
+
+  if (window.gsap && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    gsap.to(stage.querySelectorAll(".route-line"), {
+      strokeDashoffset: -120,
+      duration: 8,
+      repeat: -1,
+      ease: "none",
+    });
+    gsap.fromTo(
+      stage.querySelectorAll(".truck circle:nth-child(2)"),
+      { scale: 0.85, transformOrigin: "50% 50%" },
+      { scale: 1, duration: 1.4, repeat: -1, yoyo: true, ease: "sine.inOut", stagger: 0.3 },
+    );
   }
 
   stage.querySelectorAll("[data-truck]").forEach((el) =>
