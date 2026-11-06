@@ -155,7 +155,12 @@ const server = createServer(async (req, res) => {
       } else {
         const type = types[extname(file.full)] || "application/octet-stream";
         response = new Response(file.body, {
-          headers: { "Content-Type": type, ...headersFor(url.pathname) },
+          headers: {
+            "Content-Type": type,
+            // local editing: never let the browser serve a stale module
+            "Cache-Control": "no-store, must-revalidate",
+            ...headersFor(url.pathname),
+          },
         });
       }
     }

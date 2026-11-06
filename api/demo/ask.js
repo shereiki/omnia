@@ -7,8 +7,8 @@ import { clientIp, json, readJson, sameOrigin } from "../../server/http.js";
  * the UI is told plainly so it can fall back to the written answers.
  */
 
-const ENDPOINT = "https://opencode.ai/inference/openai/v1/chat/completions";
-const MODEL = process.env.OPENCODE_MODEL || "glm-5.3";
+const ENDPOINT = "https://opencode.ai/inference/go/openai/v1/chat/completions";
+const MODEL = process.env.OPENCODE_MODEL || "glm-5.3-flash";
 const MAX_TURNS = 8;
 const MAX_CHARS = 1200;
 
@@ -87,7 +87,12 @@ export default {
     try {
       const response = await fetch(ENDPOINT, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          // Go inference routes by session; a stable id per conversation is enough.
+          "x-opencode-session": String(body.session || "omnia-demo"),
+        },
         body: JSON.stringify({
           model: MODEL,
           messages: [{ role: "system", content: persona ? `${SYSTEM}\n\n${persona}` : SYSTEM }, ...messages],

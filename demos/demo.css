@@ -1543,3 +1543,7 @@ body.launcher { padding-top: 0; background: var(--frost); min-height: 100vh; }
 .agent-chat { display: grid; gap: 7px; }
 .agent-chat-log { display: grid; gap: 7px; max-height: 220px; overflow-y: auto; }
 .agent-chat-log:empty::before { content: "Ask it what it would do next."; font-size: 11px; color: var(--faint); }
+
+.connector-mark.has-logo { background: color-mix(in srgb, var(--brand) 10%, white); color: var(--brand); }
+.connector-mark.has-logo svg { width: 15px; height: 15px; }
+.connector-grid { grid-template-columns: repeat(auto-fill, minmax(186px, 1fr)); }
