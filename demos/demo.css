@@ -746,3 +746,21 @@ body.gate { min-height: 100vh; display: grid; place-items: center; padding: 26px
 .person-card { grid-template-columns: auto minmax(0, 1fr) auto; }
 .person-last { grid-column: 2 / -1; }
 .module-card { align-items: center; }
+
+/* ---------- tab rearranging ---------- */
+
+.tabs { position: relative; }
+.tab { cursor: grab; user-select: none; }
+.tab.pinned { cursor: pointer; }
+.tab.dragging {
+  cursor: grabbing;
+  z-index: 5;
+  background: var(--paper);
+  border-color: #cfc4f2;
+  color: var(--uv);
+  box-shadow: 0 14px 28px -18px rgba(29, 23, 64, 0.7), 0 2px 6px rgba(29, 23, 64, 0.08);
+  opacity: 0.98;
+}
+body.tab-dragging { cursor: grabbing; }
+body.tab-dragging .tab { transition: none; }
+.tab.dragging .tab-close { opacity: 0; }
