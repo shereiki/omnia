@@ -6,6 +6,7 @@ import { guardAdminRequest } from "../server/session.js";
 import { guardDemoRequest } from "../server/demos.js";
 import { createMemoryStore } from "../server/store.js";
 const demoSession = (await import("../api/demos/session.js")).default;
+const demoAsk = (await import("../api/demo/ask.js")).default;
 
 const root = new URL("..", import.meta.url).pathname;
 const port = Number(process.env.PORT || 8787);
@@ -125,7 +126,9 @@ const server = createServer(async (req, res) => {
       response = new Response(page.body, {
         headers: { "Content-Type": "text/html; charset=utf-8", ...headersFor(url.pathname) },
       });
-    } else if (url.pathname === "/api/demos/session")
+    } else if (url.pathname === "/api/demo/ask")
+      response = await demoAsk.fetch(request);
+    else if (url.pathname === "/api/demos/session")
       response = await demoSession.fetch(request);
     else if (url.pathname === "/demos" || url.pathname.startsWith("/demos/")) {
       const denied = await guardDemoRequest(request, env);
@@ -152,7 +155,12 @@ const server = createServer(async (req, res) => {
       } else {
         const type = types[extname(file.full)] || "application/octet-stream";
         response = new Response(file.body, {
-          headers: { "Content-Type": type, ...headersFor(url.pathname) },
+          headers: {
+            "Content-Type": type,
+            // local editing: never let the browser serve a stale module
+            "Cache-Control": "no-store, must-revalidate",
+            ...headersFor(url.pathname),
+          },
         });
       }
     }
