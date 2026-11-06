@@ -732,9 +732,13 @@ body.gate { min-height: 100vh; display: grid; place-items: center; padding: 26px
   .table th:nth-child(3), .table td:nth-child(3) { display: none; }
 }
 
-@media (max-width: 420px) {
-  .tile-grid, .tile-grid.three, .triple, .stat-row, .people-grid, .system-grid, .module-grid { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 430px) {
+  .triple, .stat-row, .people-grid, .system-grid, .module-grid { grid-template-columns: minmax(0, 1fr); }
   .decision-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 359px) {
+  .tile-grid, .tile-grid.three { grid-template-columns: minmax(0, 1fr); }
 }
 
 .decision-evidence { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--faint); }
@@ -1199,3 +1203,130 @@ body.tab-dragging .tab { transition: none; }
 
 /* leave room so the orb never sits on top of content */
 .stage { padding-bottom: 104px; }
+
+/* ==========================================================================
+   The panel, rebuilt: room to read, agents treated as a product
+   ========================================================================== */
+
+.dock { width: min(470px, calc(100vw - 20px)); }
+@media (min-width: 1280px) { .dock { width: 500px; } }
+.dock-body { padding: 14px; gap: 14px; }
+.dock-head { padding: 12px 12px 12px 14px; }
+.dock-title-copy strong { font-size: 13.5px; }
+.dock-title-copy span { font-size: 10.5px; }
+
+/* engineer entry in the pill */
+
+.pill-person { padding: 0 12px 0 5px; gap: 8px; height: 36px; border-radius: 999px; }
+.pill-person-avatar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #efeafc;
+  color: var(--uv);
+}
+.pill-person-avatar svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.pill-person-copy { display: grid; line-height: 1.15; text-align: left; }
+.pill-person-copy small { font-size: 8.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); font-weight: 700; }
+.pill-person-copy strong { font-size: 11.5px; font-weight: 700; color: var(--ink-2); }
+.pill-person:hover .pill-person-copy strong, .pill-person[aria-expanded="true"] .pill-person-copy strong { color: var(--uv); }
+
+/* agents chip in the pill */
+
+.pill-agents {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px;
+  margin-left: 4px;
+  border: 1px solid #d9f0e6;
+  border-radius: 999px;
+  background: #f3fbf8;
+  color: var(--mint-deep);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.pill-agents:hover { background: #e9f8f2; border-color: #c7e9dc; }
+.pill-agents[aria-expanded="true"] { background: #e4f7ef; border-color: #b9e4d5; }
+.pill-agents i { width: 6px; height: 6px; border-radius: 50%; background: var(--mint-deep); animation: pulse 2.4s ease-in-out infinite; }
+.pill-agents b { font-size: 11.5px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 1000px) { .pill-agents span { display: none; } }
+
+/* agents panel */
+
+.agent-panel { display: grid; gap: 14px; }
+.agent-banner { display: grid; gap: 4px; padding: 11px 12px; border-radius: 12px; background: #f4fbf8; border: 1px solid #dcf1e8; }
+.agent-banner-live { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--mint-deep); }
+.agent-banner-live i { width: 6px; height: 6px; border-radius: 50%; background: var(--mint-deep); animation: pulse 2.4s ease-in-out infinite; }
+.agent-banner p { font-size: 11.5px; line-height: 1.5; color: var(--ink-2); }
+
+.agent-cards { display: grid; gap: 6px; }
+.agent-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--paper);
+  text-align: left;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease), transform 0.15s var(--ease);
+}
+.agent-card:hover { border-color: #ddd4f7; background: #fcfbff; transform: translateX(1px); }
+.agent-card.selected { border-color: #d8cdf5; background: #f8f5ff; }
+.agent-card-avatar { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: #efeafc; color: var(--uv); flex: 0 0 auto; }
+.agent-card-avatar svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.agent-card-avatar.lg { width: 40px; height: 40px; border-radius: 12px; }
+.agent-card-body { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.agent-card-top { display: flex; align-items: center; gap: 7px; }
+.agent-card-top strong { font-size: 13px; font-weight: 700; }
+.agent-card-body small { font-size: 11px; color: var(--faint); }
+.agent-card-meta { font-size: 10.5px; color: var(--muted); }
+.agent-card-meta b { font-weight: 700; color: var(--ink-2); }
+
+.agent-detail { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 15px; background: #fcfbff; }
+.agent-detail-head { display: flex; align-items: center; gap: 10px; }
+.agent-detail-head h3 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+.agent-detail-head p { font-size: 11px; color: var(--muted); }
+.agent-detail-head .chip { margin-left: auto; }
+.agent-detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.agent-detail-stats div { padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+.agent-detail-stats span { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--faint); }
+.agent-detail-stats strong { display: block; margin-top: 3px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.agent-detail-label { font-size: 9.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); }
+.agent-thread { display: grid; gap: 7px; }
+.agent-msg { display: grid; gap: 3px; padding: 10px 11px; border-radius: 11px; background: var(--paper); border: 1px solid var(--line); }
+.agent-msg.user { background: #f3effc; border-color: #e6defa; }
+.agent-msg-who { font-size: 10px; font-weight: 700; color: var(--uv); }
+.agent-msg p { font-size: 12px; line-height: 1.55; color: var(--ink-2); }
+.agent-msg-when { font-size: 9.5px; color: var(--faint); }
+.agent-rules { display: flex; flex-wrap: wrap; gap: 5px; }
+.agent-tools-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* narrow screens: the pill keeps only what earns its space */
+@media (max-width: 900px) {
+  .pill .tab[aria-selected="true"] span { display: inline; }
+  .pill .tab { width: 34px; height: 34px; padding: 0; justify-content: center; }
+  .pill .tab[aria-selected="true"] { width: auto; padding: 0 12px; }
+}
+@media (max-width: 760px) {
+  .pill-person-copy { display: none; }
+  .pill-person { padding: 0; width: 34px; height: 34px; justify-content: center; }
+  .pill-person .badge { top: 0; right: 2px; }
+  .pill .tab-count { display: none; }
+}
+@media (max-width: 620px) {
+  .pill { left: 6px; right: 6px; padding: 0 4px 0 8px; gap: 2px; }
+  .pill-brand { padding-right: 0; }
+  .pill-brand span { display: none; }
+  .pill-divider { margin: 0 2px; }
+  .pill-agents { padding: 0 8px; }
+  .pill-actions { gap: 0; }
+  .pill-button, .pill-account { width: 30px; height: 30px; }
+}
