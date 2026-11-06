@@ -1,0 +1,123 @@
+import { clientIp, json, readJson, sameOrigin } from "../../server/http.js";
+
+/*
+ * The demo's live assistant. Answers questions about Omnia from a model, not a
+ * script. The key is read from the environment (OPENCODE_API_KEY) and never
+ * leaves the server; if it is missing or the account cannot pay for a request,
+ * the UI is told plainly so it can fall back to the written answers.
+ */
+
+const ENDPOINT = "https://opencode.ai/inference/openai/v1/chat/completions";
+const MODEL = process.env.OPENCODE_MODEL || "glm-5.3";
+const MAX_TURNS = 8;
+const MAX_CHARS = 1200;
+
+const hits = new Map();
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_REQUESTS = 25;
+
+function limited(key) {
+  const now = Date.now();
+  const entry = hits.get(key);
+  if (!entry || now - entry.start > WINDOW_MS) {
+    hits.set(key, { start: now, count: 1 });
+    if (hits.size > 4000) hits.clear();
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > MAX_REQUESTS;
+}
+
+const SYSTEM = `You are Omnia's assistant, inside a client workspace demo.
+
+What Omnia is: a managed, modular AI platform for businesses. Omnia designs and implements AI workflows around a company's operation, then gives them a workspace to run and see it. Four surfaces: dashboards (the operation), decisions (money, customers, stock, access — always a person's call), agents (the machinery, working inside rules), and the desk (your engineer, who builds changes).
+
+How it works for a client:
+- Omnia builds the dashboards and connectors; the client does not configure plumbing.
+- Agents raise anything consequential as a decision; nothing with a cost, a customer or access happens on its own.
+- A named engineer (a person) handles change requests and replies inside about 30 minutes. Requests are not an AI chat.
+- Connectors: hundreds of systems, with the long tail added on request.
+
+How to answer:
+- Be concrete and short: 2 to 4 sentences unless asked to go deeper.
+- Talk about the business outcome first (cost, hours, errors), not the technology.
+- Never invent client-specific numbers beyond the demo's own data; if asked about something you cannot know, say what you would check or who would.
+- If someone asks for a change (a new dashboard, a connector, a different workflow), say it goes to their engineer as a request, and that it is built for them rather than configured by them.
+- No buzzwords, no "I am an AI" framing. You are Omnia's assistant, speaking plainly.`;
+
+export default {
+  async fetch(request) {
+    if (request.method !== "POST") return json({ error: "Method not allowed." }, 405);
+    if (!sameOrigin(request)) return json({ error: "Request not allowed." }, 403);
+
+    const key = clientIp(request) || "unknown";
+    if (limited(key)) return json({ error: "Too many questions just now. Try again in a few minutes." }, 429);
+
+    let body;
+    try {
+      body = await readJson(request, 12000);
+    } catch {
+      return json({ error: "Invalid input." }, 400);
+    }
+
+    const incoming = Array.isArray(body.messages) ? body.messages : [];
+    const messages = incoming
+      .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+      .slice(-MAX_TURNS)
+      .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_CHARS) }));
+
+    if (!messages.length || messages[messages.length - 1].role !== "user")
+      return json({ error: "Ask a question first." }, 400);
+
+    const token = process.env.OPENCODE_API_KEY;
+    if (!token)
+      return json(
+        {
+          error: "The live assistant is not switched on for this deployment.",
+          code: "not_configured",
+        },
+        503,
+      );
+
+    const persona =
+      typeof body.agent === "string" && body.agent.trim()
+        ? `You are speaking as ${body.agent.trim()}, one of this workspace's agents. Stay inside what that agent knows and does.`
+        : "";
+
+    try {
+      const response = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [{ role: "system", content: persona ? `${SYSTEM}\n\n${persona}` : SYSTEM }, ...messages],
+          max_tokens: 400,
+          temperature: 0.4,
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+
+      if (response.status === 402 || response.status === 403)
+        return json(
+          {
+            error: "The live assistant has no credit on this deployment.",
+            code: "unfunded",
+          },
+          503,
+        );
+
+      if (!response.ok)
+        return json({ error: "The assistant did not answer. Try again.", code: "upstream" }, 502);
+
+      const data = await response.json();
+      const reply =
+        data?.choices?.[0]?.message?.content?.trim() ||
+        data?.choices?.[0]?.message?.reasoning_content?.trim() ||
+        "";
+      if (!reply) return json({ error: "The assistant returned nothing.", code: "empty" }, 502);
+      return json({ reply });
+    } catch {
+      return json({ error: "The assistant timed out. Try again.", code: "timeout" }, 504);
+    }
+  },
+};

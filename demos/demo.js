@@ -78,6 +78,77 @@ const greeting = () => {
   return `${part}, ${firstName()}`;
 };
 
+const CONNECTORS = [
+  ["Shopify", "Commerce", "#95BF47"], ["WooCommerce", "Commerce", "#7F54B3"], ["Magento", "Commerce", "#EE672F"],
+  ["BigCommerce", "Commerce", "#121118"], ["Salla", "Commerce", "#00C48C"], ["Zid", "Commerce", "#1F6FEB"],
+  ["Amazon Seller", "Commerce", "#FF9900"], ["Noon", "Commerce", "#FEEE00"], ["Namshi", "Commerce", "#F5613F"],
+  ["Trendyol", "Commerce", "#F27A1A"], ["Shopware", "Commerce", "#189EFF"], ["PrestaShop", "Commerce", "#DF0067"],
+  ["Stripe", "Payments", "#635BFF"], ["Adyen", "Payments", "#0ABF53"], ["Checkout.com", "Payments", "#0F2A6B"],
+  ["PayPal", "Payments", "#003087"], ["Telr", "Payments", "#00A5A8"], ["Ziina", "Payments", "#5B45D6"],
+  ["Tabby", "Payments", "#3EEDBF"], ["Tamara", "Payments", "#FFC93C"], ["Mamo", "Payments", "#0E2A47"],
+  ["PayTabs", "Payments", "#1E88E5"], ["Network International", "Payments", "#0B5FA5"], ["Paymob", "Payments", "#FF4D4D"],
+  ["QuickBooks", "Finance", "#2CA01C"], ["Xero", "Finance", "#13B5EA"], ["Zoho Books", "Finance", "#E42527"],
+  ["Wafeq", "Finance", "#6C5CE7"], ["Tally", "Finance", "#0B4D8A"], ["SAP", "Finance", "#0FAAFF"],
+  ["Oracle NetSuite", "Finance", "#C74634"], ["Sage", "Finance", "#00D639"], ["FreshBooks", "Finance", "#0075DD"],
+  ["HubSpot", "CRM", "#FF7A59"], ["Salesforce", "CRM", "#00A1E0"], ["Pipedrive", "CRM", "#017737"],
+  ["Zoho CRM", "CRM", "#E42527"], ["Monday CRM", "CRM", "#FF3D57"], ["Close", "CRM", "#4B4BFF"],
+  ["Attio", "CRM", "#2F6BFF"], ["Copper", "CRM", "#C76A29"], ["Freshsales", "CRM", "#2E7BF6"],
+  ["Google Workspace", "Productivity", "#4285F4"], ["Microsoft 365", "Productivity", "#0078D4"],
+  ["Slack", "Productivity", "#4A154B"], ["Zoom", "Productivity", "#2D8CFF"], ["Notion", "Productivity", "#111111"],
+  ["Asana", "Productivity", "#FF6B6B"], ["Trello", "Productivity", "#0079BF"], ["ClickUp", "Productivity", "#7B68EE"],
+  ["Airtable", "Productivity", "#FCB400"], ["Coda", "Productivity", "#F46A54"], ["Calendly", "Productivity", "#006BFF"],
+  ["DocuSign", "Productivity", "#FFCC22"], ["Figma", "Productivity", "#F24E1E"],
+  ["WhatsApp Business", "Messaging", "#25D366"], ["Twilio", "Messaging", "#F22F46"], ["MessageBird", "Messaging", "#2D6BFF"],
+  ["Intercom", "Messaging", "#1F8DED"], ["Zendesk", "Messaging", "#03363D"], ["Freshdesk", "Messaging", "#25C16F"],
+  ["Front", "Messaging", "#001B38"], ["Telegram", "Messaging", "#26A5E4"], ["Gmail", "Messaging", "#EA4335"],
+  ["Outlook", "Messaging", "#0F6CBD"], ["SendGrid", "Messaging", "#1A82E2"], ["Resend", "Messaging", "#111111"],
+  ["Meta", "Marketing", "#0866FF"], ["Google Ads", "Marketing", "#34A853"], ["TikTok Ads", "Marketing", "#000000"],
+  ["LinkedIn Ads", "Marketing", "#0A66C2"], ["Klaviyo", "Marketing", "#111111"], ["Mailchimp", "Marketing", "#FFE01B"],
+  ["Braze", "Marketing", "#3B2A56"], ["Customer.io", "Marketing", "#5C2EE5"], ["Segment", "Marketing", "#52BD94"],
+  ["Mixpanel", "Analytics", "#7856FF"], ["Amplitude", "Analytics", "#1E61F0"], ["Looker", "Analytics", "#4285F4"],
+  ["Power BI", "Analytics", "#F2C811"], ["Tableau", "Analytics", "#E97627"], ["PostHog", "Analytics", "#F54E00"],
+  ["Metabase", "Analytics", "#509EE3"], ["Fivetran", "Data", "#0073FF"], ["Airbyte", "Data", "#615EFF"],
+  ["Snowflake", "Data", "#29B5E8"], ["BigQuery", "Data", "#4285F4"], ["Redshift", "Data", "#8C4FFF"],
+  ["Databricks", "Data", "#FF3621"], ["Neon", "Data", "#00E599"], ["Supabase", "Data", "#3ECF8E"],
+  ["MongoDB", "Data", "#47A248"], ["PostgreSQL", "Data", "#4169E1"], ["MySQL", "Data", "#4479A1"],
+  ["Shopify POS", "Operations", "#5E8E3E"], ["Lightspeed", "Operations", "#FF0000"], ["Square", "Operations", "#000000"],
+  ["Foodics", "Operations", "#27AE60"], ["Toast", "Operations", "#FF4C00"], ["Zoho Inventory", "Operations", "#E42527"],
+  ["Cin7", "Operations", "#2D9CDB"], ["Fishbowl", "Operations", "#1B7A43"], ["Katana", "Operations", "#5C4EE5"],
+  ["SAP Business One", "ERP", "#0FAAFF"], ["Odoo", "ERP", "#714B67"], ["Microsoft Dynamics", "ERP", "#002050"],
+  ["Epicor", "ERP", "#0057B8"], ["Infor", "ERP", "#FF5000"], ["Acumatica", "ERP", "#00A3E0"],
+  ["Workday", "HR", "#0875E1"], ["BambooHR", "HR", "#71B532"], ["Personio", "HR", "#0A0A0A"],
+  ["Zenefits", "HR", "#FF4E00"], ["Deel", "HR", "#1D4ED8"], ["Gusto", "HR", "#F45D48"],
+  ["Jira", "Engineering", "#0052CC"], ["GitHub", "Engineering", "#181717"], ["GitLab", "Engineering", "#FC6D26"],
+  ["Linear", "Engineering", "#5E6AD2"], ["Sentry", "Engineering", "#362D59"], ["Datadog", "Engineering", "#632CA6"],
+  ["PagerDuty", "Engineering", "#06AC38"], ["Vercel", "Engineering", "#000000"], ["Cloudflare", "Engineering", "#F38020"],
+  ["AWS S3", "Storage", "#569A31"], ["Google Drive", "Storage", "#0F9D58"], ["Dropbox", "Storage", "#0061FF"],
+  ["Box", "Storage", "#0061D5"], ["OneDrive", "Storage", "#0078D4"], ["SharePoint", "Storage", "#038387"],
+  ["DocuWare", "Documents", "#0B4C8C"], ["PandaDoc", "Documents", "#3B2B6B"], ["Concord", "Documents", "#FF6B57"],
+  ["Twilio Flex", "Support", "#F22F46"], ["Gladly", "Support", "#3060CF"], ["Kustomer", "Support", "#3E7BFA"],
+  ["Gorgias", "Support", "#0F1B2D"], ["Re:amaze", "Support", "#00C2A8"], ["Crisp", "Support", "#1972F5"],
+  ["DHL", "Logistics", "#FFCC00"], ["Aramex", "Logistics", "#E4002B"], ["FedEx", "Logistics", "#4D148C"],
+  ["UPS", "Logistics", "#351C15"], ["SMSA", "Logistics", "#00594F"], ["Fetchr", "Logistics", "#00C4B3"],
+  ["ShipStation", "Logistics", "#1E90FF"], ["Shippo", "Logistics", "#0EA5E9"], ["EasyPost", "Logistics", "#2C3E50"],
+  ["Onfleet", "Logistics", "#2196F3"], ["Bringoz", "Logistics", "#0B7A75"], ["Locus", "Logistics", "#4F46E5"],
+  ["SAP SuccessFactors", "HR", "#0FAAFF"], ["Zoho People", "HR", "#E42527"], ["HiBob", "HR", "#E6007E"],
+  ["Zapier", "Automation", "#FF4F00"], ["Make", "Automation", "#6D00CC"], ["n8n", "Automation", "#EA4B71"],
+  ["Workato", "Automation", "#00A3E0"], ["Tray", "Automation", "#0A2540"], ["Retool", "Automation", "#3D3D3D"],
+  ["Twake", "Productivity", "#0057FF"], ["Grafana", "Analytics", "#F46800"], ["Elastic", "Analytics", "#005571"],
+  ["Algolia", "Search", "#003DFF"], ["Typesense", "Search", "#C2211D"], ["Meilisearch", "Search", "#FF5CAA"],
+  ["Stripe Tax", "Finance", "#635BFF"], ["Avalara", "Finance", "#00A651"], ["TaxJar", "Finance", "#2E86AB"],
+  ["Payoneer", "Payments", "#FF4800"], ["Wise", "Payments", "#9FE870"], ["Revolut Business", "Payments", "#0666EB"],
+  ["Emirates NBD", "Banking", "#00263A"], ["Mashreq", "Banking", "#E4002B"], ["HSBC", "Banking", "#DB0011"],
+  ["First Abu Dhabi Bank", "Banking", "#0033A0"], ["Riyad Bank", "Banking", "#00539F"], ["Al Rajhi", "Banking", "#005EAB"],
+];
+
+const CONNECTOR_CATEGORIES = ["All", ...new Set(CONNECTORS.map(([, c]) => c))];
+
+const controls = new Map();
+function controlFor(id) {
+  if (!controls.has(id)) controls.set(id, { autonomy: "Act, then tell me", paused: false, quiet: false });
+  return controls.get(id);
+}
+
 const state = {
   tabs: [
     { id: "general", pinned: true },
@@ -91,6 +162,8 @@ const state = {
   os: false,
   osView: "overview",
   period: "7d",
+  connectorQuery: "",
+  connectorCategory: "All",
   agentId: "coordinator",
   decisionFilter: "All",
   stageFilter: "All",
@@ -802,6 +875,7 @@ function openDock(view = "requests", thread = null) {
   panel.hidden = false;
   document.getElementById("dockButton")?.setAttribute("aria-expanded", String(view === "requests"));
   document.getElementById("agentsButton")?.setAttribute("aria-expanded", String(view === "agents"));
+  document.getElementById("askButton")?.setAttribute("aria-expanded", String(view === "ask"));
   const chipCount = document.getElementById("agentsChipCount");
   if (chipCount) chipCount.textContent = String(AGENTS.filter((a) => a.status === "live").length);
   if (window.gsap) {
@@ -820,6 +894,7 @@ function closeDock() {
     dock.hidden = true;
     document.getElementById("dockButton")?.setAttribute("aria-expanded", "false");
     document.getElementById("agentsButton")?.setAttribute("aria-expanded", "false");
+    document.getElementById("askButton")?.setAttribute("aria-expanded", "false");
   };
   state.dock.open = false;
   state.dock.thread = null;
@@ -950,8 +1025,125 @@ function dockAgents() {
         <div class="agent-tools-list">
           ${agent.tools.map((t) => `<span class="tool-chip">${t}</span>`).join("")}
         </div>
+
+        <h4 class="agent-detail-label">Your control</h4>
+        <div class="agent-controls">
+          <label class="control">
+            <span>How much it does alone</span>
+            <select data-autonomy="${agent.id}">
+              ${["Ask me first", "Act, then tell me", "Act on its own"]
+                .map(
+                  (o) =>
+                    `<option ${controlFor(agent.id).autonomy === o ? "selected" : ""} ${o === "Act on its own" ? "disabled" : ""}>${o}${o === "Act on its own" ? " (needs Omnia)" : ""}</option>`,
+                )
+                .join("")}
+            </select>
+          </label>
+          <div class="control-row">
+            <span>Paused</span>
+            <button class="toggle" aria-pressed="${controlFor(agent.id).paused}" aria-label="Pause ${agent.name}" data-pause="${agent.id}"></button>
+          </div>
+          <div class="control-row">
+            <span>Quiet hours (21:00–07:00)</span>
+            <button class="toggle" aria-pressed="${controlFor(agent.id).quiet}" aria-label="Quiet hours" data-quiet="${agent.id}"></button>
+          </div>
+          <p class="control-note">Changing rules beyond these is applied by your engineer — deliberately.</p>
+        </div>
+
+        <h4 class="agent-detail-label">Ask ${agent.name}</h4>
+        <div class="agent-chat" id="agentChat">
+          <div class="agent-chat-log" id="agentChatLog"></div>
+          <form class="composer" id="agentAskForm">
+            <input id="agentAskInput" placeholder="Ask about its work, or what it would do next…" autocomplete="off" />
+            <button class="send" type="submit" aria-label="Send">${I("i-send")}</button>
+          </form>
+          <p class="chat-hint"><i></i>Live assistant · answers here are generated, actions are not</p>
+        </div>
       </section>
     </div>`;
+}
+
+/* ------------------------------------------------------------ live help
+   One endpoint, two front doors: Omnia's assistant (what we can do) and an
+   agent's own view (what it would do next). Answers are generated live when the
+   deployment has credit for it; otherwise the UI says so instead of pretending. */
+
+const askHistory = [];
+let asking = false;
+
+async function askAssistant(messages, agent) {
+  const response = await fetch("/api/demo/ask", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ messages, agent }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) return { error: data.error || "The assistant did not answer.", code: data.code };
+  return { reply: data.reply };
+}
+
+function chatBubble(role, text) {
+  return `<div class="ask-msg ${role}">${text}</div>`;
+}
+
+async function sendTo(logEl, text, agent) {
+  if (asking) return;
+  asking = true;
+  askHistory.push({ role: "user", content: text });
+  logEl.insertAdjacentHTML("beforeend", chatBubble("user", text));
+  const typing = document.createElement("div");
+  typing.className = "ask-msg assistant typing";
+  typing.innerHTML = '<span class="dots"><i></i><i></i><i></i></span>';
+  logEl.appendChild(typing);
+  logEl.scrollTop = logEl.scrollHeight;
+
+  const result = await askAssistant(askHistory.slice(-8), agent);
+  typing.remove();
+
+  if (result.error) {
+    const hint =
+      result.code === "unfunded" || result.code === "not_configured"
+        ? "The live assistant is not switched on for this deployment yet — your Omnia team can turn it on. Everything else in this demo works."
+        : result.error;
+    logEl.insertAdjacentHTML("beforeend", chatBubble("assistant", hint));
+    askHistory.pop();
+  } else {
+    askHistory.push({ role: "assistant", content: result.reply });
+    logEl.insertAdjacentHTML("beforeend", chatBubble("assistant", result.reply.replace(/\n{2,}/g, "<br><br>").replace(/\n/g, "<br>")));
+  }
+  logEl.scrollTop = logEl.scrollHeight;
+  asking = false;
+}
+
+function askAgentBody(text) {
+  const logEl = document.getElementById("agentChatLog");
+  const agent = AGENTS.find((a) => a.id === state.agentId);
+  if (!logEl || !agent) return;
+  sendTo(logEl, text, agent.name);
+}
+
+function dockAsk() {
+  return `
+    <div class="ask-head">
+      <span class="ask-mark">${I("i-spark")}</span>
+      <div><strong>Ask Omnia</strong><span>What we can build, how it would work, what it costs you.</span></div>
+    </div>
+    <div class="ask-suggestions">
+      ${[
+        "What would Omnia do for a wholesaler with three warehouses?",
+        "How do decisions and approvals actually work?",
+        "Can you connect our ERP and our courier?",
+        "What does a first month look like?",
+      ]
+        .map((q) => `<button class="ask-chip" data-ask-prompt="${q}">${q}</button>`)
+        .join("")}
+    </div>
+    <div class="ask-thread" id="askThread"></div>
+    <form class="composer" id="askForm">
+      <input id="askInput" placeholder="Ask anything about Omnia…" autocomplete="off" />
+      <button class="send" type="submit" aria-label="Send">${I("i-send")}</button>
+    </form>
+    <p class="chat-hint"><i></i>Live answers · ask it something real</p>`;
 }
 
 function renderDock() {
@@ -963,9 +1155,18 @@ function renderDock() {
     title.innerHTML =
       view === "agents"
         ? `<div class="dock-title-copy"><strong>Agents</strong><span>${AGENTS.filter((a) => a.status === "live").length} running · working inside your rules</span></div>`
-        : `<div class="dock-title-copy">${engineerAvatar("sm")}<div><strong>${ENGINEER.name}</strong><span>${ENGINEER.role}</span></div></div>`;
+        : view === "ask"
+          ? `<div class="dock-title-copy"><strong>Ask Omnia</strong><span>Live answers about what we build</span></div>`
+          : `<div class="dock-title-copy">${engineerAvatar("sm")}<div><strong>${ENGINEER.name}</strong><span>${ENGINEER.role}</span></div></div>`;
   }
-  body.innerHTML = view === "agents" ? dockAgents() : state.dock.thread ? dockThread() : dockRequests();
+  body.innerHTML =
+    view === "agents"
+      ? dockAgents()
+      : view === "ask"
+        ? dockAsk()
+        : state.dock.thread
+          ? dockThread()
+          : dockRequests();
 
   const count = state.requests.filter((r) => r.status === "Open").length;
   const badge = document.getElementById("dockBadge");
@@ -991,6 +1192,37 @@ function renderDock() {
     renderDock();
   });
   body.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", () => newRequestModal()));
+
+  const agentForm = document.getElementById("agentAskForm");
+  if (agentForm) {
+    agentForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = document.getElementById("agentAskInput");
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      askAgentBody(text);
+    });
+  }
+
+  const askThread = document.getElementById("askThread");
+  if (askThread) {
+    askThread.innerHTML = askHistory
+      .map((m) => chatBubble(m.role === "user" ? "user" : "assistant", m.content))
+      .join("");
+    body.querySelectorAll("[data-ask-prompt]").forEach((chip) =>
+      chip.addEventListener("click", () => sendTo(askThread, chip.dataset.askPrompt)),
+    );
+    const askFormEl = document.getElementById("askForm");
+    askFormEl?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = document.getElementById("askInput");
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      sendTo(askThread, text);
+    });
+  }
   body.querySelectorAll("[data-book-call]").forEach((el) => el.addEventListener("click", bookACall));
   body.querySelectorAll("[data-reply]").forEach((form) =>
     form.addEventListener("submit", (event) => {
@@ -1240,6 +1472,26 @@ function osBody() {
         ).join("")}
       </div>
       <div class="card-foot"><span>We add and maintain connections. Ask and it goes on the list.</span></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Connector catalogue</h2><small>${CONNECTORS.length} connectors we can wire up · anything else is a request</small></div>
+        <div class="catalog-tools">
+          <input class="table-search" id="connectorSearch" type="search" placeholder="Search connectors" />
+          <button class="btn sm" data-help>${I("i-mail")}Ask for help</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="filter-chips catalog-cats" id="connectorCats">
+          ${CONNECTOR_CATEGORIES.map(
+            (c) => `<button class="chip ${c === state.connectorCategory ? "uv" : "ghost"}" data-cat="${c}">${c}</button>`,
+          ).join("")}
+        </div>
+        <div class="connector-grid" id="connectorGrid"></div>
+      </div>
+      <div class="card-foot"><span>Wiring is ours. You pick the system, we do the build.</span>
+        <span id="connectorCount" class="muted"></span></div>
     </section>`;
 
   if (view === "modules")
@@ -1402,6 +1654,7 @@ function renderStage() {
                   : viewGeneral();
   document.getElementById("topbar").classList.toggle("os-mode", Boolean(state.os));
   wireStage();
+  renderConnectors();
   renderMainChart();
   animateStage();
 }
@@ -1426,6 +1679,41 @@ function decide(id, status) {
       ? `${decision.id} approved · ${decision.agent} is carrying it out`
       : `${decision.id} declined · ${decision.agent} will stop work`,
   );
+}
+
+function renderConnectors() {
+  const grid = document.getElementById("connectorGrid");
+  if (!grid) return;
+  const q = state.connectorQuery.toLowerCase();
+  const list = CONNECTORS.filter(
+    ([name, cat]) =>
+      (state.connectorCategory === "All" || cat === state.connectorCategory) &&
+      (!q || name.toLowerCase().includes(q) || cat.toLowerCase().includes(q)),
+  );
+
+  grid.innerHTML = list
+    .map(
+      ([name, cat, color]) => `<button class="connector" data-connector="${name}">
+        <span class="connector-mark" style="--brand:${color}">${name.slice(0, 2).toUpperCase()}</span>
+        <span class="connector-copy"><strong>${name}</strong><small>${cat}</small></span>
+      </button>`,
+    )
+    .join("");
+
+  const count = document.getElementById("connectorCount");
+  if (count) count.textContent = `${list.length} of ${CONNECTORS.length}`;
+
+  grid.querySelectorAll("[data-connector]").forEach((el) =>
+    el.addEventListener("click", () => newRequestModal("integration", el.dataset.connector)),
+  );
+
+  if (window.gsap && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    gsap.fromTo(
+      grid.querySelectorAll(".connector"),
+      { opacity: 0, y: 8 },
+      { opacity: 1, y: 0, duration: 0.3, stagger: 0.008, ease: "power1.out", overwrite: true },
+    );
+  }
 }
 
 function wireStage() {
@@ -1576,6 +1864,30 @@ function wireStage() {
       });
     }),
   );
+  const connectorSearch = document.getElementById("connectorSearch");
+  if (connectorSearch) {
+    connectorSearch.value = state.connectorQuery;
+    connectorSearch.addEventListener("input", () => {
+      state.connectorQuery = connectorSearch.value;
+      renderConnectors();
+    });
+  }
+  stage.querySelectorAll("[data-cat]").forEach((el) =>
+    el.addEventListener("click", () => {
+      state.connectorCategory = el.dataset.cat;
+      stage.querySelectorAll("[data-cat]").forEach((b) =>
+        b.classList.toggle("uv", b.dataset.cat === state.connectorCategory),
+      );
+      stage.querySelectorAll("[data-cat]").forEach((b) =>
+        b.classList.toggle("ghost", b.dataset.cat !== state.connectorCategory),
+      );
+      renderConnectors();
+    }),
+  );
+  stage.querySelectorAll("[data-help]").forEach((el) =>
+    el.addEventListener("click", () => newRequestModal("integration")),
+  );
+
   stage.querySelectorAll("[data-os]").forEach((el) =>
     el.addEventListener("click", () => {
       state.osView = el.dataset.os;
@@ -1888,6 +2200,12 @@ function init() {
       </div></div>`),
   );
   document.querySelector('[data-action="notify"]').addEventListener("click", renderNotifications);
+
+  document.getElementById("askButton").addEventListener("click", () => {
+    if (state.dock.open && state.dock.view === "ask") return closeDock();
+    state.dock.thread = null;
+    openDock("ask");
+  });
 
   const agentsButton = document.getElementById("agentsButton");
   agentsButton.addEventListener("click", () => {
