@@ -2360,3 +2360,8 @@ body { padding-top: var(--bar); }
   .tracker { grid-template-columns: minmax(0, 1fr); }
   .rooms { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Chart.js hosts */
+.chart-box { position: relative; width: 100%; }
+.chart-box canvas { width: 100% !important; height: 100% !important; }
+.donut-box { margin: 0 auto; }

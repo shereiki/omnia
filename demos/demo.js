@@ -3,11 +3,14 @@
 
 import {
   lineChart,
-  columns,
-  donut,
+  initLine,
+  columnChart,
+  initColumns,
+  donutChart,
+  initDonut,
+  destroyChart,
   funnel,
   sparkline,
-  niceMax,
   fmt,
   C,
 } from "./charts.js";
@@ -251,6 +254,31 @@ const AGENT_WORK = {
   reminders: { task: "Sending tomorrow's confirmations", steps: ["Built the list", "Sent 96 reminders", "61 confirmed"], queue: ["26 not answered"] },
   billing: { task: "Answering billing questions", steps: ["Read 6 threads", "Explained 4 invoices", "Held 1 waiver"], queue: ["1 fee waiver for you"] },
 };
+
+const chartSpecs = [];
+let chartSeq = 0;
+
+function chart(kind, payload, height) {
+  const id = `chart-${++chartSeq}`;
+  chartSpecs.push({ id, kind, payload });
+  const size = kind === "donut" ? 148 : height || 200;
+  const markup =
+    kind === "donut"
+      ? donutChart({ id, size })
+      : kind === "line"
+        ? lineChart({ id, height: size })
+        : columnChart({ id, height: size });
+  return markup;
+}
+
+function initCharts() {
+  const specs = chartSpecs.splice(0);
+  for (const spec of specs) {
+    if (spec.kind === "line") initLine({ id: spec.id, data: spec.payload });
+    if (spec.kind === "columns") initColumns({ id: spec.id, data: spec.payload });
+    if (spec.kind === "donut") initDonut({ id: spec.id, items: spec.payload });
+  }
+}
 
 const controls = new Map();
 function controlFor(id) {
@@ -774,7 +802,7 @@ function kpiTiles() {
   const conversations = sum(p.points, "conversations");
   const orders = sum(p.points, "orders");
   const reply = p.median[p.median.length - 1];
-  return `<div class="tile-grid">
+  return `<div class="tile-grid" id="kpiGrid">
     ${[
       { label: "Conversations", value: conversations, note: p.label, icon: "i-spark", tone: "", series: p.points.map((d) => d.conversations), delta: state.period === "24h" ? "+9%" : state.period === "7d" ? "+18%" : "+24%" },
       { label: "Orders", value: orders, note: p.label, icon: "i-bag", tone: "mint", series: p.points.map((d) => d.orders), delta: state.period === "24h" ? "+4%" : state.period === "7d" ? "+6%" : "+12%" },
@@ -930,7 +958,12 @@ function viewGeneral() {
     <section class="card">
       <div class="card-head"><div><h2>Where work arrives</h2><small>Conversations by channel</small></div></div>
       <div class="card-body donut-body">
-        ${donut(
+        ${chart("donut", ([
+          { label: "WhatsApp", value: 46, color: C.uv },
+          { label: "Website", value: 31, color: C.uvSoft },
+          { label: "Email", value: 15, color: C.mint },
+          { label: "Phone", value: 8, color: C.lav },
+        ]))}
           [
             { label: "WhatsApp", value: 46, color: C.uv },
             { label: "Website", value: 31, color: C.uvSoft },
@@ -1505,10 +1538,7 @@ function viewOrders() {
     <section class="card">
       <div class="card-head"><div><h2>Daily volume</h2><small>Orders per day</small></div></div>
       <div class="card-body">
-        ${columns(
-          DAYS.map((d) => ({ label: d.label, value: d.orders })),
-          { width: 320, height: 168 },
-        )}
+        ${chart("columns", DAYS.map((d) => ({ label: d.label, value: d.orders })), 190)}
       </div>
       <div class="card-foot"><span>${fmt.n(sum(DAYS, "orders"))} this week</span><span>Sample data</span></div>
     </section>
@@ -1621,7 +1651,7 @@ function viewSavings() {
   <div class="split">
     <section class="card">
       <div class="card-head"><div><h2>Monthly saving</h2><small>${CLIENT.currency}, quarter to date</small></div></div>
-      <div class="card-body">${columns(months, { width: 420, height: 176 })}</div>
+      <div class="card-body">${chart("columns", months, 190)}</div>
       <div class="card-foot"><span>Reported to finance monthly</span><span>Prepared by Ayesha</span></div>
     </section>
     <section class="card">
@@ -2203,6 +2233,7 @@ function renderStage() {
   wireStage();
   renderConnectors();
   renderMainChart();
+  initCharts();
   animateStage();
 }
 
@@ -2437,7 +2468,14 @@ function wireStage() {
   stage.querySelectorAll("[data-period]").forEach((el) =>
     el.addEventListener("click", () => {
       state.period = el.dataset.period;
-      renderStage();
+      stage.querySelectorAll("[data-period]").forEach((b) =>
+        b.setAttribute("aria-pressed", String(b.dataset.period === state.period)),
+      );
+      const tiles = document.getElementById("kpiGrid");
+      if (tiles) tiles.innerHTML = kpiTiles();
+      renderMainChart();
+      const legend = document.querySelector(".chart-card .card-foot > span:last-child");
+      if (legend) legend.textContent = `${PERIODS[state.period].label} · sample data`;
     }),
   );
   stage.querySelectorAll("[data-filter]").forEach((el) =>
@@ -2694,13 +2732,15 @@ function renderMainChart() {
   const host = document.getElementById("mainChart");
   if (!host) return;
   const p = period();
-  const height = Math.max(200, Math.min(420, Math.round(host.clientHeight || 260)));
-  host.innerHTML = `${lineChart({
+  const height = Math.max(200, Math.min(400, Math.round(host.clientHeight || 280)));
+  host.innerHTML =
+    '<div id="mainChartCanvas"></div>' + '<div class="chart-tip" id="chartTip" hidden></div>';
+  const holder = document.getElementById("mainChartCanvas");
+  holder.innerHTML = lineChart({ id: "activityChart", height });
+  initLine({
+    id: "activityChart",
     data: p.points.map((d) => ({ label: d.label, value: d.conversations, bar: d.orders })),
-    height,
-    unit: "",
-  })}<div class="chart-tip" id="chartTip" hidden></div>`;
-  wireChart();
+  });
 }
 
 function wireChart() {
