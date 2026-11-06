@@ -1244,10 +1244,31 @@ function railBubble(role, text) {
 function railPaint(actions = []) {
   const thread = document.getElementById("railThread");
   if (!thread) return;
+  const greeting = railHistory.length
+    ? ""
+    : `<div class="rail-msg assistant">
+        <div class="bubble">Hi ${firstName()} — I'm the agent on this workspace.
+        I can open a dashboard, explain a decision, or tell you what an agent is doing.</div>
+        <span class="who">Omnia agent</span>
+      </div>
+      <div class="rail-chips">
+        ${[
+          "What needs my decision?",
+          `Show me ${(CLIENT.views[0] || {}).label || "my dashboard"}`,
+          "Which agent is busiest?",
+        ]
+          .map((q) => `<button class="rail-chip" data-rail-ask="${q}">${q}</button>`)
+          .join("")}
+      </div>`;
   thread.innerHTML =
+    greeting +
     railHistory.map((m) => railBubble(m.role, m.content)).join("") +
     (railPending ? '<div class="rail-msg assistant"><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div></div>' : "");
   thread.scrollTop = thread.scrollHeight;
+
+  thread.querySelectorAll("[data-rail-ask]").forEach((chip) =>
+    chip.addEventListener("click", () => railSend(chip.dataset.railAsk)),
+  );
 
   const bar = document.getElementById("railActions");
   if (!bar) return;
@@ -2336,6 +2357,7 @@ function renderStage() {
   stage.innerHTML = render();
   document.getElementById("topbar").classList.toggle("os-mode", Boolean(state.os));
   railContext();
+  railPaint();
   wireStage();
   renderConnectors();
   renderMainChart();

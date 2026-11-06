@@ -2505,3 +2505,16 @@ body { padding-top: var(--bar); }
   .tile-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 .tile-foot { white-space: nowrap; overflow: hidden; }
+
+.rail-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+.rail-chip {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+.rail-chip:hover { border-color: #cdbcf3; color: var(--uv); }
