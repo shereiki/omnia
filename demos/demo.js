@@ -904,14 +904,7 @@ function viewGeneral() {
         </div>
       </div>
       <div class="card-body">
-        <div class="chart-wrap" id="mainChart">
-          ${lineChart({
-            data: p.points.map((d) => ({ label: d.label, value: d.conversations, bar: d.orders })),
-            height: 236,
-            unit: "",
-          })}
-          <div class="chart-tip" id="chartTip" hidden></div>
-        </div>
+        <div class="chart-wrap" id="mainChart"></div>
       </div>
       <div class="card-foot">
         <div class="chart-legend"><span><i></i>Conversations</span><span><i class="mint"></i>Orders</span></div>
@@ -924,8 +917,21 @@ function viewGeneral() {
         <div><h2>Critical decisions</h2><small>Things only a person can sign off</small></div>
         <span class="chip uv">${pending.length} waiting</span>
       </div>
-      <div class="card-body stack">
-        ${pending.slice(0, 2).map((d) => decisionCard(d, { compact: true })).join("")}
+      <div class="card-body stack decisions-body">
+        ${decisionCard(pending[0], { compact: true })}
+        <div class="mini-decisions">
+          ${pending
+            .slice(1, 4)
+            .map(
+              (d) => `<button class="mini-decision" data-open="decisions">
+                <span class="mini-main"><strong>${d.title}</strong><small>${d.area} · ${d.impact} · by ${d.deadline}</small></span>
+                <i class="risk ${d.risk === "High" ? "high" : d.risk === "Medium" ? "medium" : "low"}"><b></b></i>
+                ${I("i-arrow")}
+              </button>`,
+            )
+            .join("")}
+        </div>
+        ${pending.length > 4 ? `<p class="mini-more">${pending.length - 4} more waiting</p>` : ""}
       </div>
       <div class="card-foot">
         <span>Money, customers and access stop here</span>
@@ -1611,6 +1617,7 @@ function renderStage() {
                   : viewGeneral();
   document.querySelector(".tabstrip").classList.toggle("os-mode", Boolean(state.os));
   wireStage();
+  renderMainChart();
   animateStage();
 }
 
@@ -1903,6 +1910,19 @@ function wireDrawer() {
     }),
   );
   document.querySelectorAll("[data-book-call]").forEach((button) => button.addEventListener("click", bookACall));
+}
+
+function renderMainChart() {
+  const host = document.getElementById("mainChart");
+  if (!host) return;
+  const p = period();
+  const height = Math.max(200, Math.min(420, Math.round(host.clientHeight || 260)));
+  host.innerHTML = `${lineChart({
+    data: p.points.map((d) => ({ label: d.label, value: d.conversations, bar: d.orders })),
+    height,
+    unit: "",
+  })}<div class="chart-tip" id="chartTip" hidden></div>`;
+  wireChart();
 }
 
 function wireChart() {
