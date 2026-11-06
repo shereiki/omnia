@@ -729,7 +729,9 @@ body.gate { min-height: 100vh; display: grid; place-items: center; padding: 26px
   .funnel-row { grid-template-columns: 68px minmax(0, 1fr) 36px; }
   .funnel-drop { display: none; }
   .fact { font-size: 11px; }
-  .table th:nth-child(3), .table td:nth-child(3) { display: none; }
+  /* tables scroll rather than losing a number a client came to read */
+  .card-body:has(> .table) { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { min-width: 460px; }
 }
 
 @media (max-width: 430px) {
@@ -2582,9 +2584,70 @@ body { padding-top: var(--bar); }
   color: var(--ink-2) !important; font-weight: 700;
 }
 
-<<<<<<< HEAD
-=======
 .rail-chips { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 30px; }
 .rail-chip { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,0.9); font-size: 10.5px; font-weight: 600; color: var(--muted); }
 .rail-chip:hover { border-color: #cdbcf3; color: var(--uv); }
->>>>>>> 92c0cd0 (The rail opens with a greeting and client-aware chips)
+.rail-composer button { background: #1d1740; }
+.rail-composer button:hover { background: var(--uv); }
+.rail-composer button svg { stroke-width: 2.2; }
+
+/* ---------- the phone: a named dashboard switcher, and the agent as a sheet ---------- */
+
+.nav-board { display: none; align-items: center; gap: 7px; height: 38px; padding: 0 10px 0 12px;
+  border: 0; border-radius: 999px; background: transparent; color: var(--ink);
+  font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.nav-board svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; opacity: 0.75; }
+.nav-board .nav-board-chev { width: 12px; height: 12px; opacity: 0.55; transition: transform 0.16s var(--ease); }
+.nav-board[aria-expanded="true"] .nav-board-chev { transform: rotate(180deg); }
+.nav-board:hover { background: rgba(29, 23, 64, 0.06); }
+
+.board-sheet {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 70;
+  min-width: 214px; padding: 6px;
+  border: 1px solid var(--line); border-radius: 16px; background: #fff;
+  box-shadow: 0 26px 50px -28px rgba(29, 23, 64, 0.45);
+}
+.board-item {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  height: 38px; padding: 0 10px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--ink-2); font-size: 12.5px; font-weight: 650; text-align: left;
+}
+.board-item svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; opacity: 0.7; flex: 0 0 auto; }
+.board-item span { flex: 1; }
+.board-item:hover { background: #f5f2fd; color: var(--ink); }
+.board-item[aria-current="true"] { background: #f2eefc; color: var(--uv); }
+.board-item[aria-current="true"] svg { opacity: 1; }
+.board-item .board-tick { width: 13px; height: 13px; stroke-width: 2.2; opacity: 1; }
+.nav-dashboards { position: relative; }
+
+@media (max-width: 900px) {
+  .nav-dashboards .tabs { display: none; }
+  .nav-dashboards .nav-board { display: inline-flex; }
+  .nav-dashboards { padding-right: 4px; }
+}
+
+/* the rail slides over the page on a phone */
+.rail-backdrop {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(24, 18, 52, 0.28);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+.rail-close { display: none; }
+
+@media (max-width: 1180px) {
+  .rail-fab { display: inline-flex; }
+  body.rail-open { overflow: hidden; }
+  body.rail-open .agent-rail {
+    display: grid; position: fixed; inset: 8px; z-index: 90;
+    border-radius: 22px; box-shadow: 0 40px 80px -30px rgba(29, 23, 64, 0.6);
+  }
+  body.rail-open .rail-close { display: grid; }
+  body.rail-open .rail-top .icon-button#railToggle { display: none; }
+  .agent-rail { border-radius: 22px; }
+}
+
+/* the sheet hangs below the bubble, so the bubble may not clip it */
+@media (max-width: 900px) {
+  .nav-dashboards { overflow: visible; }
+  .board-sheet { max-height: 62vh; overflow-y: auto; }
+}
