@@ -1597,7 +1597,7 @@ function osBody() {
 
     <section class="card">
       <div class="card-head">
-        <div><h2>Connector catalogue</h2><small>${EXPANDED.length} connectors we can wire up · anything else is a request</small></div>
+        <div><h2>Connector catalogue</h2><small>1,000+ connectors · anything we don't have is a request</small></div>
         <div class="catalog-tools">
           <input class="table-search" id="connectorSearch" type="search" placeholder="Search connectors" />
           <button class="btn sm" data-help>${I("i-mail")}Ask for help</button>
@@ -1847,7 +1847,7 @@ function renderConnectors() {
     .join("");
 
   const count = document.getElementById("connectorCount");
-  if (count) count.textContent = `${list.length} of ${EXPANDED.length}`;
+  if (count) count.textContent = `Showing ${list.length}`;
 
   grid.querySelectorAll("[data-connector]").forEach((el) =>
     el.addEventListener("click", () => newRequestModal("integration", el.dataset.connector)),
