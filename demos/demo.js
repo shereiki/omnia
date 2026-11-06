@@ -1245,7 +1245,6 @@ function railBubble(role, text) {
 function railPaint(actions = []) {
   const thread = document.getElementById("railThread");
   if (!thread) return;
-
   const greeting = railHistory.length
     ? ""
     : `<div class="rail-msg assistant">
@@ -1253,11 +1252,7 @@ function railPaint(actions = []) {
         <div class="bubble">Hi ${firstName()} — I'm the agent on this workspace. I can open a dashboard, explain a decision, or tell you what an agent is doing.</div>
       </div>
       <div class="rail-chips">
-        ${[
-          "What needs my decision?",
-          `Show me ${(CLIENT.views[0] || {}).label || "my dashboard"}`,
-          "Which agent is busiest?",
-        ]
+        ${["What needs my decision?", `Show me ${(CLIENT.views[0] || {}).label || "my dashboard"}`, "Which agent is busiest?"]
           .map((q) => `<button class="rail-chip" data-rail-ask="${q}">${q}</button>`)
           .join("")}
       </div>`;
@@ -1801,67 +1796,28 @@ function viewSavings() {
 
 /* ------------------------------------------------ one signature each */
 
+let fleetMap = null;
+
+const CITY_COORDS = {
+  "Jebel Ali": [24.99, 55.06],
+  "Abu Dhabi": [24.45, 54.38],
+  Sharjah: [25.35, 55.42],
+  Riyadh: [24.71, 46.68],
+  Dammam: [26.43, 50.1],
+  Doha: [25.29, 51.53],
+  Muscat: [23.59, 58.41],
+  Salalah: [17.02, 54.09],
+};
+
 function viewTracker() {
-  const point = (t) => [
-    t.from[0] + (t.to[0] - t.from[0]) * t.progress,
-    t.from[1] + (t.to[1] - t.from[1]) * t.progress,
-  ];
   return `
   <div class="view-head">
     <div><h1>Live map</h1><p>Every load on the road, where it actually is.</p></div>
     <div class="head-actions"><span class="chip good">${CLIENT.trucks.filter((t) => t.status !== "Delivered").length} moving</span></div>
   </div>
 
-  <section class="tracker-map">
-    <svg viewBox="0 0 760 470" role="img" aria-label="Loads moving between cities">
-      <defs>
-        <radialGradient id="mapGlow" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stop-color="#ffffff" />
-          <stop offset="100%" stop-color="#f4f0fd" />
-        </radialGradient>
-        <linearGradient id="route" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#c9bcf4" stop-opacity="0.25" />
-          <stop offset="50%" stop-color="#a493ee" stop-opacity="0.75" />
-          <stop offset="100%" stop-color="#c9bcf4" stop-opacity="0.25" />
-        </linearGradient>
-      </defs>
-      <rect width="760" height="470" rx="20" fill="url(#mapGlow)" />
-
-      ${CLIENT.trucks
-        .map(
-          (t) => `<path d="M${t.from[0]} ${t.from[1]} Q${(t.from[0] + t.to[0]) / 2} ${Math.min(t.from[1], t.to[1]) - 45} ${t.to[0]} ${t.to[1]}"
-            fill="none" stroke="url(#route)" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 8" class="route-line" />`,
-        )
-        .join("")}
-
-      ${CLIENT.cities
-        .map(
-          (c) => `<g class="city">
-            <circle cx="${c.x}" cy="${c.y}" r="9" fill="#ffffff" opacity="0.9" />
-            <circle cx="${c.x}" cy="${c.y}" r="4.5" fill="#b9a8ea" />
-            <text x="${c.x + 13}" y="${c.y + 4}" class="map-city">${c.name}</text>
-          </g>`,
-        )
-        .join("")}
-
-      ${CLIENT.trucks
-        .map((t) => {
-          const [x, y] = point(t);
-          const colour = t.status === "At border" ? "#d9a353" : t.status === "Delivered" ? "#1e7f66" : "#5b45d6";
-          return `<g class="truck" data-truck="${t.id}" tabindex="0" role="button" aria-label="${t.id} ${t.label}">
-            <circle cx="${x}" cy="${y}" r="16" fill="${colour}" opacity="0.12" />
-            <circle cx="${x}" cy="${y}" r="8" fill="${colour}" stroke="#fff" stroke-width="2.5" />
-            <text x="${x}" y="${y - 15}" text-anchor="middle" class="map-truck-id">${t.id.replace("NL-", "")}</text>
-          </g>`;
-        })
-        .join("")}
-    </svg>
-
-    <div class="tracker-legend">
-      <span><i class="dot uv"></i>In transit</span>
-      <span><i class="dot warn"></i>At border</span>
-      <span><i class="dot good"></i>Delivered</span>
-    </div>
+  <section class="fleet-map-wrap">
+    <div id="fleetMap" class="fleet-map" role="img" aria-label="Live map of loads between cities"></div>
   </section>
 
   <div class="tracker-cards">
@@ -1877,6 +1833,79 @@ function viewTracker() {
       )
       .join("")}
   </div>`;
+}
+
+function initFleetMap() {
+  const host = document.getElementById("fleetMap");
+  if (!host || !window.L) return;
+  if (fleetMap) {
+    fleetMap.remove();
+    fleetMap = null;
+  }
+
+  const map = L.map(host, {
+    zoomControl: false,
+    attributionControl: true,
+    scrollWheelZoom: false,
+    dragging: true,
+  });
+
+  // Esri's light basemap: free, no key, and quiet enough to sit under data
+  L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    {
+      attribution: "Tiles &copy; Esri, HERE, Garmin, OpenStreetMap contributors",
+      maxZoom: 16,
+      detectRetina: true,
+    },
+  ).addTo(map);
+
+  L.control.zoom({ position: "bottomright" }).addTo(map);
+
+  const points = [];
+  for (const [name, coords] of Object.entries(CITY_COORDS)) {
+    L.circleMarker(coords, {
+      radius: 4,
+      color: "#8b79ea",
+      weight: 2,
+      fillColor: "#ffffff",
+      fillOpacity: 1,
+    })
+      .addTo(map)
+      .bindTooltip(name, { direction: "top", offset: [0, -6], className: "map-tip" });
+    points.push(coords);
+  }
+
+  for (const truck of CLIENT.trucks) {
+    const from = CITY_COORDS[(truck.label.split(" → ")[0] || "").trim()];
+    const to = CITY_COORDS[(truck.label.split(" → ")[1] || "").trim()];
+    if (!from || !to) continue;
+
+    L.polyline([from, to], {
+      color: "#b7a6ee",
+      weight: 2,
+      opacity: 0.75,
+      dashArray: "6 8",
+    }).addTo(map);
+
+    const lat = from[0] + (to[0] - from[0]) * truck.progress;
+    const lng = from[1] + (to[1] - from[1]) * truck.progress;
+    const colour = truck.status === "At border" ? "#d9a353" : truck.status === "Delivered" ? "#1e7f66" : "#5b45d6";
+    const icon = L.divIcon({
+      className: "truck-pin",
+      html: '<span style="--pin:' + colour + '"><i></i></span>',
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    });
+    L.marker([lat, lng], { icon })
+      .addTo(map)
+      .bindTooltip(truck.id + " · " + truck.label, { direction: "top", offset: [0, -8], className: "map-tip" })
+      .on("click", () => openLoadDrawer(truck.id));
+  }
+
+  map.fitBounds(points, { padding: [40, 40] });
+  fleetMap = map;
+  setTimeout(() => map.invalidateSize(), 200);
 }
 
 function viewRooms() {
@@ -2364,7 +2393,9 @@ function renderStage() {
   stage.innerHTML = render();
   document.getElementById("topbar").classList.toggle("os-mode", Boolean(state.os));
   railContext();
+  railPaint();
   wireStage();
+  initFleetMap();
   renderConnectors();
   renderMainChart();
   initCharts();

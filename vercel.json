@@ -16,7 +16,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-341UjSj27tg4MSf9zUA1mUahHEM4I5CwcqosgqA9/GU=' 'sha256-ZnYJX5ypMaaAhxxWhSEjbMkhO2A9yPmbzEQH3LFaITA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self' 'sha256-341UjSj27tg4MSf9zUA1mUahHEM4I5CwcqosgqA9/GU=' 'sha256-ZnYJX5ypMaaAhxxWhSEjbMkhO2A9yPmbzEQH3LFaITA='; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://server.arcgisonline.com https://*.tile.openstreetmap.org; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         }
       ]
     },

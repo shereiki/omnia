@@ -2554,3 +2554,37 @@ body { padding-top: var(--bar); }
 .rail-action { font-size: 11.5px; padding: 8px 11px; }
 .rail-action .rail-action-kind { display: none; }
 .rail-chips { padding-left: 30px; }
+
+/* ---------- real map ---------- */
+
+.fleet-map-wrap { border: 1px solid var(--line); border-radius: 22px; overflow: hidden; background: #eef1f6; }
+.fleet-map { height: 460px; width: 100%; }
+.fleet-map .leaflet-container { background: #eef1f6; font-family: Manrope, Arial, sans-serif; }
+.fleet-map .leaflet-control-attribution {
+  background: rgba(255,255,255,0.8); font-size: 9px; color: var(--faint);
+}
+.map-tip {
+  background: #1d1740; color: #fff; border: 0; border-radius: 8px;
+  padding: 4px 8px; font-size: 10.5px; font-weight: 650;
+  box-shadow: 0 10px 22px -14px rgba(29,23,64,0.9);
+}
+.map-tip::before { border-top-color: #1d1740; }
+.truck-pin { display: grid; place-items: center; }
+.truck-pin span {
+  display: grid; place-items: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: color-mix(in srgb, var(--pin) 22%, white);
+  box-shadow: 0 0 0 2px #fff, 0 4px 10px -4px rgba(29,23,64,0.6);
+}
+.truck-pin span i { width: 8px; height: 8px; border-radius: 50%; background: var(--pin); }
+.leaflet-control-zoom a {
+  border-radius: 8px !important; border-color: var(--line) !important;
+  color: var(--ink-2) !important; font-weight: 700;
+}
+
+<<<<<<< HEAD
+=======
+.rail-chips { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 30px; }
+.rail-chip { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,0.9); font-size: 10.5px; font-weight: 600; color: var(--muted); }
+.rail-chip:hover { border-color: #cdbcf3; color: var(--uv); }
+>>>>>>> 92c0cd0 (The rail opens with a greeting and client-aware chips)
