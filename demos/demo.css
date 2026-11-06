@@ -2525,3 +2525,32 @@ body { padding-top: var(--bar); }
 }
 .rail-fab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 .shell.rail-collapsed ~ .rail-fab, body.rail-collapsed .rail-fab { display: inline-flex; }
+
+/* ---------- rail messages, tightened ---------- */
+
+.rail-thread { gap: 8px; padding: 12px 12px 6px; }
+.rail-msg { display: flex; gap: 8px; max-width: 100%; }
+.rail-msg.user { justify-content: flex-end; }
+.rail-avatar {
+  display: grid; place-items: center;
+  width: 22px; height: 22px; flex: 0 0 auto;
+  border-radius: 7px; background: #efeafc; color: var(--uv);
+  margin-top: 2px;
+}
+.rail-avatar svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.rail-msg .bubble {
+  padding: 9px 12px;
+  border-radius: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 84%;
+}
+.rail-msg.user .bubble { background: #f1ecfd; border-color: #e3dafb; color: var(--ink); }
+.rail-msg .who { display: none; }
+.rail-actions { display: grid; gap: 6px; padding: 4px 12px 10px 42px; }
+.rail-action { font-size: 11.5px; padding: 8px 11px; }
+.rail-action .rail-action-kind { display: none; }
+.rail-chips { padding-left: 30px; }
