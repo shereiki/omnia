@@ -236,6 +236,22 @@ const EXPANDED = [
 
 const CONNECTOR_CATEGORIES = ["All", ...new Set(EXPANDED.map(([, c]) => c))];
 
+/* What each agent is actually doing, shown above its chat. */
+const AGENT_WORK = {
+  coordinator: { task: "Holding two Riyadh orders for your approval", steps: ["Read the order history", "Checked the price floor", "Prepared a decision"], queue: ["2 orders waiting on you", "1 stock reorder draft"] },
+  orders: { task: "Matching new orders to stock", steps: ["Pulled 11 new orders", "Matched against stock", "Queued 9 for fulfilment"], queue: ["2 orders need a phone number"] },
+  inventory: { task: "Watching cover on 6 SKUs", steps: ["Read sell-through", "Compared against lead time", "Drafted 2 reorders"], queue: ["2 reorder drafts"] },
+  replies: { task: "Answering customer questions", steps: ["Matched approved knowledge", "Answered 14 conversations", "Escalated 2 to a person"], queue: ["2 escalations for Jordan"] },
+  dispatch: { task: "Tendering two unassigned loads", steps: ["Shortlisted 3 carriers", "Checked the rate floor", "Waiting on your call"], queue: ["2 loads to tender", "1 border audit"] },
+  quotes: { task: "Drafting overnight quote requests", steps: ["Read 9 requests", "Priced against lane cost", "Sent 7, held 2"], queue: ["2 below the floor"] },
+  drivers: { task: "Tracking driver hours", steps: ["Checked 6 rosters", "Flagged one at 46/48h", "Drafted a swap"], queue: ["1 overtime approval"] },
+  exceptions: { task: "Working a damaged pallet claim", steps: ["Pulled gate logs", "Matched timestamps", "Drafted a claim"], queue: ["1 claim for review"] },
+  frontdesk: { task: "Confirming tomorrow's bookings", steps: ["Read 14 overnight requests", "Booked 11", "Moved 3 to open slots"], queue: ["3 moved bookings"] },
+  scheduling: { task: "Fitting an urgent referral", steps: ["Checked 48h window", "Found two gaps", "Prepared a decision"], queue: ["1 urgent fit"] },
+  reminders: { task: "Sending tomorrow's confirmations", steps: ["Built the list", "Sent 96 reminders", "61 confirmed"], queue: ["26 not answered"] },
+  billing: { task: "Answering billing questions", steps: ["Read 6 threads", "Explained 4 invoices", "Held 1 waiver"], queue: ["1 fee waiver for you"] },
+};
+
 const controls = new Map();
 function controlFor(id) {
   if (!controls.has(id)) controls.set(id, { autonomy: "Act, then tell me", paused: false, quiet: false });
@@ -1148,6 +1164,19 @@ function dockAgents() {
         </div>
         <button class="chip ghost" data-open-os-agents>${I("i-gear")}Settings</button>
       </header>
+
+      <div class="agent-work">
+        <span class="agent-work-label"><i class="live-dot"></i>Working on</span>
+        <strong>${(AGENT_WORK[agent.id] || {}).task || "Working through today's queue"}</strong>
+        <ol class="agent-steps">
+          ${((AGENT_WORK[agent.id] || {}).steps || []).map(
+            (step, i) => `<li class="${i === 0 ? "done" : i === 1 ? "done" : "current"}"><i></i>${step}</li>`,
+          ).join("")}
+        </ol>
+        <div class="agent-queue">
+          ${((AGENT_WORK[agent.id] || {}).queue || []).map((q) => `<span class="agent-queue-chip">${q}</span>`).join("")}
+        </div>
+      </div>
 
       <div class="chat-body" id="agentChatLog"></div>
 
@@ -2591,6 +2620,10 @@ function init() {
   if (avatar) avatar.textContent = admin.initials;
   const pillAccount = document.getElementById("accountButton");
   if (pillAccount) pillAccount.setAttribute("aria-label", admin.name);
+  const brand = document.getElementById("navBrand");
+  if (brand && CLIENT.logo) brand.innerHTML = CLIENT.logo;
+  const wsMark = document.querySelector('#accountMenu [data-action="workspace"] .workspace-mark');
+  if (wsMark && CLIENT.logo) wsMark.innerHTML = CLIENT.logo;
   const wsName = document.querySelector('#accountMenu [data-action="workspace"] span:nth-child(2)');
   if (wsName) wsName.textContent = CLIENT.name;
   const menuHead = document.querySelector("#accountMenu .menu-head span");
