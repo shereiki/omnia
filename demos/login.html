@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#F2F0FA" />
+    <title>Omnia — Workspace demo</title>
+    <link rel="icon" href="/assets/omnia-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/demos/demo.css" />
+  </head>
+  <body class="gate">
+    <main class="gate-card">
+      <a class="gate-brand" href="/" aria-label="Omnia home">
+        <svg viewBox="0 0 430 440" aria-hidden="true">
+          <path fill="#5B45D6" d="M228 70h-58Q70 70 70 170v68h74v-56q0-38 38-38h46Z" />
+          <path fill="#69E3C0" d="M246 70h16q98 0 98 98v50h-74v-36q0-38-40-38Z" />
+          <path fill="#5B45D6" d="M360 236v38q0 96-96 96h-74v-74h58q38 0 38-38v-22Z" />
+          <path fill="#5B45D6" d="M70 256v18q0 96 98 96h4v-74q-28 0-28-38v-2Z" />
+        </svg>
+        <span>OMNIA</span>
+      </a>
+
+      <h1>A workspace, delivered.</h1>
+      <p class="gate-copy">
+        This is the client workspace we build and manage for a company. It is a
+        private demo — enter the password your Omnia team shared with you.
+      </p>
+
+      <form class="gate-form" id="gateForm" autocomplete="off">
+        <label for="password">Demo password</label>
+        <div class="gate-field">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            autocomplete="current-password"
+            placeholder="Enter password"
+            aria-describedby="gateStatus"
+          />
+          <button type="submit" class="gate-submit">
+            <span>Open demo</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m-6-6 6 6-6 6" />
+            </svg>
+          </button>
+        </div>
+        <p class="gate-status" id="gateStatus" role="status" aria-live="polite"></p>
+      </form>
+
+      <footer class="gate-foot">
+        <span>Built for Meridian Outfitters. Managed by Omnia.</span>
+        <a href="https://useomnia.dev">useomnia.dev</a>
+      </footer>
+    </main>
+
+    <script src="/demos/login.js" defer></script>
+  </body>
+</html>

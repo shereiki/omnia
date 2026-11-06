@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Disallow: /demos
 
 Sitemap: https://useomnia.dev/sitemap.xml

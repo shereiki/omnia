@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/access-check.mjs && node tests/inquiries.test.mjs && node tests/page.test.mjs",
+    "test": "node tests/access-check.mjs && node tests/inquiries.test.mjs && node tests/demos.test.mjs && node tests/page.test.mjs",
     "migrate": "node scripts/migrate.mjs",
     "preview": "node scripts/preview.mjs"
   },
