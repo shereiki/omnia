@@ -1,6 +1,5 @@
-/* Charts for the workspace demo.
-   Accurate first: every scale comes from the data it plots. Pretty second:
-   monotone curves (no overshoot), one grid weight, one axis voice. */
+/* Charts, on Chart.js. One place configures how Omnia's data looks, so every
+   chart in the demo shares the same weight, colour and motion. */
 
 export const C = {
   uv: "#5b45d6",
@@ -19,17 +18,11 @@ export const fmt = {
     new Intl.NumberFormat("en-AE", { maximumFractionDigits: 0 }).format(Math.round(v)),
 };
 
-/* Round a maximum up to a value that produces readable ticks. */
-function niceStep(rough) {
-  const pow = Math.pow(10, Math.floor(Math.log10(rough)));
-  const step = [1, 2, 2.5, 5, 10].find((m) => m * pow >= rough) * pow;
-  return step;
-}
-
-/* An axis that ends just above the data: 214 becomes 250 in 5 steps, not 400. */
 export function niceScale(max, ticks = 4) {
   if (!Number.isFinite(max) || max <= 0) return { max: 1, step: 0.25, ticks: 4 };
-  const step = niceStep(max / ticks);
+  const rough = max / ticks;
+  const pow = Math.pow(10, Math.floor(Math.log10(rough)));
+  const step = [1, 2, 2.5, 5, 10].find((m) => m * pow >= rough) * pow;
   const top = Math.ceil(max / step) * step;
   return { max: top, step, ticks: Math.round(top / step) };
 }
@@ -38,234 +31,236 @@ export function niceMax(max, ticks = 4) {
   return niceScale(max, ticks).max;
 }
 
-/* Fritsch-Carlson monotone cubic: smooth, but never overshoots the data. */
-function monotonePath(points) {
-  const n = points.length;
-  if (n === 0) return "";
-  if (n === 1) return `M${points[0][0]} ${points[0][1]}`;
-  const dx = [];
-  const dy = [];
-  const slope = [];
-  for (let i = 0; i < n - 1; i++) {
-    dx[i] = points[i + 1][0] - points[i][0];
-    dy[i] = points[i + 1][1] - points[i][1];
-    slope[i] = dy[i] / dx[i];
-  }
-  const m = [slope[0]];
-  for (let i = 1; i < n - 1; i++) {
-    if (slope[i - 1] * slope[i] <= 0) m[i] = 0;
-    else {
-      const w1 = 2 * dx[i] + dx[i - 1];
-      const w2 = dx[i] + 2 * dx[i - 1];
-      m[i] = (w1 + w2) / (w1 / slope[i - 1] + w2 / slope[i]);
-    }
-  }
-  m[n - 1] = slope[n - 2];
+const registry = new Map();
 
-  let d = `M${points[0][0]} ${points[0][1]}`;
-  for (let i = 0; i < n - 1; i++) {
-    const [x0, y0] = points[i];
-    const [x1, y1] = points[i + 1];
-    const h = dx[i] / 3;
-    d += ` C${x0 + h} ${y0 + m[i] * h} ${x1 - h} ${y1 - m[i + 1] * h} ${x1} ${y1}`;
+export function destroyChart(id) {
+  const chart = registry.get(id);
+  if (chart) {
+    chart.destroy();
+    registry.delete(id);
   }
-  return d;
 }
 
-export function sparkline(values, { width = 84, height = 26, color = C.uv, fill = true } = {}) {
-  if (!values.length) return "";
-  const max = niceMax(Math.max(...values));
-  const min = Math.min(0, Math.min(...values));
-  const span = max - min || 1;
-  const stepX = values.length > 1 ? (width - 2) / (values.length - 1) : width;
-  const pts = values.map((v, i) => [1 + i * stepX, height - 2 - ((v - min) / span) * (height - 5)]);
-  const d = monotonePath(pts);
-  const uid = `s${Math.random().toString(36).slice(2, 7)}`;
-  const [lx, ly] = pts[pts.length - 1];
-  return `<svg class="spark" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" aria-hidden="true">
-    ${fill ? `<defs><linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${color}" stop-opacity="0.13" />
-      <stop offset="100%" stop-color="${color}" stop-opacity="0" /></linearGradient></defs>
-    <path d="${d} L${width - 1} ${height} L1 ${height} Z" fill="url(#${uid})" />` : ""}
-    <path d="${d}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-    <circle cx="${lx}" cy="${ly}" r="2.1" fill="${color}" />
-  </svg>`;
+const font = () => ({ family: "Manrope, Arial, sans-serif" });
+
+const tooltipStyle = () => ({
+  backgroundColor: "#1d1740",
+  padding: 10,
+  cornerRadius: 10,
+  displayColors: false,
+  titleFont: { ...font(), size: 11, weight: "700" },
+  bodyFont: { ...font(), size: 10 },
+});
+
+function gradient(ctx, area, from, to) {
+  const g = ctx.createLinearGradient(0, area.top, 0, area.bottom);
+  g.addColorStop(0, from);
+  g.addColorStop(1, to);
+  return g;
 }
 
-/*
-  data: [{ label, value, bar? }]
-  - y axis with nice ticks and a unit
-  - optional columns behind the line (same x scale, own scale)
-*/
-export function lineChart({
-  data,
-  width = 720,
-  height = 240,
-  unit = "",
-  valueFormat = fmt.n,
-  barFormat = fmt.n,
-  ticks = 5,
-  barLabel = "Orders",
-  lineLabel = "Conversations",
-}) {
-  const padLeft = 40;
-  const padRight = 26;
-  const padTop = 22;
-  const padBottom = 28;
-  const plotW = width - padLeft - padRight;
-  const plotH = height - padTop - padBottom;
-  const scale = niceScale(Math.max(...data.map((d) => d.value)), ticks);
-  const max = scale.max;
-  const steps = scale.ticks;
-  const step = data.length > 1 ? plotW / (data.length - 1) : plotW;
+export function lineChart({ id, height = 260 }) {
+  return '<div class="chart-box" style="height:' + height + 'px"><canvas id="' + id + '"></canvas></div>';
+}
 
-  const x = (i) => padLeft + (data.length > 1 ? i * step : plotW / 2);
-  const y = (v) => padTop + plotH - (v / max) * plotH;
+export function initLine({ id, data, barLabel = "Orders" }) {
+  const canvas = document.getElementById(id);
+  if (!canvas || !window.Chart) return;
+  destroyChart(id);
+  const barMax = Math.max(...data.map((d) => d.bar ?? 0)) * 2.6 || 1;
+  const chart = new window.Chart(canvas.getContext("2d"), {
+    type: "line",
+    data: {
+      labels: data.map((d) => d.label),
+      datasets: [
+        {
+          label: "Conversations",
+          data: data.map((d) => d.value),
+          borderColor: C.uv,
+          borderWidth: 2.6,
+          tension: 0.38,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: C.uv,
+          pointHoverBorderWidth: 3,
+          fill: true,
+          backgroundColor: (context) => {
+            const { ctx, chartArea } = context.chart;
+            if (!chartArea) return "transparent";
+            return gradient(ctx, chartArea, "rgba(91,69,214,0.26)", "rgba(91,69,214,0)");
+          },
+        },
+        {
+          label: barLabel,
+          data: data.map((d) => d.bar ?? null),
+          type: "bar",
+          backgroundColor: "rgba(105,227,192,0.55)",
+          hoverBackgroundColor: "rgba(59,191,160,0.9)",
+          borderRadius: 7,
+          barThickness: 13,
+          yAxisID: "y2",
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 650, easing: "easeOutQuart" },
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { display: false }, tooltip: tooltipStyle() },
+      scales: {
+        x: {
+          grid: { display: false },
+          border: { display: false },
+          ticks: { color: C.axis, font: { ...font(), size: 10 } },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: C.grid, drawTicks: false },
+          border: { display: false },
+          ticks: { color: C.axis, font: { ...font(), size: 10 }, padding: 8, maxTicksLimit: 5 },
+        },
+        y2: { display: false, beginAtZero: true, suggestedMax: barMax },
+      },
+    },
+  });
+  registry.set(id, chart);
+}
 
-  const pts = data.map((d, i) => [x(i), y(d.value)]);
-  const path = monotonePath(pts);
-  const area = `${path} L${x(data.length - 1)} ${padTop + plotH} L${x(0)} ${padTop + plotH} Z`;
+export function columnChart({ id, height = 180 }) {
+  return '<div class="chart-box" style="height:' + height + 'px"><canvas id="' + id + '"></canvas></div>';
+}
 
-  const barMax = niceScale(Math.max(...data.map((d) => d.bar ?? 0)) || 1, ticks).max * 1.1;
-  const barW = Math.min(22, step * 0.38);
+export function initColumns({ id, data }) {
+  const canvas = document.getElementById(id);
+  if (!canvas || !window.Chart) return;
+  destroyChart(id);
+  const chart = new window.Chart(canvas.getContext("2d"), {
+    type: "bar",
+    data: {
+      labels: data.map((d) => d.label),
+      datasets: [
+        {
+          data: data.map((d) => d.value),
+          backgroundColor: data.map((_, i) => (i === data.length - 1 ? C.uv : "#e3daf9")),
+          hoverBackgroundColor: C.uv,
+          borderRadius: 9,
+          maxBarThickness: 38,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600, easing: "easeOutQuart" },
+      plugins: { legend: { display: false }, tooltip: tooltipStyle() },
+      scales: {
+        x: {
+          grid: { display: false },
+          border: { display: false },
+          ticks: { color: C.axis, font: { ...font(), size: 10 } },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: C.grid, drawTicks: false },
+          border: { display: false },
+          ticks: { color: C.axis, font: { ...font(), size: 10 }, padding: 8, maxTicksLimit: 4 },
+        },
+      },
+    },
+  });
+  registry.set(id, chart);
+}
 
-  const grid = Array.from({ length: steps + 1 }, (_, i) => {
-    const value = (max / steps) * i;
-    const yy = y(value);
-    return `<g>
-      <line x1="${padLeft}" x2="${width - padRight}" y1="${yy}" y2="${yy}"
-        stroke="${C.grid}" stroke-width="1" stroke-dasharray="2 5" opacity="0.9" />
-      <text x="${padLeft - 12}" y="${yy + 3.5}" text-anchor="end" class="axis-text">${valueFormat(value)}</text>
-    </g>`;
-  }).join("");
-
-  const bars = data
-    .map((d, i) => {
-      if (d.bar === undefined || d.bar === null) return "";
-      const h = (d.bar / barMax) * plotH * 0.55;
-      return `<rect data-bar x="${x(i) - barW / 2}" y="${padTop + plotH}" width="${barW}" height="0"
-        data-h="${h}" data-base="${padTop + plotH}" rx="6" fill="${C.mintSoft}" opacity="0.42">
-        <title>${d.label}: ${barFormat(d.bar)} ${barLabel.toLowerCase()}</title></rect>`;
-    })
-    .join("");
-
-  const xLabels = data
-    .map((d, i) => `<text x="${x(i)}" y="${height - 8}" text-anchor="middle" class="axis-text">${d.label}</text>`)
-    .join("");
-
-  const lastIndex = data.length - 1;
-  const lastPoint = pts[lastIndex];
-  const pillW = 58;
-  const pillX = Math.min(
-    Math.max(lastPoint[0] - pillW - 10, padLeft + 2),
-    width - padRight - pillW - 2,
+export function donutChart({ id, size = 148 }) {
+  return (
+    '<div class="chart-box donut-box" style="height:' +
+    size +
+    'px;width:' +
+    size +
+    'px"><canvas id="' +
+    id +
+    '"></canvas></div>'
   );
-  const pillY = Math.max(lastPoint[1] - 22, 14);
-  const endPoint = `
-    <circle cx="${lastPoint[0]}" cy="${lastPoint[1]}" r="9" fill="${C.uv}" opacity="0.12" />
-    <circle cx="${lastPoint[0]}" cy="${lastPoint[1]}" r="4.5" fill="#fff" stroke="${C.uv}" stroke-width="3" />
-    <g class="chart-pill" transform="translate(${pillX}, ${pillY})">
-      <rect x="0" y="-18" width="${pillW}" height="20" rx="10" fill="#1d1740" />
-      <text x="${pillW / 2}" y="-4" text-anchor="middle" class="chart-pill-text">${valueFormat(data[lastIndex].value)}${unit}</text>
-    </g>`;
+}
 
-  const hover = data
+export function initDonut({ id, items }) {
+  const canvas = document.getElementById(id);
+  if (!canvas || !window.Chart) return;
+  destroyChart(id);
+  const chart = new window.Chart(canvas.getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: items.map((i) => i.label),
+      datasets: [
+        {
+          data: items.map((i) => i.value),
+          backgroundColor: items.map((i) => i.color),
+          borderWidth: 0,
+          hoverOffset: 4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "72%",
+      animation: { animateRotate: true, duration: 700 },
+      plugins: { legend: { display: false }, tooltip: tooltipStyle() },
+    },
+  });
+  registry.set(id, chart);
+}
+
+export function sparkline(values, { width = 92, height = 26, color = C.uv } = {}) {
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const span = max - min || 1;
+  const stepX = width / (values.length - 1);
+  const d = values
     .map(
-      (d, i) =>
-        `<rect data-hit x="${x(i) - step / 2}" y="${padTop}" width="${Math.max(step, 1)}" height="${plotH}"
-          fill="transparent" data-label="${d.label}" data-value="${valueFormat(d.value)}${unit}"
-          data-barlabel="${d.bar !== undefined ? `${barFormat(d.bar)} ${barLabel.toLowerCase()}` : ""}"></rect>`,
+      (v, i) =>
+        (i === 0 ? "M" : "L") +
+        (i * stepX).toFixed(1) +
+        " " +
+        (height - 3 - ((v - min) / span) * (height - 6)).toFixed(1),
     )
-    .join("");
-
-  const uid = `l${Math.random().toString(36).slice(2, 7)}`;
-
-  return `<svg class="chart" viewBox="0 0 ${width} ${height}" width="100%" height="${height}"
-      preserveAspectRatio="none" role="img" aria-label="${lineLabel} by ${data.length} points">
-    <defs>
-      <linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${C.uv}" stop-opacity="0.22" />
-        <stop offset="55%" stop-color="${C.uv}" stop-opacity="0.06" />
-        <stop offset="100%" stop-color="${C.uv}" stop-opacity="0" />
-      </linearGradient>
-    </defs>
-    ${grid}
-    ${bars}
-    <path d="${area}" fill="url(#${uid})" />
-    <path class="line" d="${path}" fill="none" stroke="${C.uv}" stroke-width="3"
-      stroke-linecap="round" stroke-linejoin="round" />
-    ${endPoint}
-    <g class="hits">${hover}</g>
-    ${xLabels}
-    <g class="cursor" opacity="0"><line y1="${padTop}" y2="${padTop + plotH}" stroke="${C.lav}" stroke-width="1" stroke-dasharray="3 4" /></g>
-  </svg>`;
-}
-
-export function columns(data, { width = 320, height = 150, highlightLast = true, unit = "" } = {}) {
-  const padTop = 24;
-  const padBottom = 24;
-  const padLeft = 6;
-  const plotH = height - padTop - padBottom;
-  const max = niceScale(Math.max(...data.map((d) => d.value)), 3).max;
-  const gap = 14;
-  const barW = (width - padLeft * 2 - gap * (data.length - 1)) / data.length;
-
-  const bars = data
-    .map((d, i) => {
-      const h = (d.value / max) * plotH;
-      const x = padLeft + i * (barW + gap);
-      const strong = highlightLast && i === data.length - 1;
-      return `<g class="col">
-        <rect class="col-track" x="${x}" y="${padTop}" width="${barW}" height="${plotH}" rx="8" fill="#f6f3fd" />
-        <rect data-bar x="${x}" y="${padTop + plotH}" width="${barW}" height="0"
-          data-h="${h}" data-base="${padTop + plotH}" rx="8"
-          fill="${strong ? C.uv : "#ded5f8"}" />
-        <text x="${x + barW / 2}" y="${padTop + plotH - h - 9}" text-anchor="middle" class="col-value">${fmt.n(d.value)}${unit}</text>
-        <text x="${x + barW / 2}" y="${height - 6}" text-anchor="middle" class="axis-text">${d.label}</text>
-      </g>`;
-    })
-    .join("");
-
-  return `<svg class="columns" viewBox="0 0 ${width} ${height}" width="100%" height="${height}" role="img" aria-label="Columns">
-    <path d="M0 ${padTop + plotH}H${width}" stroke="${C.grid}" stroke-width="1" />
-    ${bars}
-  </svg>`;
-}
-
-export function donut(items, { size = 148, thickness = 14, centerValue = "", centerLabel = "" } = {}) {
-  const total = items.reduce((s, i) => s + i.value, 0) || 1;
-  const r = (size - thickness) / 2;
-  const circ = 2 * Math.PI * r;
-  let offset = 0;
-  const segs = items
-    .map((item) => {
-      const len = (item.value / total) * circ - 2;
-      const el = `<circle class="seg" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none"
-        stroke="${item.color}" stroke-width="${thickness}" stroke-linecap="round"
-        stroke-dasharray="${Math.max(len, 1)} ${circ}" stroke-dashoffset="${-offset - 1}"
-        transform="rotate(-90 ${size / 2} ${size / 2})"><title>${item.label}: ${fmt.n(item.value)}</title></circle>`;
-      offset += (item.value / total) * circ;
-      return el;
-    })
-    .join("");
-  return `<svg class="donut" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Channel mix">
-    <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="#f4f1fb" stroke-width="${thickness}" />
-    ${segs}
-    <text x="50%" y="47%" text-anchor="middle" class="donut-value">${centerValue}</text>
-    <text x="50%" y="58%" text-anchor="middle" class="donut-label">${centerLabel}</text>
-  </svg>`;
+    .join(" ");
+  return (
+    '<svg class="spark" viewBox="0 0 ' +
+    width +
+    " " +
+    height +
+    '" width="' +
+    width +
+    '" height="' +
+    height +
+    '" aria-hidden="true"><path d="' +
+    d +
+    '" fill="none" stroke="' +
+    color +
+    '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>'
+  );
 }
 
 export function funnel(stages) {
   const max = stages[0].value || 1;
-  return `<div class="funnel">${stages
-    .map(
-      (s, i) => `<div class="funnel-row">
-        <span class="funnel-label">${s.label}</span>
-        <span class="funnel-track"><i data-funnel="${(s.value / max) * 100}"></i></span>
-        <span class="funnel-value">${fmt.n(s.value)}</span>
-        <span class="funnel-drop">${i === 0 ? "" : `−${Math.round((1 - s.value / stages[i - 1].value) * 100)}%`}</span>
-      </div>`,
-    )
-    .join("")}</div>`;
+  return (
+    '<div class="funnel">' +
+    stages
+      .map(function (s, i) {
+        return (
+          '<div class="funnel-row">' +
+          '<span class="funnel-label">' + s.label + "</span>" +
+          '<span class="funnel-track"><i data-funnel="' + (s.value / max) * 100 + '"></i></span>' +
+          '<span class="funnel-value">' + fmt.n(s.value) + "</span>" +
+          '<span class="funnel-drop">' +
+          (i === 0 ? "" : "−" + Math.round((1 - s.value / stages[i - 1].value) * 100) + "%") +
+          "</span></div>"
+        );
+      })
+      .join("") +
+    "</div>"
+  );
 }
