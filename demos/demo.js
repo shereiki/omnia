@@ -1,4 +1,4 @@
-/* Meridian Outfitters — Omnia client workspace demo.
+/* Omnia client workspace demo.
    Illustrative data only. Nothing here talks to a real service. */
 
 import {
@@ -11,38 +11,35 @@ import {
   fmt,
   C,
 } from "./charts.js";
+import { PROFILES, TICKET_TEMPLATES as SHARED_TICKET_TEMPLATES } from "./clients.js";
 
 const I = (id) => `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#${id}"></use></svg>`;
 
 /* ------------------------------------------------------------------ data */
 
-const DAYS = [
-  { label: "Fri", conversations: 128, orders: 41 },
-  { label: "Sat", conversations: 141, orders: 44 },
-  { label: "Sun", conversations: 133, orders: 41 },
-  { label: "Mon", conversations: 176, orders: 58 },
-  { label: "Tue", conversations: 162, orders: 55 },
-  { label: "Wed", conversations: 198, orders: 63 },
-  { label: "Thu", conversations: 214, orders: 71 },
-];
+/* Which client this workspace belongs to. /demos/<slug> or ?client=<slug>. */
+const SLUG =
+  (location.pathname.match(/\/demos\/([a-z0-9-]+)\/?$/) || [])[1] ||
+  new URLSearchParams(location.search).get("client") ||
+  "meridian";
 
-const HOURS = [
-  { label: "00", conversations: 4, orders: 1 },
-  { label: "03", conversations: 6, orders: 2 },
-  { label: "06", conversations: 18, orders: 6 },
-  { label: "09", conversations: 42, orders: 11 },
-  { label: "12", conversations: 48, orders: 13 },
-  { label: "15", conversations: 34, orders: 10 },
-  { label: "18", conversations: 22, orders: 6 },
-  { label: "21", conversations: 12, orders: 3 },
-];
+export const CLIENT = PROFILES[SLUG] || PROFILES.meridian;
 
-const WEEKS = [
-  { label: "W1", conversations: 1184, orders: 372 },
-  { label: "W2", conversations: 1290, orders: 398 },
-  { label: "W3", conversations: 1315, orders: 410 },
-  { label: "W4", conversations: 1429, orders: 424 },
-];
+const {
+  days: DAYS,
+  hours: HOURS,
+  weeks: WEEKS,
+  engineer: ENGINEER,
+  decisions: DECISIONS,
+  requests: REQUESTS,
+  agents: AGENTS,
+  orders: ORDERS,
+  inventory: INVENTORY,
+  people: PEOPLE,
+  systems: SYSTEMS,
+  modules: MODULES,
+  activity: ACTIVITY,
+} = CLIENT;
 
 const PERIODS = {
   "24h": {
@@ -50,7 +47,7 @@ const PERIODS = {
     grain: "per hour",
     points: HOURS,
     median: [22, 20, 18, 17, 15, 15, 14],
-    hours: 6,
+    hours: Math.max(1, Math.round(CLIENT.savings.hours / 30)),
     replyNote: "down from 22s",
   },
   "7d": {
@@ -58,7 +55,7 @@ const PERIODS = {
     grain: "per day",
     points: DAYS,
     median: [44, 39, 33, 28, 22, 20, 18],
-    hours: 46,
+    hours: Math.round(CLIENT.savings.hours / 4),
     replyNote: "down from 4m",
   },
   "30d": {
@@ -66,241 +63,20 @@ const PERIODS = {
     grain: "per week",
     points: WEEKS,
     median: [60, 44, 32, 21],
-    hours: 187,
+    hours: CLIENT.savings.hours,
     replyNote: "down from 3m",
   },
 };
 
-const ENGINEER = {
-  name: "Ayesha Karim",
-  initials: "AK",
-  role: "Solutions engineer · your Omnia team",
-  sla: "Usually replies within 30 minutes",
-  available: true,
+const TICKET_TEMPLATES = SHARED_TICKET_TEMPLATES;
+const DASH = CLIENT.dashboards;
+const firstName = () =>
+  CLIENT.people[0].name.replace(/^Dr\.\s*/, "").split(" ")[0];
+const greeting = () => {
+  const hour = new Date().getHours();
+  const part = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  return `${part}, ${firstName()}`;
 };
-
-const DECISIONS = [
-  {
-    id: "D-2101",
-    area: "Orders",
-    title: "Release 2 held orders",
-    why: "Both shipped last week and were never scanned by the courier. The hold is on our side, so releasing them costs nothing.",
-    impact: "AED 1,860",
-    impactNote: "revenue released",
-    risk: "Low",
-    deadline: "Today",
-    agent: "Coordinator",
-    evidence: "2 orders · same tracking pool",
-    status: "pending",
-  },
-  {
-    id: "D-2102",
-    area: "Inventory",
-    title: "Approve reorder: 24 overshirts, 18 totes",
-    why: "Cover drops under a week on both. Lead time is 11 days, so ordering now keeps the shelf stocked through the month.",
-    impact: "AED 6,120",
-    impactNote: "purchase order",
-    risk: "Medium",
-    deadline: "2 days",
-    agent: "Inventory Control",
-    evidence: "Sell-through 30d · 2 SKUs",
-    status: "pending",
-  },
-  {
-    id: "D-2103",
-    area: "Customer",
-    title: "Refund a sale item outside policy",
-    why: "The customer received a damaged item, but the 14-day window closed two days ago. A person has to decide this one.",
-    impact: "AED 420",
-    impactNote: "refund",
-    risk: "Medium",
-    deadline: "Today",
-    agent: "Customer replies",
-    evidence: "Photos attached · 1 order",
-    status: "pending",
-  },
-  {
-    id: "D-2104",
-    area: "Access",
-    title: "Let Customer replies send without review",
-    why: "Would cut first replies from 18s to under 5s. It also removes the human check on refund and return wording.",
-    impact: "2 min faster",
-    impactNote: "per conversation",
-    risk: "High",
-    deadline: "No rush",
-    agent: "Customer replies",
-    evidence: "97.2% accuracy · 30 days",
-    status: "pending",
-  },
-];
-
-const REQUESTS = [
-  {
-    id: "REQ-014",
-    title: "Supplier lead time on Order Operations",
-    type: "New dashboard",
-    status: "Answered",
-    updated: "12 min ago",
-    needing: false,
-    thread: [
-      {
-        from: "client",
-        author: "Maya Ortiz",
-        when: "Yesterday · 14:02",
-        text: "I keep chasing suppliers for delivery dates in a spreadsheet. Can we see promised vs actual on each order instead?",
-      },
-      {
-        from: "engineer",
-        author: ENGINEER.name,
-        when: "Yesterday · 14:41",
-        text: "Hi Maya — done. There's a new Supplier lead time view inside Order Operations. Columns are vendor, promised date, actual date and slip in days, and it flags anything running past five days late. Have a look tomorrow once a full sync has run; tell me if you'd rather see it as a weekly chart.",
-      },
-    ],
-  },
-  {
-    id: "REQ-013",
-    title: "Move the reorder check before the standup",
-    type: "Workflow change",
-    status: "With your engineer",
-    updated: "1 hr ago",
-    needing: false,
-    thread: [
-      {
-        from: "client",
-        author: "Maya Ortiz",
-        when: "Today · 08:12",
-        text: "The reorder suggestions land after our 8am warehouse standup, so they get missed. Can they be ready before it?",
-      },
-      {
-        from: "engineer",
-        author: ENGINEER.name,
-        when: "Today · 08:20",
-        text: "Morning — I'll move it to 07:15 so it's there before you meet. Nothing else changes; I'll confirm once it has run.",
-      },
-    ],
-  },
-  {
-    id: "REQ-012",
-    title: "Connect Zoho Inventory",
-    type: "Integration",
-    status: "Closed",
-    updated: "Yesterday",
-    needing: false,
-    thread: [
-      {
-        from: "client",
-        author: "Maya Ortiz",
-        when: "Tuesday · 11:05",
-        text: "We still run one warehouse on Zoho. Is it worth connecting or should we move it to Shopify?",
-      },
-      {
-        from: "engineer",
-        author: ENGINEER.name,
-        when: "Tuesday · 11:38",
-        text: "Connected it in staging so you can compare for a week before anything changes. One word of caution: its stock counts lag by about an hour, so I'd keep ordering decisions on Shopify for now.",
-      },
-    ],
-  },
-];
-
-const TICKET_TEMPLATES = {
-  "New dashboard": {
-    reply:
-      "Hi Maya — put this together this afternoon. It's attached to Order Operations as a new view, and the default filter is the last 30 days. If the columns aren't quite what you pictured, reply here and I'll rework it — no need to explain it twice, I have the context.",
-    evidence: ["New view added: Supplier lead time", "Filters set to last 30 days", "Visible to Operations and Finance"],
-  },
-  "Workflow change": {
-    reply:
-      "Morning Maya — changed it and left a note in the activity log so you can see exactly what moved. I watched the first run and it behaved as expected; nothing else in the workflow was touched.",
-    evidence: ["Schedule moved to 07:15", "First run verified", "No other changes"],
-  },
-  Integration: {
-    reply:
-      "Connected it in staging first so nothing customer-facing changed. I want to watch one full sync cycle before I promote it — that's usually about four hours. I'll confirm when it's live.",
-    evidence: ["Connection added (staging)", "Sync watching", "No production change yet"],
-  },
-  "Something's wrong": {
-    reply:
-      "Found it. A webhook was rotated on the Shopify side and orders stopped arriving. I re-pointed it and replayed the missed ones — all 11 are accounted for and nothing was lost. I'll keep an eye on it for the rest of the day.",
-    evidence: ["Webhook re-pointed", "11 orders replayed", "Monitoring for 24h"],
-  },
-};
-
-const AGENTS = [
-  { id: "coordinator", name: "Coordinator", scope: "Runs the workspace · 6 tools", icon: "i-agent", status: "live", autonomy: "Approval on money", stats: { runs: 214, approval: 3, success: "98.4%" }, series: [18, 24, 19, 31, 28, 34, 41], tools: ["orders.lookup", "warehouse.release", "stripe.charges"], thread: [
-    { from: "agent", text: "Two Riyadh orders are held at the warehouse. Both shipped last week and the courier never scanned them.", meta: "Coordinator · 09:41", tool: "warehouse.lookup", toolMeta: "2 records" },
-    { from: "user", text: "What would releasing them cost us?", meta: "Maya Ortiz · 09:42" },
-    { from: "agent", text: "Nothing. Both were paid once and the hold is on our side. It is in your decisions queue — approve it there and I will release them with the original tracking.", meta: "Coordinator · 09:42" },
-  ] },
-  { id: "orders", name: "Order Operations", scope: "Shopify · Warehouse API", icon: "i-bag", status: "live", autonomy: "Internal updates only", stats: { runs: 392, approval: 1, success: "99.1%" }, series: [41, 44, 41, 58, 55, 63, 71], tools: ["orders.validate", "stock.reserve", "warehouse.queue"], thread: [
-    { from: "agent", text: "Validated 11 orders overnight: 3 had stale prices, 8 were missing a phone number for the courier.", meta: "Order Operations · 07:10", tool: "orders.validate", toolMeta: "11 fixes" },
-    { from: "user", text: "Does the missing number block fulfilment?", meta: "Maya Ortiz · 08:02" },
-    { from: "agent", text: "It does for Riyadh same-day. I queued those 8 for a WhatsApp nudge at 10:00, which is when that group usually replies.", meta: "Order Operations · 08:02" },
-  ] },
-  { id: "inventory", name: "Inventory Control", scope: "Shopify · Stock levels", icon: "i-boxes", status: "idle", autonomy: "Drafts, never purchases", stats: { runs: 96, approval: 2, success: "100%" }, series: [8, 12, 9, 14, 11, 16, 13], tools: ["stock.read", "forecast.sellthrough", "reorder.draft"], thread: [
-    { from: "agent", text: "Linen overshirt · Sand has 4 days of cover left. Canvas tote · Olive has 6.", meta: "Inventory Control · 06:30", tool: "forecast.sellthrough", toolMeta: "30-day window" },
-    { from: "user", text: "What would you order?", meta: "Maya Ortiz · 07:15" },
-    { from: "agent", text: "24 overshirts and 18 totes covers four weeks without overstocking. It is waiting in your decisions queue.", meta: "Inventory Control · 07:15" },
-  ] },
-  { id: "replies", name: "Customer replies", scope: "WhatsApp · Approved knowledge", icon: "i-spark", status: "live", autonomy: "Approved answers only", stats: { runs: 186, approval: 0, success: "97.2%" }, series: [22, 28, 24, 31, 36, 33, 41], tools: ["knowledge.search", "orders.lookup", "handoff.create"], thread: [
-    { from: "agent", text: "Answered 14 conversations from approved knowledge. 2 asked for a refund outside policy, so I passed them to a person.", meta: "Customer replies · 09:05", tool: "knowledge.search", toolMeta: "14 answers" },
-    { from: "user", text: "Why did those two need a person?", meta: "Maya Ortiz · 09:20" },
-    { from: "agent", text: "Sale items with a 14-day window that closed on Tuesday. Refunds are a person's call, not mine.", meta: "Customer replies · 09:20" },
-  ] },
-];
-
-const ORDERS = [
-  { id: "MRD-4483", customer: "Layla Haddad", city: "Dubai", items: 3, value: 612, stage: "Captured", channel: "WhatsApp", age: "4 min" },
-  { id: "MRD-4482", customer: "Omar Nassar", city: "Abu Dhabi", items: 1, value: 238, stage: "Validated", channel: "Website", age: "9 min" },
-  { id: "MRD-4481", customer: "Sara Maktoum", city: "Dubai", items: 2, value: 410, stage: "In fulfilment", channel: "Website", age: "22 min" },
-  { id: "MRD-4480", customer: "Ibrahim Qasim", city: "Sharjah", items: 4, value: 980, stage: "Completed", channel: "WhatsApp", age: "48 min" },
-  { id: "MRD-4479", customer: "Khalid Rashed", city: "Riyadh", items: 5, value: 1180, stage: "Completed", channel: "Email", age: "1 hr" },
-  { id: "MRD-4478", customer: "Nadia Farouk", city: "Riyadh", items: 2, value: 860, stage: "On hold", channel: "WhatsApp", age: "2 hr" },
-  { id: "MRD-4477", customer: "Huda Salim", city: "Dubai", items: 1, value: 420, stage: "Completed", channel: "Website", age: "3 hr" },
-  { id: "MRD-4471", customer: "Yousef Amin", city: "Riyadh", items: 1, value: 1000, stage: "On hold", channel: "WhatsApp", age: "5 hr" },
-];
-
-const INVENTORY = [
-  { item: "Linen overshirt · Sand", sku: "LOS-SND", onHand: 6, cover: 4, suggested: 24, status: "Review", trend: [18, 16, 14, 11, 9, 7, 6] },
-  { item: "Canvas tote · Olive", sku: "CTO-OLV", onHand: 9, cover: 6, suggested: 18, status: "Review", trend: [22, 20, 17, 15, 13, 11, 9] },
-  { item: "Trainer · White 41", sku: "TRN-W41", onHand: 2, cover: 2, suggested: 30, status: "Critical", trend: [14, 12, 9, 6, 4, 3, 2] },
-  { item: "Desert boot · 42", sku: "DBT-42", onHand: 31, cover: 22, suggested: 0, status: "Healthy", trend: [26, 27, 28, 29, 30, 30, 31] },
-  { item: "Cotton cap · Navy", sku: "CCP-NVY", onHand: 44, cover: 31, suggested: 0, status: "Healthy", trend: [38, 39, 41, 42, 43, 43, 44] },
-  { item: "Merino scarf · Charcoal", sku: "MSC-CHR", onHand: 12, cover: 9, suggested: 0, status: "Healthy", trend: [9, 10, 10, 11, 11, 12, 12] },
-];
-
-const PEOPLE = [
-  { initials: "MO", name: "Maya Ortiz", role: "Workspace admin", access: "Everything", last: "Active now" },
-  { initials: "JL", name: "Jordan Lee", role: "Operations", access: "Orders · decisions", last: "12 min ago" },
-  { initials: "AS", name: "Amira Saleh", role: "Finance", access: "Savings · invoices", last: "1 hr ago" },
-  { initials: "HR", name: "Hassan Rahimi", role: "Warehouse", access: "Orders · stock", last: "3 hr ago" },
-];
-
-const SYSTEMS = [
-  { name: "Shopify", meta: "Orders, catalog, stock", sync: "2 min ago", icon: "i-bag", state: "Healthy" },
-  { name: "Warehouse API", meta: "Fulfilment & tracking", sync: "6 min ago", icon: "i-boxes", state: "Healthy" },
-  { name: "Stripe", meta: "Payments & refunds", sync: "1 min ago", icon: "i-card", state: "Healthy" },
-  { name: "WhatsApp Business", meta: "Customer conversations", sync: "12 min ago", icon: "i-spark", state: "Healthy" },
-  { name: "Google Workspace", meta: "Team & calendar", sync: "1 hr ago", icon: "i-team", state: "Connected" },
-  { name: "Zoho Inventory", meta: "Legacy stock system", sync: "3 days ago", icon: "i-layers", state: "Degraded" },
-];
-
-const MODULES = [
-  { name: "Order operations", meta: "Intake, validation, fulfilment routing", on: true, icon: "i-bag" },
-  { name: "Inventory control", meta: "Stock signals and reorder drafts", on: true, icon: "i-boxes" },
-  { name: "Customer replies", meta: "Answers from approved knowledge", on: true, icon: "i-spark" },
-  { name: "Business reporting", meta: "Weekly summaries for finance", on: false, icon: "i-chart" },
-  { name: "Supplier follow-up", meta: "Chasing delivery confirmations", on: false, icon: "i-layers" },
-];
-
-const ACTIVITY = [
-  { time: "09:44", who: "Coordinator", text: "Released 2 held orders", result: "Done" },
-  { time: "09:41", who: "Coordinator", text: "Raised a decision: release held orders", result: "Waiting" },
-  { time: "09:38", who: "Order Operations", text: "Validated 11 new orders", result: "Done" },
-  { time: "09:20", who: "Inventory Control", text: "Drafted a reorder for 2 SKUs", result: "Waiting" },
-  { time: "08:55", who: "Customer replies", text: "Answered 14 conversations", result: "Done" },
-  { time: "07:15", who: "Order Operations", text: "Synced fulfilment status", result: "Done" },
-];
 
 const state = {
   tabs: [
@@ -324,7 +100,7 @@ const state = {
   requests: REQUESTS.map((r) => ({ ...r, thread: [...r.thread] })),
   notifications: [
     { id: "n1", title: "Two orders are waiting on your approval", meta: "Coordinator · 4 min ago", kind: "decision", ref: "D-2101", read: false },
-    { id: "n2", title: "Ayesha replied to REQ-014", meta: "Your engineer · 12 min ago", kind: "request", ref: "REQ-014", read: false },
+    { id: "n2", title: `${ENGINEER.name.split(" ")[0]} replied to REQ-014`, meta: "Your engineer · 12 min ago", kind: "request", ref: "REQ-014", read: false },
     { id: "n3", title: "Stock cover dropped under a week", meta: "Inventory Control · 28 min ago", kind: "decision", ref: "D-2102", read: false },
     { id: "n4", title: "Zoho Inventory is degraded", meta: "Systems · 3 hr ago", kind: "system", read: true },
   ],
@@ -462,7 +238,21 @@ function requestThread(request) {
     .join("")}</div>`;
 }
 
-function newRequestModal() {
+function newRequestModal(preset = "") {
+  const presetType =
+    preset === "integration" ? "Integration" : preset === "module" ? "Workflow change" : "New dashboard";
+  const presetTitle =
+    preset === "integration"
+      ? "Connect a system"
+      : preset === "module"
+        ? "A capability we do not have yet"
+        : "";
+  const presetDetails =
+    preset === "integration"
+      ? "Which system, and what should we read from it?"
+      : preset === "module"
+        ? "What should it do, and who needs it?"
+        : "";
   openModal(`
     <div class="modal-head">
       <div><h2>Request a change</h2><p>Your engineer picks it up and comes back to you — usually inside 30 minutes.</p></div>
@@ -472,21 +262,20 @@ function newRequestModal() {
       <form class="request-form" id="requestForm">
         <label>What kind of change?
           <select name="type">
-            <option>New dashboard</option>
-            <option>Workflow change</option>
-            <option>Integration</option>
-            <option>Something's wrong</option>
+            ${["New dashboard", "Workflow change", "Integration", "Something's wrong"]
+              .map((t) => `<option ${t === presetType ? "selected" : ""}>${t}</option>`)
+              .join("")}
           </select>
         </label>
         <label>In a sentence
-          <input name="title" required placeholder="Supplier lead time on Order Operations" />
+          <input name="title" required placeholder="${presetTitle || "Supplier lead time on Order Operations"}" />
         </label>
         <label>Anything useful to know
-          <textarea name="details" rows="3" placeholder="Where it should live, who needs it, what it should show…"></textarea>
+          <textarea name="details" rows="3" placeholder="${presetDetails || "Where it should live, who needs it, what it should show…"}"></textarea>
         </label>
-        <p class="modal-note">Ayesha sees this with the workspace context already attached. You will not be asked to explain it twice.</p>
+        <p class="modal-note">${ENGINEER.name.split(" ")[0]} sees this with the workspace context already attached. You will not be asked to explain it twice.</p>
         <div class="modal-actions">
-          <button class="btn primary" type="submit">Send to Ayesha</button>
+          <button class="btn primary" type="submit">Send to ${ENGINEER.name.split(" ")[0]}</button>
           <button class="btn" type="button" data-book-call>Book a call instead</button>
         </div>
       </form>
@@ -511,7 +300,7 @@ function submitRequest(type, title, details) {
     thread: [
       {
         from: "client",
-        author: "Maya Ortiz",
+        author: "${CLIENT.people[0].name}",
         when: "Just now",
         text: details.trim() || title.trim(),
       },
@@ -551,7 +340,7 @@ function deliverReply(id, type) {
   request.updated = "just now";
   request.deliverables = template.evidence;
   request.thread.push({ from: "engineer", author: ENGINEER.name, when: "Just now", text: template.reply });
-  notify({ title: `Ayesha replied to ${id}`, meta: "Your engineer · just now", kind: "request", ref: id });
+  notify({ title: `${ENGINEER.name.split(" ")[0]} replied to ${id}`, meta: "Your engineer · just now", kind: "request", ref: id });
   toast(`${id} · Ayesha replied`);
   if (state.dock.open) renderDock();
 }
@@ -565,7 +354,7 @@ function bookACall() {
   closeModal();
   openModal(`
     <div class="modal-head">
-      <div><h2>Book a call with Ayesha</h2><p>30 minutes, screen shared, no slides.</p></div>
+      <div><h2>Book a call with ${ENGINEER.name.split(" ")[0]}</h2><p>30 minutes, screen shared, no slides.</p></div>
       <button class="icon-button" data-close-modal aria-label="Close">${I("i-x")}</button>
     </div>
     <div class="modal-body">
@@ -592,9 +381,9 @@ function solution(id) {
 
 const SOLUTIONS = [
   { id: "decisions", label: "Decisions", meta: "Waiting on a person", icon: "i-shield", tone: "", state: "" },
-  { id: "orders", label: "Order Operations", meta: "Intake & fulfilment", icon: "i-bag", tone: "mint", state: "Running" },
-  { id: "inventory", label: "Inventory Control", meta: "Stock & replenishment", icon: "i-boxes", tone: "lav", state: "3 need review", review: true },
-  { id: "savings", label: "Savings Report", meta: "Cost recovered", icon: "i-chart", tone: "ink", state: "Updated today" },
+  { id: "orders", label: DASH.orders, meta: "Live operation", icon: "i-bag", tone: "mint", state: "Running" },
+  { id: "inventory", label: DASH.inventory, meta: "Capacity & stock", icon: "i-boxes", tone: "lav", state: "3 need review", review: true },
+  { id: "savings", label: DASH.savings, meta: "Cost recovered", icon: "i-chart", tone: "ink", state: "Updated today" },
 ];
 
 const tabLabel = (id) => (id === "general" ? "General" : solution(id)?.label || id);
@@ -857,7 +646,7 @@ function viewGeneral() {
   return `
   <div class="view-head">
     <div>
-      <h1>Good evening, Maya</h1>
+      <h1>${greeting()}</h1>
       <p>${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · ${pending.length} decisions waiting, ${openRequests().length} open requests.</p>
     </div>
   </div>
@@ -911,7 +700,7 @@ function viewGeneral() {
 
   <div class="triple">
     <section class="card">
-      <div class="card-head"><div><h2>Your requests</h2><small>Handled by Ayesha, your engineer</small></div>
+      <div class="card-head"><div><h2>Your requests</h2><small>Handled by ${ENGINEER.name}, your engineer</small></div>
         <button class="btn quiet sm" data-dock-open="requests">Open${I("i-arrow")}</button></div>
       <div class="card-body rows">
         ${openRequests()
@@ -1072,7 +861,7 @@ function dockRequests() {
           .join("")}
       </div>
     </div>
-    <p class="dock-note">Changes go to Ayesha. You get a reply, not another chat window to manage.</p>`;
+    <p class="dock-note">Changes go to ${ENGINEER.name}. You get a reply, not another chat window to manage.</p>`;
 }
 
 function dockThread() {
@@ -1143,7 +932,7 @@ function dockAgents() {
             .slice(-2)
             .map(
               (m) => `<div class="agent-msg ${m.from}">
-                <span class="agent-msg-who">${m.from === "user" ? "Maya" : agent.name}</span>
+                <span class="agent-msg-who">${m.from === "user" ? firstName() : agent.name}</span>
                 <p>${m.text}</p>
                 <span class="agent-msg-when">${m.meta}</span>
               </div>`,
@@ -1201,7 +990,7 @@ function renderDock() {
     state.dock.thread = null;
     renderDock();
   });
-  body.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", newRequestModal));
+  body.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", () => newRequestModal()));
   body.querySelectorAll("[data-book-call]").forEach((el) => el.addEventListener("click", bookACall));
   body.querySelectorAll("[data-reply]").forEach((form) =>
     form.addEventListener("submit", (event) => {
@@ -1209,7 +998,7 @@ function renderDock() {
       const text = form.querySelector("textarea").value.trim();
       if (!text) return;
       const request = state.requests.find((r) => r.id === form.dataset.reply);
-      request.thread.push({ from: "client", author: "Maya Ortiz", when: "Just now", text });
+      request.thread.push({ from: "client", author: "${CLIENT.people[0].name}", when: "Just now", text });
       request.updated = "just now";
       renderDock();
       toast("Reply sent to Ayesha");
@@ -1230,7 +1019,7 @@ function viewOrders() {
   const rows = filteredOrders();
   return `
   <div class="view-head">
-    <div><h1>Order Operations</h1><p>Intake, validation and fulfilment across Shopify and the warehouse.</p></div>
+    <div><h1>${DASH.orders}</h1><p>${CLIENT.pitch}</p></div>
   </div>
 
   <div class="split wide-left">
@@ -1294,13 +1083,13 @@ function viewOrders() {
 function viewInventory() {
   return `
   <div class="view-head">
-    <div><h1>Inventory Control</h1><p>Stock signals from Shopify, reconciled against the warehouse.</p></div>
+    <div><h1>${DASH.inventory}</h1><p>Capacity, cover and the things that need restocking.</p></div>
     <div class="head-actions"><span class="chip warn">3 need review</span></div>
   </div>
 
   <div class="tile-grid three">
     <article class="tile"><div class="tile-top"><span class="tile-label">Tracked items</span><span class="tile-icon lav">${I("i-boxes")}</span></div>
-      <div class="tile-value" data-count="1842">1,842</div>
+      <div class="tile-value" data-count="${INVENTORY.length * 47}">${fmt.n(INVENTORY.length * 47)}</div>
       <div class="tile-foot"><span>across 5 collections</span></div></article>
     <article class="tile"><div class="tile-top"><span class="tile-label">Under a week of cover</span><span class="tile-icon">${I("i-pulse")}</span></div>
       <div class="tile-value" data-count="3">3</div>
@@ -1338,11 +1127,10 @@ function viewInventory() {
 }
 
 function viewSavings() {
-  const months = [
-    { label: "Aug", value: 11900 },
-    { label: "Sep", value: 13400 },
-    { label: "Oct", value: 15900 },
-  ];
+  const months = CLIENT.savings.months.map(([name, value]) => ({
+    label: name.slice(0, 3),
+    value,
+  }));
   return `
   <div class="view-head">
     <div><h1>Savings Report</h1><p>What Omnia recovered for Meridian this quarter.</p></div>
@@ -1352,12 +1140,12 @@ function viewSavings() {
   <section class="savings-hero">
     <div>
       <span class="kicker">Quarter to date</span>
-      <strong>AED <span class="hero-count" data-count="41200">41,200</span></strong>
+      <strong>${CLIENT.currency} <span class="hero-count" data-count="${CLIENT.savings.total}">${fmt.money(CLIENT.savings.total)}</span></strong>
       <p>Duplicate tools retired, manual hours returned and fewer fulfilment errors — measured against the three months before Omnia.</p>
       <div class="hero-pills">
-        <span class="hero-pill">${I("i-chart")}AED 13,733 / month</span>
-        <span class="hero-pill">${I("i-clock")}187 hours</span>
-        <span class="hero-pill">${I("i-shield")}34 errors avoided</span>
+        <span class="hero-pill">${I("i-chart")}${CLIENT.currency} ${fmt.money(CLIENT.savings.monthly)} / month</span>
+        <span class="hero-pill">${I("i-clock")}${CLIENT.savings.hours} hours</span>
+        <span class="hero-pill">${I("i-shield")}${CLIENT.savings.errors} errors avoided</span>
       </div>
     </div>
     <div class="savings-badge">${I("i-chart")}</div>
@@ -1365,19 +1153,14 @@ function viewSavings() {
 
   <div class="split">
     <section class="card">
-      <div class="card-head"><div><h2>Monthly saving</h2><small>AED, quarter to date</small></div></div>
+      <div class="card-head"><div><h2>Monthly saving</h2><small>${CLIENT.currency}, quarter to date</small></div></div>
       <div class="card-body">${columns(months, { width: 420, height: 176 })}</div>
       <div class="card-foot"><span>Reported to finance monthly</span><span>Prepared by Ayesha</span></div>
     </section>
     <section class="card">
       <div class="card-head"><div><h2>Where it comes from</h2><small>Quarter to date</small></div></div>
       <div class="card-body bars">
-        ${[
-          ["Duplicate tools retired", 16400, 100],
-          ["Manual hours returned", 14800, 90],
-          ["Fulfilment errors avoided", 6100, 37],
-          ["Support response time", 3900, 24],
-        ]
+        ${CLIENT.savings.breakdown
           .map(
             ([label, value, width]) => `<div class="bar-row">
               <span class="label">${label}</span>
@@ -1396,11 +1179,7 @@ function viewSavings() {
       <table class="table">
         <thead><tr><th>Month</th><th>Saved</th><th>Hours returned</th><th>Errors avoided</th><th>Trend</th></tr></thead>
         <tbody>
-          ${[
-            ["August", 11900, 52, 9],
-            ["September", 13400, 60, 11],
-            ["October", 15900, 75, 14],
-          ]
+          ${CLIENT.savings.months
             .map(
               ([month, value, hours, errors]) => `<tr>
                 <td><strong>${month}</strong></td><td class="mono">${fmt.money(value)}</td>
@@ -1448,7 +1227,8 @@ function osBody() {
 
   if (view === "systems")
     return `<section class="card">
-      <div class="card-head"><div><h2>Connected systems</h2><small>Monitored by Omnia · 5 healthy, 1 degraded</small></div></div>
+      <div class="card-head"><div><h2>Connected systems</h2><small>Monitored and maintained by Omnia</small></div>
+        <button class="btn sm" data-request="integration">${I("i-plus")}Request a connection</button></div>
       <div class="card-body system-grid">
         ${SYSTEMS.map(
           (s) => `<article class="system-card ${s.state === "Degraded" ? "warn" : ""}">
@@ -1459,12 +1239,13 @@ function osBody() {
           </article>`,
         ).join("")}
       </div>
-      <div class="card-foot"><span>Adding or removing a connection is a request to Ayesha</span></div>
+      <div class="card-foot"><span>We add and maintain connections. Ask and it goes on the list.</span></div>
     </section>`;
 
   if (view === "modules")
     return `<section class="card">
-      <div class="card-head"><div><h2>Modules</h2><small>What your workspace can do today</small></div></div>
+      <div class="card-head"><div><h2>Modules</h2><small>What your workspace can do today</small></div>
+        <button class="btn sm" data-request="module">${I("i-plus")}Request a module</button></div>
       <div class="card-body module-grid">
         ${MODULES.map(
           (m) => `<article class="module-card ${m.on ? "" : "off"}">
@@ -1474,7 +1255,7 @@ function osBody() {
           </article>`,
         ).join("")}
       </div>
-      <div class="card-foot"><span>Turning a module on is applied by your Omnia team</span></div>
+      <div class="card-foot"><span>We build these with you. Turning one on is our job, not yours.</span></div>
     </section>`;
 
   if (view === "agents")
@@ -1512,7 +1293,7 @@ function osBody() {
 
   if (view === "plan")
     return `<section class="card">
-      <div class="card-head"><div><h2>Plan & usage</h2><small>Managed for Meridian Outfitters</small></div>
+      <div class="card-head"><div><h2>Plan & usage</h2><small>Managed for ${CLIENT.name}</small></div>
         <span class="chip uv">Omnia managed</span></div>
       <div class="card-body usage">
         ${[["Workspace activity", 62, ""], ["Agent runs", 41, "mint"], ["Connected systems", 75, ""]]
@@ -1527,7 +1308,7 @@ function osBody() {
       <div class="card-body facts">
         <div class="fact"><span>Plan</span><strong>Omnia Workspace</strong></div>
         <div class="fact"><span>Seats</span><strong>4 of 12</strong></div>
-        <div class="fact"><span>Billing</span><strong>Monthly · AED 9,800</strong></div>
+        <div class="fact"><span>Billing</span><strong>Monthly · ${CLIENT.currency} 9,800</strong></div>
         <div class="fact"><span>Support</span><strong>Named engineer</strong></div>
       </div>
       <div class="card-foot"><span>Plan changes go through Ayesha</span></div>
@@ -1535,7 +1316,7 @@ function osBody() {
     <section class="card">
       <div class="card-head"><div><h2>Invoices</h2><small>Last three months</small></div></div>
       <div class="card-body rows">
-        ${[["INV-2026-010", "October", "AED 9,800"], ["INV-2026-009", "September", "AED 9,800"], ["INV-2026-008", "August", "AED 9,800"]]
+        ${[["INV-2026-010", "October", `${CLIENT.currency} 9,800`], ["INV-2026-009", "September", `${CLIENT.currency} 9,800`], ["INV-2026-008", "August", `${CLIENT.currency} 9,800`]]
           .map(
             ([id, month, amount]) => `<div class="row row-static">
               <span class="row-main"><strong>${id}</strong><small>${month}</small></span>
@@ -1557,7 +1338,7 @@ function osBody() {
         .join("")}
     </div>
     <div class="card-body facts">
-      <div class="fact"><span>Workspace</span><strong>Meridian Outfitters</strong></div>
+      <div class="fact"><span>Workspace</span><strong>${CLIENT.name}</strong></div>
       <div class="fact"><span>Region</span><strong>United Arab Emirates</strong></div>
       <div class="fact"><span>People</span><strong>4 of 12 seats</strong></div>
       <div class="fact"><span>Connected systems</span><strong>6</strong></div>
@@ -1652,7 +1433,10 @@ function wireStage() {
 
   stage.querySelectorAll("[data-tab]").forEach((el) => el.addEventListener("click", () => openTab(el.dataset.tab)));
   stage.querySelectorAll("[data-open]").forEach((el) => el.addEventListener("click", () => openTab(el.dataset.open)));
-  stage.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", newRequestModal));
+  stage.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", () => newRequestModal()));
+  stage.querySelectorAll("[data-request]").forEach((el) =>
+    el.addEventListener("click", () => newRequestModal(el.dataset.request)),
+  );
   stage.querySelectorAll("[data-book-call]").forEach((el) => el.addEventListener("click", bookACall));
   stage.querySelectorAll("[data-agent]").forEach((el) =>
     el.addEventListener("click", () => {
@@ -1824,7 +1608,7 @@ function wireStage() {
       if (!text) return;
       const log = document.getElementById("chatLog");
       const agent = AGENTS.find((a) => a.id === state.agentId);
-      log.insertAdjacentHTML("beforeend", `<div class="msg user"><div class="bubble">${text}<div class="msg-meta">Maya Ortiz · now</div></div></div>`);
+      log.insertAdjacentHTML("beforeend", `<div class="msg user"><div class="bubble">${text}<div class="msg-meta">${CLIENT.people[0].name} · now</div></div></div>`);
       input.value = "";
       const typing = document.createElement("div");
       typing.className = "msg agent typing";
@@ -1849,7 +1633,7 @@ function openOrder(id) {
     order.id,
     `${order.customer} · ${order.city} · ${order.channel}`,
     `<div class="drawer-facts">
-      <div><span>Value</span><strong>AED ${fmt.money(order.value)}</strong></div>
+      <div><span>Value</span><strong>${CLIENT.currency} ${fmt.money(order.value)}</strong></div>
       <div><span>Items</span><strong>${order.items}</strong></div>
       <div><span>Age</span><strong>${order.age}</strong></div>
       <div><span>Stage</span><strong>${order.stage}</strong></div>
@@ -2051,6 +1835,21 @@ function renderNotifications() {
 }
 
 function init() {
+  document.title = `${CLIENT.name} — Omnia workspace`;
+  const engineerName = document.querySelector(".pill-person-copy strong");
+  if (engineerName) engineerName.textContent = CLIENT.engineer.name;
+  const admin = CLIENT.people[0];
+  const accountName = document.querySelector("#accountMenu .menu-head strong");
+  if (accountName) accountName.textContent = admin.name;
+  const avatar = document.querySelector(".pill-account .avatar");
+  if (avatar) avatar.textContent = admin.initials;
+  const pillAccount = document.getElementById("accountButton");
+  if (pillAccount) pillAccount.setAttribute("aria-label", admin.name);
+  const wsName = document.querySelector('#accountMenu [data-action="workspace"] span:nth-child(2)');
+  if (wsName) wsName.textContent = CLIENT.name;
+  const menuHead = document.querySelector("#accountMenu .menu-head span");
+  if (menuHead) menuHead.textContent = `Workspace admin · ${CLIENT.name}`;
+  document.getElementById("dockButton")?.setAttribute("aria-label", `Your engineer, ${CLIENT.engineer.name}`);
   restoreTabOrder();
   renderTabs();
   setupTabDrag();
@@ -2079,12 +1878,12 @@ function init() {
 
   document.querySelector('[data-action="workspace"]').addEventListener("click", () =>
     openModal(`
-      <div class="modal-head"><div><h2>Meridian Outfitters</h2><p>This demo shows one delivered workspace.</p></div>
+      <div class="modal-head"><div><h2>${CLIENT.name}</h2><p>${CLIENT.industry} · ${CLIENT.region} · live since ${CLIENT.since}</p></div>
         <button class="icon-button" data-close-modal aria-label="Close">${I("i-x")}</button></div>
       <div class="modal-body"><div class="drawer-facts">
         <div><span>Region</span><strong>United Arab Emirates</strong></div>
-        <div><span>Systems</span><strong>6 connected</strong></div>
-        <div><span>Agents</span><strong>4 running</strong></div>
+        <div><span>Systems</span><strong>${SYSTEMS.length} connected</strong></div>
+        <div><span>Agents</span><strong>${AGENTS.length} configured</strong></div>
         <div><span>Engineer</span><strong>${ENGINEER.name}</strong></div>
       </div></div>`),
   );

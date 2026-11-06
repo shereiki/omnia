@@ -119,7 +119,12 @@ function redirect(request, path) {
 }
 
 const LOGIN_PATHS = new Set(["/demos/login", "/demos/login.html"]);
-const PUBLIC_DEMO_ASSETS = new Set(["/demos/demo.css", "/demos/login.js"]);
+const PUBLIC_DEMO_ASSETS = new Set([
+  "/demos/demo.css",
+  "/demos/login.js",
+  "/demos/index.js",
+  "/demos/clients.js",
+]);
 
 export async function guardDemoRequest(request, env = process.env) {
   const path = pathname(request);

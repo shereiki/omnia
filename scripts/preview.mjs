@@ -119,6 +119,12 @@ const server = createServer(async (req, res) => {
         status: 404,
         headers: { "Content-Type": "text/html; charset=utf-8", ...headersFor(url.pathname) },
       });
+    } else if (/^\/demos\/[a-z0-9-]+$/.test(url.pathname)) {
+      // the deployment rewrite sends /demos/<slug> to the workspace app
+      const page = await readStatic("/demos/workspace.html");
+      response = new Response(page.body, {
+        headers: { "Content-Type": "text/html; charset=utf-8", ...headersFor(url.pathname) },
+      });
     } else if (url.pathname === "/api/demos/session")
       response = await demoSession.fetch(request);
     else if (url.pathname === "/demos" || url.pathname.startsWith("/demos/")) {
