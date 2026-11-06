@@ -46,8 +46,8 @@
       </defs>
     </svg>
 
-    <header class="topbar" id="topbar">
-      <a class="brand" href="/demos/" aria-label="Omnia demo home">
+    <nav class="pill" id="topbar" aria-label="Workspace navigation">
+      <a class="pill-brand" href="/demos/" aria-label="Omnia demo home">
         <svg viewBox="0 0 430 440" aria-hidden="true">
           <path fill="#5B45D6" d="M228 70h-58Q70 70 70 170v68h74v-56q0-38 38-38h46Z" />
           <path fill="#69E3C0" d="M246 70h16q98 0 98 98v50h-74v-36q0-38-40-38Z" />
@@ -57,71 +57,63 @@
         <span>OMNIA</span>
       </a>
 
-      <button class="workspace-chip" type="button" data-action="workspace">
+      <button class="pill-workspace" type="button" data-action="workspace" title="Meridian Outfitters">
         <span class="workspace-mark">M</span>
-        <span class="workspace-name">Meridian Outfitters</span>
-        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron" /></svg>
       </button>
 
-      <span class="env-pill"><i></i>Demo</span>
-      <div class="topbar-spacer"></div>
+      <span class="pill-divider" aria-hidden="true"></span>
 
-      <button class="icon-button" type="button" aria-label="Search" data-action="search">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search" /></svg>
-      </button>
-
-      <button class="icon-button desk-button" id="dockButton" type="button" aria-label="Ayesha and agents" aria-expanded="false" aria-controls="dock">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ticket" /></svg>
-        <i class="badge" id="dockBadge" hidden></i>
-      </button>
-
-      <button class="icon-button" id="bell" type="button" aria-label="Notifications" data-action="notify">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bell" /></svg>
-        <i class="badge" id="badge" hidden></i>
-      </button>
-
-      <div class="account-wrap">
-        <button class="account" id="accountButton" type="button" aria-expanded="false" aria-haspopup="menu">
-          <span class="avatar">MO</span>
-          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron" /></svg>
-        </button>
-        <div class="menu account-menu" id="accountMenu" role="menu" hidden>
-          <div class="menu-head"><strong>Maya Ortiz</strong><span>Workspace admin · Meridian</span></div>
-          <button class="menu-item" role="menuitem" type="button" data-action="manage-os"><svg viewBox="0 0 24 24"><use href="#i-gear" /></svg><span>Manage Omnia OS</span><kbd>G</kbd></button>
-          <button class="menu-item" role="menuitem" type="button" data-action="people"><svg viewBox="0 0 24 24"><use href="#i-team" /></svg><span>People &amp; access</span></button>
-          <button class="menu-item" role="menuitem" type="button" data-action="requests"><svg viewBox="0 0 24 24"><use href="#i-ticket" /></svg><span>Your requests</span></button>
-          <div class="menu-sep"></div>
-          <a class="menu-item" role="menuitem" href="/demos/logout"><svg viewBox="0 0 24 24"><use href="#i-logout" /></svg><span>Lock this demo</span></a>
-        </div>
-      </div>
-    </header>
-
-    <div class="tabstrip" id="tabstrip">
-      <div class="tabs" id="tabs" role="tablist" aria-label="Workspace"></div>
+      <div class="tabs" id="tabs" role="tablist" aria-label="Dashboards"></div>
       <button class="tab-add" id="tabAdd" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Open a dashboard">
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus" /></svg>
       </button>
       <div class="menu solutions-menu" id="solutionsMenu" role="menu" hidden></div>
-      <button class="tab-collapse" id="tabCollapse" type="button" aria-expanded="true" aria-label="Collapse the dashboard tabs">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chevron" /></svg>
-      </button>
-      <div class="tabstrip-meta"><span class="sync"><i></i>Synced 2 min ago</span></div>
-    </div>
+
+      <div class="pill-actions">
+        <button class="pill-button" type="button" aria-label="Search" data-action="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search" /></svg>
+        </button>
+        <button class="pill-person" id="dockButton" type="button" aria-label="Ayesha, your engineer" aria-expanded="false" aria-controls="dock">
+          <span class="pill-person-avatar">AK</span>
+          <span class="pill-person-name">Ayesha</span>
+          <i class="badge" id="dockBadge" hidden></i>
+        </button>
+        <button class="pill-button" id="bell" type="button" aria-label="Notifications" data-action="notify">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bell" /></svg>
+          <i class="badge" id="badge" hidden></i>
+        </button>
+        <div class="account-wrap">
+          <button class="pill-account" id="accountButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Maya Ortiz">
+            <span class="avatar">MO</span>
+          </button>
+          <div class="menu account-menu" id="accountMenu" role="menu" hidden>
+            <div class="menu-head"><strong>Maya Ortiz</strong><span>Workspace admin · Meridian</span></div>
+            <button class="menu-item" role="menuitem" type="button" data-action="manage-os"><svg viewBox="0 0 24 24"><use href="#i-gear" /></svg><span>Manage Omnia OS</span><kbd>G</kbd></button>
+            <button class="menu-item" role="menuitem" type="button" data-action="people"><svg viewBox="0 0 24 24"><use href="#i-team" /></svg><span>People &amp; access</span></button>
+            <button class="menu-item" role="menuitem" type="button" data-action="requests"><svg viewBox="0 0 24 24"><use href="#i-ticket" /></svg><span>Your requests</span></button>
+            <div class="menu-sep"></div>
+            <a class="menu-item" role="menuitem" href="/demos/logout"><svg viewBox="0 0 24 24"><use href="#i-logout" /></svg><span>Lock this demo</span></a>
+          </div>
+        </div>
+      </div>
+    </nav>
 
     <main class="stage" id="stage" tabindex="-1"></main>
 
     <aside class="dock" id="dock" aria-label="Ayesha and agents" hidden>
       <div class="dock-head">
-        <div class="dock-seg" role="tablist" aria-label="Desk">
-          <button type="button" role="tab" data-dock="requests" aria-selected="true">Ayesha</button>
-          <button type="button" role="tab" data-dock="agents" aria-selected="false">Agents</button>
-        </div>
-        <button class="icon-button" type="button" data-dock-close aria-label="Close the desk">
+        <div class="dock-title" id="dockTitle"></div>
+        <button class="icon-button" type="button" data-dock-close aria-label="Close">
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-x" /></svg>
         </button>
       </div>
       <div class="dock-body" id="dockBody"></div>
     </aside>
+
+    <button class="agents-orb" id="agentsOrb" type="button" aria-label="Agents" aria-expanded="false">
+      <span class="agents-orb-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-agent" /></svg></span>
+      <span class="agents-orb-live"><i></i><b id="agentsOrbCount">3</b><em>running</em></span>
+    </button>
 
     <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
     <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Details" hidden></aside>

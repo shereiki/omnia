@@ -803,11 +803,7 @@ function renderSolutionsMenu() {
         ${s.state ? `<span class="state ${s.review ? "review" : ""}"><i></i>${s.state}</span>` : ""}
       </button>`,
     ).join("")}
-    <div class="menu-sep"></div>
-    <button class="solution-option" role="menuitem" data-new-request>
-      <span class="tile-icon ink">${I("i-ticket")}</span>
-      <span><strong>Request a change</strong><small>Your engineer replies in ~30 min</small></span>
-    </button>`;
+`;
   menu.querySelectorAll("[data-open]").forEach((b) =>
     b.addEventListener("click", () => {
       menu.hidden = true;
@@ -815,10 +811,6 @@ function renderSolutionsMenu() {
       openTab(b.dataset.open);
     }),
   );
-  menu.querySelector("[data-new-request]").addEventListener("click", () => {
-    menu.hidden = true;
-    newRequestModal();
-  });
 }
 
 /* ------------------------------------------------------------------ views */
@@ -887,9 +879,6 @@ function viewGeneral() {
     <div>
       <h1>Good evening, Maya</h1>
       <p>${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · ${pending.length} decisions waiting, ${openRequests().length} open requests.</p>
-    </div>
-    <div class="head-actions">
-      <button class="btn primary" data-new-request>${I("i-ticket")}Request a change</button>
     </div>
   </div>
 
@@ -1042,7 +1031,10 @@ function openDock(view = "requests", thread = null) {
   panel.style.transform = "";
   panel.style.opacity = "";
   panel.hidden = false;
-  document.getElementById("dockButton")?.setAttribute("aria-expanded", "true");
+  document.getElementById("dockButton")?.setAttribute("aria-expanded", String(view === "requests"));
+  document.getElementById("agentsOrb")?.setAttribute("aria-expanded", String(view === "agents"));
+  const orbCount = document.getElementById("agentsOrbCount");
+  if (orbCount) orbCount.textContent = String(AGENTS.filter((a) => a.status === "live").length);
   if (window.gsap) {
     gsap.fromTo(
       document.getElementById("dock"),
@@ -1058,6 +1050,7 @@ function closeDock() {
   const done = () => {
     dock.hidden = true;
     document.getElementById("dockButton")?.setAttribute("aria-expanded", "false");
+    document.getElementById("agentsOrb")?.setAttribute("aria-expanded", "false");
   };
   state.dock.open = false;
   state.dock.thread = null;
@@ -1076,19 +1069,17 @@ function closeDock() {
 function dockRequests() {
   const waiting = state.requests.filter((r) => r.status === "Open" || r.status === "With your engineer").length;
   return `
-    <div class="dock-person">
-      ${engineerAvatar("md")}
-      <div>
-        <strong>${ENGINEER.name}</strong>
-        <span>${ENGINEER.role}</span>
-        <b class="dock-sla"><i></i>${ENGINEER.sla}</b>
+    <div class="dock-status">
+      <b class="dock-sla"><i></i>${ENGINEER.sla}</b>
+      <div class="dock-status-actions">
+        <button class="btn sm" data-book-call>${I("i-clock")}Call</button>
+        <button class="btn primary sm" data-new-request>${I("i-plus")}New request</button>
       </div>
-      <button class="btn sm" data-book-call>${I("i-clock")}Call</button>
     </div>
     <div class="dock-section">
       <div class="dock-section-head">
         <span>${waiting ? `${waiting} in progress` : "Nothing waiting"}</span>
-        <button class="btn quiet sm" data-new-request>${I("i-plus")}New request</button>
+        <span class="dock-count">${state.requests.length} total</span>
       </div>
       <div class="dock-list">
         ${state.requests
@@ -1165,11 +1156,14 @@ function renderDock() {
   const body = document.getElementById("dockBody");
   if (!body) return;
   const view = state.dock.view;
+  const title = document.getElementById("dockTitle");
+  if (title) {
+    title.innerHTML =
+      view === "agents"
+        ? `<div class="dock-title-copy"><strong>Agents</strong><span>${AGENTS.filter((a) => a.status === "live").length} running · working inside your rules</span></div>`
+        : `<div class="dock-title-copy">${engineerAvatar("sm")}<div><strong>${ENGINEER.name}</strong><span>${ENGINEER.role}</span></div></div>`;
+  }
   body.innerHTML = view === "agents" ? dockAgents() : state.dock.thread ? dockThread() : dockRequests();
-
-  document.querySelectorAll("[data-dock]").forEach((button) =>
-    button.setAttribute("aria-selected", String(button.dataset.dock === view)),
-  );
 
   const count = state.requests.filter((r) => r.status === "Open").length;
   const badge = document.getElementById("dockBadge");
@@ -1224,10 +1218,6 @@ function viewOrders() {
   return `
   <div class="view-head">
     <div><h1>Order Operations</h1><p>Intake, validation and fulfilment across Shopify and the warehouse.</p></div>
-    <div class="head-actions">
-      <button class="btn" data-export-orders>${I("i-doc")}Export</button>
-      <button class="btn primary" data-new-request>${I("i-ticket")}Request a change</button>
-    </div>
   </div>
 
   <div class="split wide-left">
@@ -1259,6 +1249,7 @@ function viewOrders() {
     <div class="card-head">
       <div><h2>Orders</h2><small>${rows.length} of ${ORDERS.length}</small></div>
       <div class="table-tools">
+        <button class="btn quiet sm" data-export-orders>${I("i-doc")}Export</button>
         <div class="filter-chips">
           ${["All", "Captured", "Validated", "In fulfilment", "Completed", "On hold"].map(
             (s) => `<button class="chip ${state.stageFilter === s ? "uv" : "ghost"}" data-stage="${s}">${s}</button>`,
@@ -1476,7 +1467,7 @@ function osBody() {
   if (view === "agents")
     return `<section class="card">
       <div class="card-head"><div><h2>Agents</h2><small>What each one may decide alone</small></div>
-        <button class="btn sm" data-new-request>Request a change</button></div>
+        </div>
       <div class="card-body agent-settings">
         ${AGENTS.map(
           (a) => `<article class="agent-setting">
@@ -1615,7 +1606,7 @@ function renderStage() {
                 : state.active === "savings"
                   ? viewSavings()
                   : viewGeneral();
-  document.querySelector(".tabstrip").classList.toggle("os-mode", Boolean(state.os));
+  document.getElementById("topbar").classList.toggle("os-mode", Boolean(state.os));
   wireStage();
   renderMainChart();
   animateStage();
@@ -2068,20 +2059,6 @@ function init() {
   renderStage();
   updateBadge();
 
-  document.getElementById("tabCollapse").addEventListener("click", (event) => {
-    const strip = document.getElementById("tabstrip");
-    const collapsed = strip.classList.toggle("collapsed");
-    event.currentTarget.setAttribute("aria-expanded", String(!collapsed));
-    document.body.classList.toggle("tabs-collapsed", collapsed);
-    if (window.gsap) {
-      gsap.fromTo(
-        document.getElementById("tabs"),
-        { opacity: collapsed ? 1 : 0, y: collapsed ? 0 : -4 },
-        { opacity: collapsed ? 0 : 1, y: 0, duration: 0.22, ease: "power2.out" },
-      );
-    }
-  });
-
   document.getElementById("tabAdd").addEventListener("click", (event) => {
     const menu = document.getElementById("solutionsMenu");
     const open = menu.hidden;
@@ -2122,18 +2099,19 @@ function init() {
   );
   document.querySelector('[data-action="notify"]').addEventListener("click", renderNotifications);
 
+  const orb = document.getElementById("agentsOrb");
+  orb.addEventListener("click", () => {
+    if (state.dock.open && state.dock.view === "agents") return closeDock();
+    state.dock.thread = null;
+    openDock("agents");
+  });
+
   const dockButton = document.getElementById("dockButton");
   dockButton.addEventListener("click", () => {
-    if (state.dock.open) closeDock();
-    else openDock(state.dock.view);
+    if (state.dock.open && state.dock.view === "requests") return closeDock();
+    state.dock.thread = null;
+    openDock("requests");
   });
-  document.querySelectorAll("[data-dock]").forEach((button) =>
-    button.addEventListener("click", () => {
-      state.dock.view = button.dataset.dock;
-      state.dock.thread = null;
-      renderDock();
-    }),
-  );
   document.querySelector("[data-dock-close]").addEventListener("click", closeDock);
 
   // compact bar hides on scroll down, returns on scroll up
