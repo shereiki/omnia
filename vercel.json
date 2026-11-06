@@ -2,59 +2,140 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "DENY" },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
         {
           "key": "Permissions-Policy",
           "value": "camera=(), microphone=(), geolocation=()"
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-341UjSj27tg4MSf9zUA1mUahHEM4I5CwcqosgqA9/GU=' 'sha256-ZnYJX5ypMaaAhxxWhSEjbMkhO2A9yPmbzEQH3LFaITA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self' 'sha256-RmZYUKA7WPirglKEu4OmMUZrlEeaeRvcs0Fhu/ktKWo=' 'sha256-ZnYJX5ypMaaAhxxWhSEjbMkhO2A9yPmbzEQH3LFaITA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         }
       ]
     },
     {
       "source": "/admin",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
     },
     {
       "source": "/admin/:path*",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=604800" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    },
+    {
+      "source": "/:file(styles\\.min\\.css|(?:script|native-intelligence|omnia-story|animations|inquiry)\\.js)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/server/:path*", "destination": "/404" },
-    { "source": "/docs/:path*", "destination": "/404" },
-    { "source": "/tests/:path*", "destination": "/404" },
-    { "source": "/archive/:path*", "destination": "/404" },
-    { "source": "/scripts/:path*", "destination": "/404" },
-    { "source": "/db/:path*", "destination": "/404" },
-    { "source": "/proxy.js", "destination": "/404" },
-    { "source": "/package.json", "destination": "/404" },
-    { "source": "/package-lock.json", "destination": "/404" },
-    { "source": "/vercel.json", "destination": "/404" }
+    {
+      "source": "/server/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/docs/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/tests/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/archive/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/scripts/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/db/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/proxy.js",
+      "destination": "/404"
+    },
+    {
+      "source": "/package.json",
+      "destination": "/404"
+    },
+    {
+      "source": "/package-lock.json",
+      "destination": "/404"
+    },
+    {
+      "source": "/vercel.json",
+      "destination": "/404"
+    }
   ],
   "proxy": {
     "entrypoint": "proxy.js",
-    "matcher": ["/admin", "/admin/:path*", "/api/admin/:path*"]
+    "matcher": [
+      "/admin",
+      "/admin/:path*",
+      "/api/admin/:path*",
+      "/server/:path*",
+      "/docs/:path*",
+      "/tests/:path*",
+      "/db/:path*",
+      "/scripts/:path*",
+      "/archive/:path*",
+      "/proxy.js",
+      "/package.json",
+      "/package-lock.json",
+      "/vercel.json",
+      "/README.md",
+      "/.vercelignore"
+    ]
   }
 }

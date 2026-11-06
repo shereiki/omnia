@@ -18,4 +18,4 @@ for (const statement of statements) {
   await sql.query(statement);
   console.log(`Applied: ${statement.split("\n")[0]}`);
 }
-console.log("Inquiry tables are ready.");
+console.log("Early access tables are ready.");

@@ -6,14 +6,14 @@
     <meta name="theme-color" content="#F2F0FA" />
     <meta
       name="description"
-      content="Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
+      content="Omnia connects the software your business already uses into one system, cutting duplicate tools and manual work, then adds the capabilities you're missing. Coming soon."
     />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="https://useomnia.dev/" />
     <meta property="og:title" content="Omnia — Everything works together." />
     <meta
       property="og:description"
-      content="Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
+      content="Omnia connects the software your business already uses into one system, cutting duplicate tools and manual work, then adds the capabilities you're missing. Coming soon."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://useomnia.dev/" />
@@ -27,7 +27,7 @@
     <meta name="twitter:title" content="Omnia — Everything works together." />
     <meta
       name="twitter:description"
-      content="Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
+      content="Omnia connects the software your business already uses into one system, cutting duplicate tools and manual work, then adds the capabilities you're missing. Coming soon."
     />
     <meta name="twitter:image" content="https://useomnia.dev/assets/og.png" />
     <title>Omnia — Everything works together.</title>
@@ -42,7 +42,7 @@
         "name": "Omnia",
         "url": "https://useomnia.dev/",
         "logo": "https://useomnia.dev/assets/apple-touch-icon.png",
-        "description": "Omnia is a technology company building Omnia OS: an extensible, AI-native environment that connects existing business technology and makes entirely new capabilities possible. Coming soon."
+        "description": "Omnia connects the software your business already uses into one system, cutting duplicate tools and manual work, then adds the capabilities you're missing. Coming soon."
       }
     </script>
     <script>
@@ -55,16 +55,13 @@
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="launch.css?v=launch-1" />
-    <link rel="stylesheet" href="styles.css?v=launch-1" />
+    <link rel="stylesheet" href="styles.min.css?v=launch-3" />
     <noscript
       ><style>
-        .welcome,
         .header nav,
         .menu,
         .story-navigation,
         .perspective-controls,
-        .foundation-toggle,
         .native-switch,
         .dimension-controls,
         .explorer-navigation {
@@ -88,22 +85,21 @@
           min-height: 0 !important;
           padding-block: 30px !important;
         }
-        .inquiry-form .form-row,
-        .inquiry-form .field,
-        .inquiry-form .form-footer {
+        .early-access-form .field,
+        .early-access-form .form-footer,
+        .early-access-step-two {
           display: none;
         }
       </style></noscript
     >
     <script src="assets/vendor/gsap.min.js" defer></script>
     <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
-    <script src="assets/vendor/motion.js" defer></script>
     <script src="assets/vendor/lenis-1.3.27.min.js" defer></script>
-    <script src="script.js?v=launch-1" defer></script>
-    <script src="native-intelligence.js?v=launch-1" defer></script>
-    <script src="omnia-story.js?v=launch-1" defer></script>
-    <script src="animations.js?v=launch-1" defer></script>
-    <script src="inquiry.js?v=launch-1" defer></script>
+    <script src="script.js?v=launch-3" defer></script>
+    <script src="native-intelligence.js?v=launch-3" defer></script>
+    <script src="omnia-story.js?v=launch-3" defer></script>
+    <script src="animations.js?v=launch-3" defer></script>
+    <script src="inquiry.js?v=launch-3" defer></script>
   </head>
   <body>
     <svg class="svg-definitions" aria-hidden="true">
@@ -140,41 +136,6 @@
       </defs>
     </svg>
 
-    <div class="welcome" id="welcome" aria-label="Welcome to Omnia">
-      <div class="welcome-top">
-        <span class="wordmark">OMNIA</span
-        ><span class="launch-status">Coming soon</span>
-      </div>
-      <div class="welcome-center">
-        <svg class="welcome-mark" viewBox="0 0 430 440" aria-hidden="true">
-          <path
-            class="corner corner-a"
-            d="M228 70h-58Q70 70 70 170v68h74v-56q0-38 38-38h46Z"
-          />
-          <path
-            class="corner corner-b"
-            d="M246 70h16q98 0 98 98v50h-74v-36q0-38-40-38Z"
-          />
-          <path
-            class="corner corner-c"
-            d="M360 236v38q0 96-96 96h-74v-74h58q38 0 38-38v-22Z"
-          />
-          <path
-            class="corner corner-d"
-            d="M70 256v18q0 96 98 96h4v-74q-28 0-28-38v-2Z"
-          />
-        </svg>
-        <p class="welcome-line">It all comes together.</p>
-        <button class="button" id="enter" type="button">
-          <span>Discover Omnia</span
-          ><span class="button-symbol" aria-hidden="true"
-            ><svg viewBox="0 0 24 24"><use href="#icon-arrow" /></svg
-          ></span>
-        </button>
-      </div>
-      <p class="welcome-bottom">Everything connected. Everything optimized.</p>
-    </div>
-
     <div id="site">
       <a class="skip" href="#main">Skip to content</a>
       <header class="header">
@@ -186,16 +147,18 @@
           >
           <nav id="navigation" aria-label="Main navigation">
             <a href="#omnia-os-overview">Omnia OS</a
-            ><a href="#native-intelligence">Native intelligence</a
-            ><a href="#explore">Omnia Modules</a
-            ><a href="#approach">Working with Omnia</a>
+            ><a href="#automations">Automations</a
+            ><a href="#explore">Modules</a
+            ><a href="#how-it-works">How it works</a
+            ><a href="#questions">FAQ</a>
           </nav>
           <div class="header-actions">
             <span class="launch-indicator"><i></i>Coming soon</span
-            ><a class="small-cta" href="#early-access"
-              >Let’s talk
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <use href="#icon-arrow" /></svg></a
+            ><a class="button header-cta" href="#early-access"
+              ><span>Get early access</span
+              ><span class="button-symbol" aria-hidden="true"
+                ><svg viewBox="0 0 24 24"><use href="#icon-arrow" /></svg
+              ></span></a
             ><button
               class="menu"
               type="button"
@@ -212,36 +175,35 @@
         <section class="hero container" aria-labelledby="hero-title">
           <div class="hero-copy">
             <p class="hero-category">
-              A technology company. An AI-native foundation.
+              A technology company. One foundation for your business.
             </p>
             <h1 id="hero-title" tabindex="-1">
               <span>Everything</span><span>works together.</span>
             </h1>
             <p class="hero-description">
-              We're building Omnia OS—an AI-native environment that brings your
-              existing technology together and makes room for entirely new
-              capabilities.
+              Omnia connects the software your business already pays for into
+              one system — so you cut duplicate tools and manual handoffs first,
+              then build what you’ve been missing.
             </p>
             <p class="hero-support">
-              Connect the tools you rely on. Expand with Omnia Modules. Put
-              native intelligence and new capabilities to work.
+              Connect the tools you rely on. Add Omnia Modules as you need them.
+              Keep what works.
             </p>
             <p class="hero-statement">One foundation. Entirely your own.</p>
             <div class="hero-actions">
-              <a class="button" href="#omnia-os-overview"
-                ><span>Explore Omnia</span
+              <a class="button" href="#early-access"
+                ><span>Get early access</span
                 ><span class="button-symbol"
                   ><svg viewBox="0 0 24 24" aria-hidden="true">
-                    <use href="#icon-arrow" /></svg></span></a
-              ><a class="quiet-link" href="#early-access"
-                >Start a conversation</a
-              >
+                    <use href="#icon-arrow" /></svg></span
+              ></a>
             </div>
           </div>
           <div
             class="hero-art motion-scene"
             role="img"
-            aria-label="An Omnia extension inside an existing workspace: existing software, connected tools, and new intelligent capabilities. "
+            aria-hidden="true"
+            aria-label="An Omnia extension inside an existing workspace: existing software, connected tools and new capabilities."
           >
             <div class="art-orbit" aria-hidden="true"></div>
             <div class="art-ground" aria-hidden="true"></div>
@@ -339,8 +301,8 @@
               Your existing tools. One shared foundation.<br />New capabilities
               as your business needs them.
             </p>
-            <a class="scroll-cue" href="#omnia-os-overview"
-              >Discover Omnia OS<span
+            <a class="scroll-cue" href="#how-it-works"
+              >See how it works<span
                 ><svg viewBox="0 0 24 24" aria-hidden="true">
                   <use href="#icon-arrow" /></svg></span
             ></a>
@@ -355,12 +317,12 @@
         >
           <div class="os-overview-layout" data-os-explorer>
             <div class="os-overview-left">
-              <h2 id="os-overview-title">Meet Omnia OS.</h2>
+              <h2 id="os-overview-title">Pay for less. Get more from what you keep.</h2>
             <div
               class="foundation-environment"
               data-expanded="false"
               role="group"
-              aria-label="Your existing technology remains in place around Omnia OS, an intelligent foundation for new capabilities."
+              aria-label="Your existing technology remains in place around Omnia OS, one shared foundation for new capabilities."
             >
               <span class="foundation-existing-label"
                 >Your existing technology</span
@@ -411,11 +373,11 @@
                   <svg viewBox="0 0 430 440"><use href="#mark" /></svg>
                 </div>
                 <strong>Omnia OS</strong>
-                <span><i aria-hidden="true"></i>Intelligence, built in</span>
+                <span><i aria-hidden="true"></i>One shared foundation</span>
               </div>
               <div class="foundation-possibilities" aria-hidden="true">
                 <span>New functionality</span
-                ><span>Intelligent coordination</span
+                ><span>Automated handoffs</span
                 ><span>Tailored experiences</span>
               </div>
               <span class="foundation-environment-caption"
@@ -426,58 +388,25 @@
             <div class="os-overview-right">
             <div class="os-overview-copy">
               <p class="os-lead">
-                A foundation for what your technology could become.
+                Most businesses run on a stack of tools that don't talk to each
+                other. Omnia OS sits underneath them as one shared foundation.
               </p>
               <p>
-                Omnia OS is the persistent, customizable, AI-native environment
-                we're building to work with the technology your business already
-                uses.
-              </p>
-              <p>
-                Omnia Modules expand its capabilities. Native intelligence can
-                put the connected environment to work. Your Solution brings
-                these together with the configuration and custom engineering
-                your business needs.
+                First we find the overlap — subscriptions that do the same job,
+                data typed twice, handoffs done by hand. Then we connect what
+                stays, so records, requests and approvals move between your
+                tools on their own. When you're ready to grow, new capabilities
+                plug into the same foundation instead of becoming one more tool
+                to manage.
               </p>
             </div>
             <div class="os-principles">
               <div>
-                <span>Your technology has more to give.</span>
+                <span>What changes</span>
                 <p>
-                  Keep the software that works for you. Build connections and
-                  introduce capabilities around it, without starting over.
-                </p>
-              </div>
-              <button
-                class="small-cta foundation-toggle"
-                type="button"
-                data-foundation-toggle
-                aria-expanded="false"
-                aria-controls="foundation-possibility-copy"
-              >
-                <span>Explore what becomes possible</span
-                ><span aria-hidden="true">+</span>
-              </button>
-              <div
-                id="foundation-possibility-copy"
-                class="foundation-possibility-copy"
-                hidden
-              >
-                <p>
-                  A new capability inside familiar software. An agent with
-                  relevant context. Work that can continue across tools. The
-                  same foundation can support each of them.
-                </p>
-              </div>
-              <div class="os-native-statement">
-                <svg viewBox="0 0 430 440" aria-hidden="true">
-                  <use href="#mark" />
-                </svg>
-                <p>
-                  Intelligence is native to Omnia OS. Its shared agent runtime
-                  is designed to connect specialized agents with relevant
-                  business context, capabilities, permissions, and human
-                  oversight.
+                  A new capability inside software your team already knows.
+                  Work that carries on across tools without re-typing. Software
+                  built for the part of your business nothing else fits.
                 </p>
               </div>
             </div>
@@ -494,19 +423,13 @@
             <div>
               <span class="section-kicker">Your ecosystem</span>
               <h2 id="connections-title">
-                Built around the<br />tools you use.
+                Works with the tools you already pay for.
               </h2>
             </div>
             <div>
               <p>
-                We start with the software you rely on—global platforms, the
-                systems used in your market, or software built just for your
-                business.
-              </p>
-              <p>
-                Then we connect what exists, extend it where it helps, and
-                engineer what's missing. Your environment stays yours; the
-                foundation underneath starts working as one.
+                Global platforms, the systems used in your market, and software
+                built just for your business. We keep what works and connect it.
               </p>
             </div>
           </div>
@@ -690,42 +613,33 @@
               <div>
                 <h3>Custom &amp; proprietary systems</h3>
                 <p>
-                  The internal database, the legacy ERP, the bespoke API, the
-                  spreadsheet that quietly runs the company. This is where Omnia
-                  is built to matter most.
+                  Internal databases, legacy ERPs, bespoke APIs — even the
+                  spreadsheet that quietly runs the company.
                 </p>
               </div>
-              <span class="custom-tag">Designed for the unusual</span>
             </div>
           </div>
         </section>
 
         <section
           class="native-intelligence-section"
-          id="native-intelligence"
+          id="automations"
           tabindex="-1"
-          aria-labelledby="native-title"
+          aria-labelledby="automations-title"
           data-native-intelligence
         >
           <div class="container">
             <div class="section-intro">
-              <h2 id="native-title">
-                Intelligence, built<br />into everything.
+              <h2 id="automations-title">
+                Routine work, handled.<br />Decisions stay with your people.
               </h2>
               <div>
                 <p>
-                  Omnia OS doesn't treat intelligence as another disconnected
-                  application.
-                </p>
-                <p>
-                  Its native AI layer can work with the information, systems,
-                  and capabilities brought together within the Omnia
-                  environment.
-                </p>
-                <p>
-                  That means agents can be created around the responsibilities
-                  of your organization, equipped with the relevant knowledge,
-                  connected tools, and permissions to carry out their work.
+                  Omnia Automations take on the repetitive work between your
+                  systems — reading records, checking them against your rules
+                  and preparing the next step. Anything consequential, like a
+                  discount below your floor or a refund, comes back to a person
+                  to approve.
                 </p>
               </div>
             </div>
@@ -740,8 +654,8 @@
                     <use href="#mark" />
                   </svg>
                   <div>
-                    <strong>Native intelligence</strong>
-                    <span>Omnia OS · shared runtime</span>
+                    <strong>Omnia Automations</strong>
+                    <span>Runs across your connected tools</span>
                   </div>
                 </div>
                 <div class="console-status">
@@ -753,7 +667,7 @@
                   <div
                     class="native-switch"
                     role="tablist"
-                    aria-label="Explore native intelligence for different audiences"
+                    aria-label="Explore Automations for different audiences"
                   >
                     <button
                       type="button"
@@ -785,20 +699,17 @@
                     aria-labelledby="organization-agent-tab"
                     tabindex="0"
                   >
-                    <h3>An agent for the way you work.</h3>
+                    <h3>Built around a job your team does today.</h3>
                     <p>
-                      Omnia agents are configured around a responsibility, with
-                      the context, tools and boundaries that responsibility
-                      requires.
+                      Each automation is set up around one responsibility, with
+                      only the records, tools and limits that job needs.
                     </p>
                     <p>
-                      They retrieve permitted knowledge, read current records,
-                      prepare work and coordinate actions—then bring
-                      consequential decisions back to your people.
+                      It reads current records, prepares the work and handles
+                      routine steps — then hands decisions back to your people.
                     </p>
                     <span class="native-role-note"
-                      >Every behavior, permission and approval is yours to
-                      define.</span
+                      >Every permission and approval is yours to define.</span
                     >
                   </div>
                   <div
@@ -809,13 +720,13 @@
                     tabindex="0"
                     hidden
                   >
-                    <h3>Your intelligence.<br />Your customer experience.</h3>
+                    <h3>Built around<br />your customer experience.</h3>
                     <p>
-                      The same runtime can power agents inside the experiences
-                      your customers already use.
+                      The same foundation can handle routine customer requests
+                      inside the experiences your customers already use.
                     </p>
                     <p>
-                      An agent can carry your products, policies and approved
+                      It can carry your products, policies and approved
                       knowledge, understand a verified customer's own context,
                       and prepare the right next step through permitted tools.
                     </p>
@@ -827,7 +738,7 @@
                   <div
                     class="dimension-controls"
                     role="group"
-                    aria-label="Explore six configurable agent dimensions"
+                    aria-label="Explore six configurable automation settings"
                   >
                     <button
                       type="button"
@@ -888,7 +799,7 @@
                     </svg>
                     <div>
                       <span data-dimension-definition
-                        >What the agent is expected to accomplish.</span
+                        >What the automation is expected to accomplish.</span
                       ><strong data-dimension-example
                         >Keep track of commitments, identify what needs
                         attention, and prepare the next steps.</strong
@@ -899,7 +810,7 @@
                 <div
                   class="console-visual"
                   role="group"
-                  aria-label="An illustrative Operations Intelligence agent draws on permitted organizational knowledge, current operational records and authorized Omnia Modules through the native intelligence layer of Omnia OS."
+                  aria-label="An illustrative Operations automation draws on permitted business knowledge, current operational records and authorized Omnia Modules. It prepares priorities, supporting context and work for review. Changes to commitments require human approval."
                   data-native-canvas
                 >
                   <article class="agent-run" data-agent-result="organization">
@@ -909,7 +820,7 @@
                           <svg viewBox="0 0 430 440"><use href="#mark" /></svg>
                         </span>
                         <div>
-                          <span>Operations Intelligence</span>
+                          <span>Operations</span>
                           <strong>Decision prepared for review</strong>
                         </div>
                       </div>
@@ -1255,6 +1166,7 @@
               ></p>
             </div>
           </div>
+        </div>
         </section>
         <section
           class="business-story os-explorer"
@@ -1267,13 +1179,13 @@
             <div class="story-intro">
               <div>
                 <span class="section-kicker">Omnia Modules</span>
-                <h2 id="story-title">An ecosystem that grows with you.</h2>
+                <h2 id="story-title">Four kinds of Modules. Add only what you need.</h2>
               </div>
               <div class="ecosystem-intro-copy">
                 <p>
                   Start with the systems you already use. Omnia OS connects
-                  them, adds native intelligence, and opens a Module ecosystem
-                  that can become entirely new software.
+                  them and adds capabilities through four kinds of Modules:
+                  Connectors, Extensions, Automations and Custom Services.
                 </p>
                 <p>
                   Reuse, adapt, combine, or engineer it from scratch. The
@@ -1293,7 +1205,7 @@
                 data-os-composition
               >
                 <div class="os-role os-input-zone">
-                  <h4 class="os-zone-heading">Existing technology</h4>
+                  <h3 class="os-zone-heading">Existing technology</h3>
                   <div class="os-zone-body">
                     <div class="existing-system-list">
                       <div class="existing-system">
@@ -1344,7 +1256,7 @@
                   </div>
                 </div>
                 <div class="os-role os-center-zone">
-                  <h4 class="os-zone-heading">The shared foundation</h4>
+                  <h3 class="os-zone-heading">The shared foundation</h3>
                   <div class="os-zone-body">
                     <div class="os-environment" data-os-environment>
                       <div class="os-environment-header brand-on-violet">
@@ -1366,9 +1278,9 @@
                             class="native-band-signal"
                             aria-hidden="true"
                           ></span
-                          ><strong>Native intelligence</strong>
+                          ><strong>Shared records &amp; permissions</strong>
                         </div>
-                        <p>Authorized context &amp; capabilities</p>
+                        <p>One source of truth across your tools</p>
                         <span class="native-band-state" data-native-band-state
                           >Part of the foundation</span
                         >
@@ -1392,7 +1304,7 @@
                               <rect x="23" y="13" width="6" height="6" rx="2" />
                             </svg>
                             <div>
-                              <span class="module-family">Connector</span>
+                              <span class="module-family">Connectors</span>
                               <strong>CRM &amp; ERP connector</strong
                               ><span
                                 >Customers, orders and invoices in one live
@@ -1417,7 +1329,7 @@
                               <path d="M3 9h18M9 9v11m4-7h4m-4 3h4" />
                             </svg>
                             <div>
-                              <span class="module-family">Extension</span>
+                              <span class="module-family">Extensions</span>
                               <strong>Workspace extension</strong
                               ><span
                                 >Customer and team context in Microsoft 365 /
@@ -1441,7 +1353,7 @@
                               <path d="M22 7v10m0 0 3-3m-3 3-3-3" />
                             </svg>
                             <div>
-                              <span class="module-family">Automation</span>
+                              <span class="module-family">Automations</span>
                               <strong>Customer request routing</strong
                               ><span>Fewer touches per request</span>
                             </div>
@@ -1461,7 +1373,7 @@
                               <path d="M24 6v6m-3-3h6" />
                             </svg>
                             <div>
-                              <span class="module-family">Automation</span>
+                              <span class="module-family">Automations</span>
                               <strong>Employee onboarding</strong
                               ><span
                                 >New hires ready without the paperwork
@@ -1485,7 +1397,7 @@
                               <circle cx="12" cy="8.5" r="1" />
                             </svg>
                             <div>
-                              <span class="module-family">Custom Service</span>
+                              <span class="module-family">Custom Services</span>
                               <strong>Logistics operations app</strong
                               ><span
                                 >Exceptions handled before they cost you</span
@@ -1502,7 +1414,7 @@
                   </div>
                 </div>
                 <div class="os-role os-output-zone">
-                  <h4 class="os-zone-heading">Your Solution</h4>
+                  <h3 class="os-zone-heading">Your Solution</h3>
                   <div class="os-zone-body os-output-body">
                     <div class="output-introduction" data-output-introduction>
                       <span
@@ -1527,7 +1439,7 @@
                           /></svg
                       ></span>
                       <div>
-                        <strong>Intelligence with context</strong
+                        <strong>Records with context</strong
                         ><span
                           >Relevant information. Permitted actions. Human
                           oversight.</span
@@ -1699,313 +1611,248 @@
                 Your Solution.<br />Frontend, backend, or the complete
                 environment.
               </p>
-              <a class="button mint" href="#customization"
-                ><span>Make it your own</span
-                ><span class="button-symbol"
-                  ><svg viewBox="0 0 24 24" aria-hidden="true">
-                    <use href="#icon-arrow" /></svg></span
-              ></a>
             </div>
           </div>
         </section>
         <section
-          class="capabilities-section container"
-          id="customization"
+          class="how-it-works container"
+          id="how-it-works"
           tabindex="-1"
-          aria-labelledby="customization-title"
+          aria-labelledby="how-it-works-title"
         >
           <div class="section-intro">
-            <h2 id="customization-title">
-              The foundation is shared.<br />The possibilities are yours.
-            </h2>
             <div>
-              <p>
-                Some businesses need intelligence inside familiar tools. Others
-                want their systems to work together in ways they never have.
-                Some need something that doesn't exist yet.
-              </p>
-              <p>
-                Your Solution combines Omnia OS, the relevant Modules, native
-                intelligence, and custom engineering. Connections, behavior,
-                permissions, and interfaces can be shaped around what you want
-                to make possible.
-              </p>
+              <span class="section-kicker">How it works</span>
+              <h2 id="how-it-works-title">Savings first. Then growth.</h2>
             </div>
           </div>
-          <div class="capability-spectrum">
-            <article class="spectrum-item spectrum-connections">
-              <div class="spectrum-art" aria-hidden="true">
-                <span></span><span></span><span></span><span></span>
-              </div>
-              <div>
-                <h3>Your technology.</h3>
-                <p>
-                  Connect global platforms, specialized software, and your own
-                  systems. Keep the parts that work and introduce what is
-                  missing.
-                </p>
-              </div>
-            </article>
-            <article class="spectrum-item spectrum-intelligence">
-              <div
-                class="spectrum-art intelligence-controls-art"
-                aria-hidden="true"
-              >
-                <div><i></i><i></i><i></i></div>
-                <svg viewBox="0 0 24 24">
-                  <path d="M4 5h16M4 12h16M4 19h16" />
-                  <circle cx="8" cy="5" r="2" />
-                  <circle cx="16" cy="12" r="2" />
-                  <circle cx="10" cy="19" r="2" />
-                </svg>
-              </div>
-              <div>
-                <h3>Your intelligence.</h3>
-                <p>
-                  Shape specialized agents around suitable responsibilities,
-                  with relevant knowledge, permitted capabilities, and the right
-                  human involvement.
-                </p>
-              </div>
-            </article>
-            <article class="spectrum-item spectrum-functionality">
-              <div class="spectrum-art" aria-hidden="true">
-                <span></span><span></span><span></span>
-              </div>
-              <div>
-                <h3>Your way of working.</h3>
-                <p>
-                  Customize the logic, functionality, and interfaces around how
-                  your business works—or a completely new experience you want to
-                  create.
-                </p>
-              </div>
-            </article>
-            <article class="spectrum-item spectrum-evolution">
-              <div class="spectrum-art" aria-hidden="true">
-                <span></span><span></span><span></span>
-              </div>
-              <div>
-                <h3>Room for the next idea.</h3>
-                <p>
-                  Add a connection, introduce another responsibility, or build a
-                  new capability. Reusable components and custom engineering
-                  extend the same foundation.
-                </p>
-              </div>
-            </article>
-          </div>
+          <ol class="how-it-works-steps">
+            <li>
+              <span class="step-number">01</span>
+              <h3>Cut the overlap</h3>
+              <p>
+                We map the software you pay for and the work done twice between
+                it, and retire what you don't need.
+              </p>
+            </li>
+            <li>
+              <span class="step-number">02</span>
+              <h3>Connect what stays</h3>
+              <p>
+                Connectors and Automations let your existing tools share records
+                and hand off work on their own.
+              </p>
+            </li>
+            <li>
+              <span class="step-number">03</span>
+              <h3>Build what's missing</h3>
+              <p>
+                Extensions and Custom Services add the capabilities you need to
+                grow, inside the tools your team already uses.
+              </p>
+            </li>
+          </ol>
+          <p class="how-it-works-close">
+            Our team implements it, then stays on to run, support and extend it.
+          </p>
         </section>
         <section
-          class="relationship-section product-relationship"
-          id="approach"
-          tabindex="-1"
-          aria-labelledby="approach-title"
-        >
-          <div class="container">
-            <div class="section-intro">
-              <h2 id="approach-title">
-                Your ambition.<br />Our team behind it.
-              </h2>
-              <div>
-                <p>
-                  You bring the idea, the problem, or the possibility. We work
-                  closely with your team to understand what it needs and what
-                  your technology can already do.
-                </p>
-                <p>
-                  Omnia configures the foundation, engineers what's missing, and
-                  implements the environment. We stay involved to manage,
-                  support, and extend it within the agreed engagement.
-                </p>
-                <div class="delivery-signature">
-                  <svg viewBox="0 0 430 440" aria-hidden="true">
-                    <use href="#mark" /></svg
-                  ><span
-                    >You focus on what becomes possible.<br />We handle the
-                    technology behind it.</span
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section
-          class="invitation container"
+          class="invitation container early-access"
           id="early-access"
           tabindex="-1"
-          aria-labelledby="invitation-title"
+          aria-labelledby="early-access-title"
         >
           <div class="invitation-copy">
-            <span class="section-kicker">Start a conversation</span>
-            <h2 id="invitation-title">What could you<br />make possible?</h2>
+            <span class="section-kicker">Early access</span>
+            <h2 id="early-access-title">Get early access.</h2>
             <p>
-              An idea your software can't accommodate. A responsibility
-              intelligence could take on. A capability you wish existed.
+              Omnia is opening to a small group of businesses first. Leave your
+              work email and we'll be in touch before launch.
             </p>
-            <p>Bring it to Omnia. Let's explore what it could become.</p>
-            <button
-              class="quiet-link launch-updates-link"
-              type="button"
-              data-inquiry-intent="updates"
-            >
-              Launch updates
-            </button>
           </div>
-          <form
-            class="inquiry-form"
-            id="inquiry-form"
-            method="post"
-            action="/api/inquiries"
-            aria-label="Send Omnia an inquiry"
-            aria-describedby="inquiry-status"
-          >
-            <div class="form-row">
-              <div class="field">
-                <label for="name">Your name</label
-                ><input
-                  id="name"
-                  name="name"
-                  autocomplete="name"
-                  maxlength="120"
-                  required
-                />
+          <div class="early-access-panel">
+            <form
+              class="inquiry-form early-access-form"
+              id="early-access-form"
+              method="post"
+              action="/api/early-access"
+              novalidate
+              aria-label="Get early access to Omnia"
+              aria-describedby="early-access-status"
+            >
+              <div class="early-access-step-one">
+                <div class="field">
+                  <label for="early-email">Work email</label
+                  ><input
+                    id="early-email"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    maxlength="254"
+                    required
+                  />
+                </div>
+                <div class="form-trap" aria-hidden="true">
+                  <label
+                    >Website<input
+                      name="website"
+                      tabindex="-1"
+                      autocomplete="off"
+                      aria-hidden="true"
+                  /></label>
+                </div>
+                <div class="form-footer">
+                  <button class="button" type="submit">
+                    <span>Get early access</span
+                    ><span class="button-symbol" aria-hidden="true"
+                      ><svg viewBox="0 0 24 24"><use href="#icon-arrow" /></svg
+                    ></span>
+                  </button>
+                </div>
+                <p class="form-note">
+                  We'll only use your email to contact you about Omnia.
+                </p>
+                <p
+                  class="form-status"
+                  id="early-access-status"
+                  role="status"
+                  aria-live="polite"
+                  tabindex="-1"
+                ></p>
               </div>
-              <div class="field">
-                <label for="email">Your email</label
-                ><input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autocomplete="email"
-                  maxlength="254"
-                  required
-                />
+              <div class="early-access-step-two" id="early-access-details" hidden>
+                <h3>You're on the list.</h3>
+                <p>Optional: tell us a little more so we can prepare.</p>
+                <div class="field">
+                  <label for="early-company">Company</label
+                  ><input
+                    id="early-company"
+                    name="company"
+                    autocomplete="organization"
+                    maxlength="160"
+                  />
+                </div>
+                <div class="field">
+                  <label for="early-role">Role</label
+                  ><input
+                    id="early-role"
+                    name="role"
+                    autocomplete="organization-title"
+                    maxlength="120"
+                  />
+                </div>
+                <div class="field">
+                  <label for="early-message"
+                    >What would you like Omnia to fix first?</label
+                  ><textarea
+                    id="early-message"
+                    name="message"
+                    rows="3"
+                    maxlength="2000"
+                  ></textarea>
+                </div>
+                <div class="form-footer">
+                  <button class="button" type="submit" data-details-submit>
+                    <span>Send details</span
+                    ><span class="button-symbol" aria-hidden="true"
+                      ><svg viewBox="0 0 24 24"><use href="#icon-arrow" /></svg
+                    ></span>
+                  </button>
+                  <button class="text-button" type="button" data-details-skip>
+                    Skip
+                  </button>
+                </div>
+                <p
+                  class="form-status"
+                  id="early-access-details-status"
+                  role="status"
+                  aria-live="polite"
+                  tabindex="-1"
+                ></p>
               </div>
-            </div>
-            <div class="field">
-              <label for="interest">I’m here as</label
-              ><select id="interest" name="interest" required>
-                <option value="business">
-                  A business exploring possibilities
-                </option>
-                <option value="partner">A potential partner</option>
-                <option value="investor">An investor</option>
-                <option value="updates">
-                  Someone interested in launch updates
-                </option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="message">Tell us about your business or idea</label
-              ><textarea
-                id="message"
-                name="message"
-                rows="3"
-                maxlength="4000"
-                required
-                placeholder="What would you like your business to do—or become?"
-              ></textarea>
-            </div>
-            <div class="form-trap" aria-hidden="true">
-              <label
-                >Website<input name="website" tabindex="-1" autocomplete="off"
-              /></label>
-            </div>
-            <div class="form-footer">
-              <button class="button" type="submit">
-                <span>Start a conversation</span
-                ><span class="button-symbol" aria-hidden="true"
-                  ><svg viewBox="0 0 24 24"><use href="#icon-arrow" /></svg
-                ></span>
-              </button>
-              <p>
-                Sent privately to the Omnia team.<br />Used to respond to your
-                inquiry.
-              </p>
-            </div>
+              <noscript
+                ><p>
+                  JavaScript is required to sign up. Please enable it and
+                  reload.
+                </p></noscript
+              >
+            </form>
             <p
-              class="form-status"
-              id="inquiry-status"
+              class="form-status early-access-success"
+              id="early-access-success"
               role="status"
               aria-live="polite"
               tabindex="-1"
+              hidden
             ></p>
-            <noscript
-              ><p>Please enable JavaScript to send an inquiry.</p></noscript
-            >
-          </form>
-          <div
-            class="questions closing-questions"
-            aria-labelledby="questions-title"
-          >
-            <div>
-              <span class="section-kicker">A few useful answers</span>
-              <h2 id="questions-title">A closer look.</h2>
-            </div>
-            <div class="question-list">
-              <details>
-                <summary>
-                  <span>What is Omnia building?</span
-                  ><span class="detail-plus" aria-hidden="true">+</span>
-                </summary>
-                <p>
-                  Omnia is a technology company building Omnia OS: an
-                  extensible, AI-native environment that connects with existing
-                  business technology. Omnia Modules add reusable or
-                  purpose-built capabilities. Native intelligence and custom
-                  engineering can introduce radically different functionality
-                  through the same foundation. Our team implements and operates
-                  it with clients.
-                </p>
-              </details>
-              <details>
-                <summary>
-                  <span>Do we have to replace our existing software?</span
-                  ><span class="detail-plus" aria-hidden="true">+</span>
-                </summary>
-                <p>
-                  We start by understanding what you already rely on. A Solution
-                  can connect and extend those tools, add software where it’s
-                  needed, and bring the work together around your business.
-                </p>
-              </details>
-              <details>
-                <summary>
-                  <span>Is Omnia OS another off-the-shelf application?</span
-                  ><span class="detail-plus" aria-hidden="true">+</span>
-                </summary>
-                <p>
-                  Omnia OS is the persistent foundation behind an environment
-                  that can be deeply customized. It can extend familiar tools,
-                  introduce agents, coordinate work, or support entirely new
-                  functionality. The shared foundation carries capabilities
-                  forward as the environment evolves.
-                </p>
-              </details>
-              <details>
-                <summary>
-                  <span>What happens after implementation?</span
-                  ><span class="detail-plus" aria-hidden="true">+</span>
-                </summary>
-                <p>
-                  Omnia helps keep the result working, with ongoing management,
-                  support, and improvements agreed around the Solution and your
-                  business. The relationship can continue as your needs change.
-                </p>
-              </details>
-              <details>
-                <summary>
-                  <span>Can we work with Omnia now?</span
-                  ><span class="detail-plus" aria-hidden="true">+</span>
-                </summary>
-                <p>
-                  Omnia is coming soon. You can introduce your business, bring
-                  us an idea, register for launch updates, or begin a
-                  conversation as a prospective partner or investor.
-                </p>
-              </details>
-            </div>
+          </div>
+        </section>
+        <section
+          class="questions container"
+          id="questions"
+          tabindex="-1"
+          aria-labelledby="questions-title"
+        >
+          <div>
+            <span class="section-kicker">FAQ</span>
+            <h2 id="questions-title">Questions.</h2>
+          </div>
+          <div class="question-list">
+            <details>
+              <summary>
+                <span>What does Omnia do?</span
+                ><span class="detail-plus" aria-hidden="true">+</span>
+              </summary>
+              <p>
+                Omnia connects the software your business already uses into one
+                system. We start by cutting duplicate tools and manual handoffs,
+                then add the capabilities you're missing through four kinds of
+                Modules: Connectors, Extensions, Automations and Custom
+                Services. Our team implements it and keeps it running.
+              </p>
+            </details>
+            <details>
+              <summary>
+                <span>Do we have to replace our existing software?</span
+                ><span class="detail-plus" aria-hidden="true">+</span>
+              </summary>
+              <p>
+                No. We start with what you already rely on, keep what works,
+                connect it, and only add software where something is missing.
+              </p>
+            </details>
+            <details>
+              <summary>
+                <span>How is this different from buying another app?</span
+                ><span class="detail-plus" aria-hidden="true">+</span>
+              </summary>
+              <p>
+                Another app means another login, another bill and another place
+                for data to drift. Omnia works underneath the tools you keep, so
+                new capabilities share the same records and permissions instead
+                of starting from scratch.
+              </p>
+            </details>
+            <details>
+              <summary>
+                <span>What happens after implementation?</span
+                ><span class="detail-plus" aria-hidden="true">+</span>
+              </summary>
+              <p>
+                We stay involved to manage, support and improve what we built,
+                on terms agreed around your business.
+              </p>
+            </details>
+            <details>
+              <summary>
+                <span>When can we start?</span
+                ><span class="detail-plus" aria-hidden="true">+</span>
+              </summary>
+              <p>
+                Omnia is coming soon. Get early access and we'll contact you
+                before launch.
+              </p>
+            </details>
           </div>
         </section>
       </main>
@@ -2022,7 +1869,7 @@
             ><span>© <span id="year">2026</span> Omnia</span>
           </div>
         </div>
-        <span class="footer-word" aria-hidden="true">OMNIA</span>
+        <span class="footer-word" aria-hidden="true" data-word="OMNIA"></span>
       </footer>
     </div>
   </body>

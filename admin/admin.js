@@ -6,12 +6,6 @@
     refresh = document.querySelector("#refresh");
   let page = 0,
     loading = false;
-  const interests = {
-    business: "Business inquiry",
-    partner: "Potential partner",
-    investor: "Investor",
-    updates: "Launch interest",
-  };
   function element(tag, className, text) {
     const el = document.createElement(tag);
     if (className) el.className = className;
@@ -33,12 +27,12 @@
         location.href = "/admin/login";
         return;
       }
-      if (!response.ok || !Array.isArray(result?.inquiries))
+      if (!response.ok || !Array.isArray(result?.signups))
         throw new Error(
           result?.error || "The inbox could not be loaded. Please try again.",
         );
       inbox.replaceChildren();
-      for (const item of result.inquiries) {
+      for (const item of result.signups) {
         const article = element("article", "inquiry");
         article.dataset.reviewed = String(item.status === "reviewed");
         const head = element("div", "inquiry-header"),
@@ -46,14 +40,11 @@
         const email = element("a", "", item.email);
         email.href = `mailto:${encodeURIComponent(item.email)}`;
         const date = new Date(item.created_at).toLocaleString();
+        const meta = item.role ? `${item.role} · ${date}` : date;
         identity.append(
-          element("h2", "", item.name),
+          element("h2", "", item.company || "Early access sign-up"),
           email,
-          element(
-            "p",
-            "inquiry-meta",
-            `${interests[item.interest] || "Inquiry"} · ${date}`,
-          ),
+          element("p", "inquiry-meta", meta),
         );
         const toggle = element(
           "button",
@@ -84,12 +75,14 @@
           }
         });
         head.append(identity, toggle);
-        article.append(head, element("p", "inquiry-message", item.message));
+        article.append(head);
+        if (item.message)
+          article.append(element("p", "inquiry-message", item.message));
         inbox.append(article);
       }
-      status.textContent = result.inquiries.length
+      status.textContent = result.signups.length
         ? ""
-        : "Your inbox is empty. New inquiries will appear here.";
+        : "Your inbox is empty. New early access sign-ups will appear here.";
       previous.disabled = page === 0;
       next.disabled = !result.hasMore;
       document.querySelector("#page-number").textContent = `Page ${page + 1}`;
