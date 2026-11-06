@@ -2,14 +2,25 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "DENY" },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
         {
           "key": "Permissions-Policy",
           "value": "camera=(), microphone=(), geolocation=()"
@@ -23,38 +34,111 @@
     {
       "source": "/admin",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
     },
     {
       "source": "/admin/:path*",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=604800" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/server/:path*", "destination": "/404" },
-    { "source": "/docs/:path*", "destination": "/404" },
-    { "source": "/tests/:path*", "destination": "/404" },
-    { "source": "/archive/:path*", "destination": "/404" },
-    { "source": "/scripts/:path*", "destination": "/404" },
-    { "source": "/db/:path*", "destination": "/404" },
-    { "source": "/proxy.js", "destination": "/404" },
-    { "source": "/package.json", "destination": "/404" },
-    { "source": "/package-lock.json", "destination": "/404" },
-    { "source": "/vercel.json", "destination": "/404" }
+    {
+      "source": "/demos/:slug",
+      "destination": "/demos/workspace"
+    },
+    {
+      "source": "/server/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/docs/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/tests/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/archive/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/scripts/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/db/:path*",
+      "destination": "/404"
+    },
+    {
+      "source": "/proxy.js",
+      "destination": "/404"
+    },
+    {
+      "source": "/package.json",
+      "destination": "/404"
+    },
+    {
+      "source": "/package-lock.json",
+      "destination": "/404"
+    },
+    {
+      "source": "/vercel.json",
+      "destination": "/404"
+    }
   ],
   "proxy": {
     "entrypoint": "proxy.js",
-    "matcher": ["/server", "/server/:path*", "/db", "/db/:path*", "/docs", "/docs/:path*", "/tests", "/tests/:path*", "/archive", "/archive/:path*", "/scripts", "/scripts/:path*", "/proxy.js", "/package.json", "/package-lock.json", "/vercel.json", "/README.md", "/.vercelignore", "/admin", "/admin/:path*", "/api/admin/:path*", "/demos", "/demos/:path*"]
+    "matcher": [
+      "/server",
+      "/server/:path*",
+      "/db",
+      "/db/:path*",
+      "/docs",
+      "/docs/:path*",
+      "/tests",
+      "/tests/:path*",
+      "/archive",
+      "/archive/:path*",
+      "/scripts",
+      "/scripts/:path*",
+      "/proxy.js",
+      "/package.json",
+      "/package-lock.json",
+      "/vercel.json",
+      "/README.md",
+      "/.vercelignore",
+      "/admin",
+      "/admin/:path*",
+      "/api/admin/:path*",
+      "/demos",
+      "/demos/:path*"
+    ]
   }
 }
