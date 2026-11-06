@@ -246,9 +246,7 @@ const state = {
   tabs: [
     { id: "general", pinned: true },
     { id: "decisions" },
-    { id: "orders" },
-    { id: "inventory" },
-    { id: "savings" },
+    ...CLIENT.views.map((v) => ({ id: v.id })),
   ],
   dock: { open: false, view: "requests", thread: null },
   active: "general",
@@ -548,10 +546,8 @@ function solution(id) {
 }
 
 const SOLUTIONS = [
-  { id: "decisions", label: "Decisions", meta: "Waiting on a person", icon: "i-shield", tone: "", state: "" },
-  { id: "orders", label: DASH.orders, meta: "Live operation", icon: "i-bag", tone: "mint", state: "Running" },
-  { id: "inventory", label: DASH.inventory, meta: "Capacity & stock", icon: "i-boxes", tone: "lav", state: "3 need review", review: true },
-  { id: "savings", label: DASH.savings, meta: "Cost recovered", icon: "i-chart", tone: "ink", state: "Updated today" },
+  { id: "decisions", label: "Decisions", icon: "i-shield" },
+  ...CLIENT.views.map((v) => ({ id: v.id, label: v.label, icon: v.icon })),
 ];
 
 const tabLabel = (id) => (id === "general" ? "General" : solution(id)?.label || id);
@@ -1520,6 +1516,184 @@ function viewSavings() {
   </section>`;
 }
 
+/* ------------------------------------------------- three different shops
+   Logistics and clinics are not retail with new words on it: each brings its
+   own boards. */
+
+function viewDispatch() {
+  const columns = ["Unassigned", "Assigned", "In transit", "At border", "Delivered"];
+  return `
+  <div class="view-head">
+    <div><h1>Dispatch board</h1><p>Every load, by where it actually is.</p></div>
+    <div class="head-actions"><span class="chip good">${CLIENT.loads.filter((l) => l.status !== "Delivered").length} open</span></div>
+  </div>
+  <div class="board">
+    ${columns
+      .map(
+        (col) => `<section class="board-col">
+          <header><span>${col}</span><b>${CLIENT.loads.filter((l) => l.status === col).length}</b></header>
+          <div class="board-cards">
+            ${CLIENT.loads
+              .filter((l) => l.status === col)
+              .map(
+                (l) => `<button class="load-card ${col === "At border" ? "warn" : ""}" data-load="${l.id}">
+                  <span class="load-id">${l.id}</span>
+                  <strong>${l.customer}</strong>
+                  <span class="load-lane">${l.from} → ${l.to}</span>
+                  <span class="load-meta">${l.weight} · ${CLIENT.currency} ${fmt.money(l.rate)}</span>
+                  <span class="load-foot">${l.driver === "—" ? "No driver" : l.driver} · ${l.eta}</span>
+                </button>`,
+              )
+              .join("") || '<p class="board-empty">Nothing here</p>'}
+          </div>
+        </section>`,
+      )
+      .join("")}
+  </div>`;
+}
+
+function viewFleet() {
+  const available = CLIENT.drivers.filter((d) => d.status === "Available").length;
+  const nearCap = CLIENT.drivers.filter((d) => d.hours / d.cap > 0.85).length;
+  const onRoad = CLIENT.loads.filter((l) => ["Assigned", "In transit"].includes(l.status)).length;
+  return `
+  <div class="view-head">
+    <div><h1>Fleet &amp; drivers</h1><p>Hours, availability and who is close to the limit.</p></div>
+  </div>
+  <div class="tile-grid three">
+    <article class="tile"><div class="tile-top"><span class="tile-label">Drivers available</span><span class="tile-icon">${I("i-team")}</span></div><div class="tile-value" data-count="${available}">${available}</div></article>
+    <article class="tile"><div class="tile-top"><span class="tile-label">Close to hours cap</span><span class="tile-icon lav">${I("i-clock")}</span></div><div class="tile-value" data-count="${nearCap}">${nearCap}</div></article>
+    <article class="tile"><div class="tile-top"><span class="tile-label">Loads on the road</span><span class="tile-icon mint">${I("i-boxes")}</span></div><div class="tile-value" data-count="${onRoad}">${onRoad}</div></article>
+  </div>
+  <section class="card">
+    <div class="card-head"><div><h2>Driver hours this week</h2><small>Cap is 48 hours</small></div></div>
+    <div class="card-body driver-list">
+      ${CLIENT.drivers
+        .map(
+          (d) => `<div class="driver-row">
+            <span class="driver-name"><strong>${d.name}</strong><small>${d.status}${d.load !== "—" ? ` · ${d.load}` : ""}</small></span>
+            <span class="driver-bar"><i class="${d.hours / d.cap > 0.85 ? "hot" : ""}" style="width:${Math.round((d.hours / d.cap) * 100)}%"></i></span>
+            <span class="driver-hours">${d.hours}/${d.cap}h</span>
+          </div>`,
+        )
+        .join("")}
+    </div>
+  </section>`;
+}
+
+function viewLanes() {
+  return `
+  <div class="view-head">
+    <div><h1>Lane margin</h1><p>What each corridor earns after cost — the argument for changing a rate.</p></div>
+  </div>
+  <section class="card">
+    <div class="card-head"><div><h2>By lane</h2><small>This month · ${CLIENT.currency}</small></div></div>
+    <div class="card-body">
+      <table class="table">
+        <thead><tr><th>Lane</th><th>Loads</th><th>Revenue</th><th>Cost</th><th>Margin</th><th>Fill</th></tr></thead>
+        <tbody>
+          ${CLIENT.lanes
+            .map((l) => {
+              const margin = Math.round(((l.revenue - l.cost) / l.revenue) * 100);
+              return `<tr>
+                <td><strong>${l.lane}</strong></td>
+                <td class="mono">${l.loads}</td>
+                <td class="mono">${fmt.money(l.revenue)}</td>
+                <td class="mono">${fmt.money(l.cost)}</td>
+                <td><span class="margin ${margin < 20 ? "low" : ""}">${margin}%</span></td>
+                <td><span class="fill"><i style="width:${l.fill}%"></i></span></td>
+              </tr>`;
+            })
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-foot"><span>Salalah is losing money at this fill</span><span>Sample data</span></div>
+  </section>`;
+}
+
+function viewSchedule() {
+  const booked = CLIENT.clinicians.reduce(
+    (n, c) => n + c.slots.filter((s) => s.state !== "open").length,
+    0,
+  );
+  return `
+  <div class="view-head">
+    <div><h1>Today's list</h1><p>Three clinicians, one screen, so the front desk can see what is free.</p></div>
+    <div class="head-actions"><span class="chip good">${booked} booked</span></div>
+  </div>
+  <div class="schedule">
+    ${CLIENT.clinicians
+      .map(
+        (c) => `<section class="clinic-col">
+          <header><strong>${c.name}</strong><small>${c.role}</small></header>
+          ${c.slots
+            .map(
+              (slot) => `<button class="slot-card ${slot.state}" data-slot-detail="${c.name} · ${slot.time}">
+                <span class="slot-time">${slot.time}</span>
+                <span class="slot-body"><strong>${slot.patient}</strong><small>${slot.type}</small></span>
+                <span class="slot-state">${slot.state === "open" ? "Free" : slot.state === "no-show" ? "No-show" : slot.state === "arrived" ? "Here" : "Booked"}</span>
+              </button>`,
+            )
+            .join("")}
+        </section>`,
+      )
+      .join("")}
+  </div>`;
+}
+
+function viewWaitlist() {
+  return `
+  <div class="view-head">
+    <div><h1>Waitlist</h1><p>People waiting for a slot, and how well they fit the gaps.</p></div>
+    <div class="head-actions"><button class="btn sm" data-request="module">${I("i-plus")}Add to waitlist</button></div>
+  </div>
+  <section class="card">
+    <div class="card-head"><div><h2>Waiting for a slot</h2><small>Best fit first</small></div>
+      <span class="chip uv">${CLIENT.waitlist.length} waiting</span></div>
+    <div class="card-body waitlist">
+      ${CLIENT.waitlist
+        .map(
+          (w) => `<div class="wait-row">
+            <span class="wait-main"><strong>${w.name}</strong><small>${w.need} · ${w.site} · waiting ${w.waiting}</small></span>
+            <span class="wait-fit"><i style="width:${w.fit}%"></i></span>
+            <span class="wait-score">${w.fit}% fit</span>
+            <button class="btn sm" data-offer="${w.name}">Offer slot</button>
+          </div>`,
+        )
+        .join("")}
+    </div>
+    <div class="card-foot"><span>Offers go out only when a clinician's list has a gap</span></div>
+  </section>`;
+}
+
+function viewClaims() {
+  const submitted = CLIENT.claims.reduce((n, c) => n + c.value, 0);
+  const denied = CLIENT.claims.reduce((n, c) => n + c.denied, 0);
+  return `
+  <div class="view-head">
+    <div><h1>Claims</h1><p>Submitted, approved, denied — by payer.</p></div>
+  </div>
+  <section class="card">
+    <div class="card-head"><div><h2>This month</h2><small>${CLIENT.currency} ${fmt.money(submitted)} submitted</small></div>
+      <span class="chip warn">${denied} denied</span></div>
+    <div class="card-body claims">
+      ${CLIENT.claims
+        .map((c) => {
+          const approved = Math.round((c.approved / c.submitted) * 100);
+          return `<div class="claim-row">
+            <span class="claim-name"><strong>${c.payer}</strong><small>${c.submitted} submitted · ${c.denied} denied</small></span>
+            <span class="claim-bar"><i style="width:${approved}%"></i></span>
+            <span class="claim-pct">${approved}%</span>
+            <span class="claim-value">${fmt.money(c.value)}</span>
+          </div>`;
+        })
+        .join("")}
+    </div>
+    <div class="card-foot"><span>Denials with Daman are up this month</span><span>Sample data</span></div>
+  </section>`;
+}
+
 /* --------------------------------------------------------------- manage OS */
 
 const OS_NAV = [
@@ -1731,21 +1905,24 @@ function viewOs() {
 
 /* ----------------------------------------------------------------- render */
 
+const VIEWS = {
+  general: () => viewGeneral(),
+  decisions: () => viewDecisions(),
+  orders: () => viewOrders(),
+  inventory: () => viewInventory(),
+  savings: () => viewSavings(),
+  dispatch: () => viewDispatch(),
+  fleet: () => viewFleet(),
+  lanes: () => viewLanes(),
+  schedule: () => viewSchedule(),
+  waitlist: () => viewWaitlist(),
+  claims: () => viewClaims(),
+};
+
 function renderStage() {
   const stage = document.getElementById("stage");
-  stage.innerHTML = state.os
-    ? viewOs()
-    : state.active === "general"
-      ? viewGeneral()
-      : state.active === "decisions"
-        ? viewDecisions()
-        : state.active === "orders"
-              ? viewOrders()
-              : state.active === "inventory"
-                ? viewInventory()
-                : state.active === "savings"
-                  ? viewSavings()
-                  : viewGeneral();
+  const render = state.os ? viewOs : VIEWS[state.active] || viewGeneral;
+  stage.innerHTML = render();
   document.getElementById("topbar").classList.toggle("os-mode", Boolean(state.os));
   wireStage();
   renderConnectors();
@@ -1846,6 +2023,52 @@ function wireStage() {
       openDock("ask");
     }),
   );
+  stage.querySelectorAll("[data-load]").forEach((el) =>
+    el.addEventListener("click", () => {
+      const load = CLIENT.loads.find((l) => l.id === el.dataset.load);
+      if (!load) return;
+      openDrawer(
+        load.id,
+        `${load.customer} · ${load.from} → ${load.to}`,
+        `<div class="drawer-facts">
+          <div><span>Status</span><strong>${load.status}</strong></div>
+          <div><span>Weight</span><strong>${load.weight}</strong></div>
+          <div><span>Rate</span><strong>${CLIENT.currency} ${fmt.money(load.rate)}</strong></div>
+          <div><span>Driver</span><strong>${load.driver}</strong></div>
+        </div>
+        <h4 class="drawer-title">Timing</h4>
+        <ol class="timeline">
+          <li><i></i><div><strong>Booked</strong><span>${load.customer} · today</span></div></li>
+          <li><i></i><div><strong>Tender</strong><span>${load.status === "Unassigned" ? "Waiting for a carrier" : "Carrier accepted"}</span></div></li>
+          <li class="${load.status === "At border" ? "warn" : ""}"><i></i><div><strong>Transit</strong><span>${load.eta}</span></div></li>
+        </ol>
+        <div class="drawer-actions">
+          <button class="btn primary sm" data-load-action>Tender load</button>
+          <button class="btn sm" data-load-message>Message driver</button>
+        </div>`,
+      );
+      document.querySelector("[data-load-action]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast("Tendered · carriers notified");
+      });
+      document.querySelector("[data-load-message]")?.addEventListener("click", () => {
+        closeDrawer();
+        toast("Message queued for the driver");
+      });
+    }),
+  );
+
+  stage.querySelectorAll("[data-slot-detail]").forEach((el) =>
+    el.addEventListener("click", () => {
+      const [who, time] = el.dataset.slotDetail.split(" · ");
+      openDrawer(time, who, `<p class="muted">Slot detail is illustrative in this demo.</p>`);
+    }),
+  );
+
+  stage.querySelectorAll("[data-offer]").forEach((el) =>
+    el.addEventListener("click", () => toast(`Offer sent to ${el.dataset.offer}`)),
+  );
+
   stage.querySelectorAll("[data-new-request]").forEach((el) => el.addEventListener("click", () => newRequestModal()));
   stage.querySelectorAll("[data-request]").forEach((el) =>
     el.addEventListener("click", () => newRequestModal(el.dataset.request)),

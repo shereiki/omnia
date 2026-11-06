@@ -46,47 +46,34 @@
       </defs>
     </svg>
 
-    <nav class="pill" id="topbar" aria-label="Workspace navigation">
-      <a class="pill-brand" href="/demos/" aria-label="Omnia demo home">
+    <nav class="nav" id="topbar" aria-label="Workspace navigation">
+      <a class="nav-brand" href="/demos/" aria-label="Omnia demos">
         <svg viewBox="0 0 430 440" aria-hidden="true">
           <path fill="#5B45D6" d="M228 70h-58Q70 70 70 170v68h74v-56q0-38 38-38h46Z" />
           <path fill="#69E3C0" d="M246 70h16q98 0 98 98v50h-74v-36q0-38-40-38Z" />
           <path fill="#5B45D6" d="M360 236v38q0 96-96 96h-74v-74h58q38 0 38-38v-22Z" />
           <path fill="#5B45D6" d="M70 256v18q0 96 98 96h4v-74q-28 0-28-38v-2Z" />
         </svg>
-        <span>OMNIA</span>
       </a>
 
-      <span class="pill-divider" aria-hidden="true"></span>
+      <div class="nav-bubble nav-dashboards">
+        <div class="tabs" id="tabs" role="tablist" aria-label="Dashboards"></div>
+      </div>
 
-      <div class="tabs" id="tabs" role="tablist" aria-label="Dashboards"></div>
-      <button class="pill-ask" id="askButton" type="button" aria-expanded="false" aria-controls="dock">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-spark" /></svg>
-        <span>Ask Omnia</span>
-      </button>
-
-      <button class="pill-agents" id="agentsButton" type="button" aria-expanded="false" aria-controls="dock">
-        <i></i><b id="agentsChipCount">3</b><span>agents</span>
-      </button>
-
-      <div class="pill-actions">
-        <button class="pill-button" type="button" aria-label="Search" data-action="search">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-search" /></svg>
+      <div class="nav-right">
+        <button class="nav-bubble nav-ask" id="askButton" type="button" aria-expanded="false" aria-controls="dock">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-spark" /></svg>
+          <span>Ask Omnia</span>
         </button>
-        <button class="pill-person" id="dockButton" type="button" aria-label="Your engineer" aria-expanded="false" aria-controls="dock">
-          <span class="pill-person-avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mail" /></svg></span>
-          <span class="pill-person-copy">
-            <small>Your engineer</small>
-            <strong>Ayesha Karim</strong>
-          </span>
-          <i class="badge" id="dockBadge" hidden></i>
+        <button class="nav-bubble nav-agents" id="agentsButton" type="button" aria-expanded="false" aria-controls="dock">
+          <i></i><b id="agentsChipCount">3</b><span>agents</span>
         </button>
-        <button class="pill-button" id="bell" type="button" aria-label="Notifications" data-action="notify">
+        <button class="nav-circle" id="bell" type="button" aria-label="Notifications" data-action="notify">
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bell" /></svg>
           <i class="badge" id="badge" hidden></i>
         </button>
         <div class="account-wrap">
-          <button class="pill-account" id="accountButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Maya Ortiz">
+          <button class="nav-circle nav-avatar" id="accountButton" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Maya Ortiz">
             <span class="avatar">MO</span>
           </button>
           <div class="menu account-menu" id="accountMenu" role="menu" hidden>

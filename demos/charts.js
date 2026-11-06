@@ -108,10 +108,10 @@ export function lineChart({
   barLabel = "Orders",
   lineLabel = "Conversations",
 }) {
-  const padLeft = 46;
-  const padRight = 12;
-  const padTop = 14;
-  const padBottom = 26;
+  const padLeft = 40;
+  const padRight = 26;
+  const padTop = 22;
+  const padBottom = 28;
   const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
   const scale = niceScale(Math.max(...data.map((d) => d.value)), ticks);
@@ -123,27 +123,28 @@ export function lineChart({
   const y = (v) => padTop + plotH - (v / max) * plotH;
 
   const pts = data.map((d, i) => [x(i), y(d.value)]);
-  const line = monotonePath(pts);
-  const area = `${line} L${x(data.length - 1)} ${padTop + plotH} L${x(0)} ${padTop + plotH} Z`;
+  const path = monotonePath(pts);
+  const area = `${path} L${x(data.length - 1)} ${padTop + plotH} L${x(0)} ${padTop + plotH} Z`;
 
-  const barMax = niceMax(Math.max(...data.map((d) => d.bar ?? 0)) || 1, ticks) * 1.15;
-  const barW = Math.min(18, step * 0.34);
+  const barMax = niceScale(Math.max(...data.map((d) => d.bar ?? 0)) || 1, ticks).max * 1.1;
+  const barW = Math.min(22, step * 0.38);
 
   const grid = Array.from({ length: steps + 1 }, (_, i) => {
     const value = (max / steps) * i;
     const yy = y(value);
     return `<g>
-      <path d="M${padLeft} ${yy}H${width - padRight}" stroke="${C.grid}" stroke-width="1" />
-      <text x="${padLeft - 10}" y="${yy + 3.5}" text-anchor="end" class="axis-text">${valueFormat(value)}</text>
+      <line x1="${padLeft}" x2="${width - padRight}" y1="${yy}" y2="${yy}"
+        stroke="${C.grid}" stroke-width="1" stroke-dasharray="2 5" opacity="0.9" />
+      <text x="${padLeft - 12}" y="${yy + 3.5}" text-anchor="end" class="axis-text">${valueFormat(value)}</text>
     </g>`;
   }).join("");
 
   const bars = data
     .map((d, i) => {
       if (d.bar === undefined || d.bar === null) return "";
-      const h = (d.bar / barMax) * plotH * 0.52;
+      const h = (d.bar / barMax) * plotH * 0.55;
       return `<rect data-bar x="${x(i) - barW / 2}" y="${padTop + plotH}" width="${barW}" height="0"
-        data-h="${h}" data-base="${padTop + plotH}" rx="4" fill="${C.mintSoft}" opacity="0.38">
+        data-h="${h}" data-base="${padTop + plotH}" rx="6" fill="${C.mintSoft}" opacity="0.42">
         <title>${d.label}: ${barFormat(d.bar)} ${barLabel.toLowerCase()}</title></rect>`;
     })
     .join("");
@@ -152,12 +153,21 @@ export function lineChart({
     .map((d, i) => `<text x="${x(i)}" y="${height - 8}" text-anchor="middle" class="axis-text">${d.label}</text>`)
     .join("");
 
-  const dots = data
-    .map(
-      (d, i) =>
-        `<circle class="dot" cx="${x(i)}" cy="${y(d.value)}" r="3" fill="#fff" stroke="${C.uv}" stroke-width="2" opacity="${i === data.length - 1 ? 1 : 0}" />`,
-    )
-    .join("");
+  const lastIndex = data.length - 1;
+  const lastPoint = pts[lastIndex];
+  const pillW = 58;
+  const pillX = Math.min(
+    Math.max(lastPoint[0] - pillW - 10, padLeft + 2),
+    width - padRight - pillW - 2,
+  );
+  const pillY = Math.max(lastPoint[1] - 22, 14);
+  const endPoint = `
+    <circle cx="${lastPoint[0]}" cy="${lastPoint[1]}" r="9" fill="${C.uv}" opacity="0.12" />
+    <circle cx="${lastPoint[0]}" cy="${lastPoint[1]}" r="4.5" fill="#fff" stroke="${C.uv}" stroke-width="3" />
+    <g class="chart-pill" transform="translate(${pillX}, ${pillY})">
+      <rect x="0" y="-18" width="${pillW}" height="20" rx="10" fill="#1d1740" />
+      <text x="${pillW / 2}" y="-4" text-anchor="middle" class="chart-pill-text">${valueFormat(data[lastIndex].value)}${unit}</text>
+    </g>`;
 
   const hover = data
     .map(
@@ -174,29 +184,30 @@ export function lineChart({
       preserveAspectRatio="none" role="img" aria-label="${lineLabel} by ${data.length} points">
     <defs>
       <linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${C.uv}" stop-opacity="0.16" />
+        <stop offset="0%" stop-color="${C.uv}" stop-opacity="0.22" />
+        <stop offset="55%" stop-color="${C.uv}" stop-opacity="0.06" />
         <stop offset="100%" stop-color="${C.uv}" stop-opacity="0" />
       </linearGradient>
     </defs>
     ${grid}
     ${bars}
     <path d="${area}" fill="url(#${uid})" />
-    <path class="line" d="${line}" fill="none" stroke="${C.uv}" stroke-width="2.2"
+    <path class="line" d="${path}" fill="none" stroke="${C.uv}" stroke-width="3"
       stroke-linecap="round" stroke-linejoin="round" />
-    ${dots}
+    ${endPoint}
     <g class="hits">${hover}</g>
     ${xLabels}
-    <g class="cursor" opacity="0"><line y1="${padTop}" y2="${padTop + plotH}" stroke="${C.lav}" stroke-width="1" /></g>
+    <g class="cursor" opacity="0"><line y1="${padTop}" y2="${padTop + plotH}" stroke="${C.lav}" stroke-width="1" stroke-dasharray="3 4" /></g>
   </svg>`;
 }
 
 export function columns(data, { width = 320, height = 150, highlightLast = true, unit = "" } = {}) {
-  const padTop = 18;
-  const padBottom = 22;
-  const padLeft = 4;
+  const padTop = 24;
+  const padBottom = 24;
+  const padLeft = 6;
   const plotH = height - padTop - padBottom;
-  const max = niceMax(Math.max(...data.map((d) => d.value)), 3);
-  const gap = 12;
+  const max = niceScale(Math.max(...data.map((d) => d.value)), 3).max;
+  const gap = 14;
   const barW = (width - padLeft * 2 - gap * (data.length - 1)) / data.length;
 
   const bars = data
@@ -204,12 +215,13 @@ export function columns(data, { width = 320, height = 150, highlightLast = true,
       const h = (d.value / max) * plotH;
       const x = padLeft + i * (barW + gap);
       const strong = highlightLast && i === data.length - 1;
-      return `<g>
+      return `<g class="col">
+        <rect class="col-track" x="${x}" y="${padTop}" width="${barW}" height="${plotH}" rx="8" fill="#f6f3fd" />
         <rect data-bar x="${x}" y="${padTop + plotH}" width="${barW}" height="0"
-          data-h="${h}" data-base="${padTop + plotH}" rx="4"
-          fill="${strong ? C.uv : "#e6e0f7"}" />
-        <text x="${x + barW / 2}" y="${padTop + plotH - h - 7}" text-anchor="middle" class="col-value">${fmt.n(d.value)}${unit}</text>
-        <text x="${x + barW / 2}" y="${height - 5}" text-anchor="middle" class="axis-text">${d.label}</text>
+          data-h="${h}" data-base="${padTop + plotH}" rx="8"
+          fill="${strong ? C.uv : "#ded5f8"}" />
+        <text x="${x + barW / 2}" y="${padTop + plotH - h - 9}" text-anchor="middle" class="col-value">${fmt.n(d.value)}${unit}</text>
+        <text x="${x + barW / 2}" y="${height - 6}" text-anchor="middle" class="axis-text">${d.label}</text>
       </g>`;
     })
     .join("");
