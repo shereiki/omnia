@@ -1,225 +1,259 @@
-/* Chart primitives for the workspace demo.
-   Plain SVG with data attributes so GSAP can draw and scale them in. */
+/* Charts for the workspace demo.
+   Accurate first: every scale comes from the data it plots. Pretty second:
+   monotone curves (no overshoot), one grid weight, one axis voice. */
 
-const NS = {
+export const C = {
   uv: "#5b45d6",
-  uvSoft: "#8d7bea",
-  mint: "#69e3c0",
-  mintDeep: "#2aa886",
+  uvSoft: "#8b79ea",
+  mint: "#3bbfa0",
+  mintSoft: "#69e3c0",
   lav: "#c9c2f2",
   ink: "#1d1740",
-  grid: "#f0ecfa",
+  grid: "#f1edfa",
+  axis: "#a09ab9",
 };
 
 export const fmt = {
-  n: (value) => new Intl.NumberFormat("en-US").format(Math.round(value)),
-  money: (value) =>
-    new Intl.NumberFormat("en-AE", { maximumFractionDigits: 0 }).format(
-      Math.round(value),
-    ),
-  pct: (value) => `${Math.round(value)}%`,
+  n: (v) => new Intl.NumberFormat("en-US").format(Math.round(v)),
+  money: (v) =>
+    new Intl.NumberFormat("en-AE", { maximumFractionDigits: 0 }).format(Math.round(v)),
 };
 
-/* Smooth path through values using a Catmull-Rom style cubic. */
-function smoothPath(values, xAt, yAt) {
-  return values
-    .map((value, index) => {
-      const x = xAt(index);
-      const y = yAt(value);
-      if (index === 0) return `M${x} ${y}`;
-      const px = xAt(index - 1);
-      const py = yAt(values[index - 1]);
-      const cx = px + (x - px) / 2;
-      return `C${cx} ${py} ${cx} ${y} ${x} ${y}`;
-    })
-    .join(" ");
+/* Round a maximum up to a value that produces readable ticks. */
+function niceStep(rough) {
+  const pow = Math.pow(10, Math.floor(Math.log10(rough)));
+  const step = [1, 2, 2.5, 5, 10].find((m) => m * pow >= rough) * pow;
+  return step;
 }
 
-export function lineChart({
-  series,
-  labels = [],
-  width = 640,
-  height = 180,
-  bars = null,
-  dots = true,
-  yTicks = 3,
-  valueFormat = (v) => fmt.n(v),
-}) {
-  const primary = series[0];
-  const flat = series.flatMap((s) => s.values);
-  const pad = 16;
-  const top = 10;
-  const max = Math.max(...flat) * 1.12 || 1;
-  const min = 0;
-  const stepX = (width - pad * 2) / Math.max(1, primary.values.length - 1);
-  const xAt = (i) => pad + i * stepX;
-  const yAt = (v) => height - ((v - min) / (max - min)) * (height - top);
-  const uid = `g${Math.random().toString(36).slice(2, 8)}`;
-  const barW = Math.min(22, stepX * 0.42);
+/* An axis that ends just above the data: 214 becomes 250 in 5 steps, not 400. */
+export function niceScale(max, ticks = 4) {
+  if (!Number.isFinite(max) || max <= 0) return { max: 1, step: 0.25, ticks: 4 };
+  const step = niceStep(max / ticks);
+  const top = Math.ceil(max / step) * step;
+  return { max: top, step, ticks: Math.round(top / step) };
+}
 
-  const lineD = smoothPath(primary.values, xAt, yAt);
-  const areaD = `${lineD} L${width - pad} ${height} L${pad} ${height} Z`;
+export function niceMax(max, ticks = 4) {
+  return niceScale(max, ticks).max;
+}
 
-  return `<svg class="chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img"
-      aria-label="Activity chart">
-    <defs>
-      <linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${NS.uv}" stop-opacity="0.2" />
-        <stop offset="100%" stop-color="${NS.uv}" stop-opacity="0" />
-      </linearGradient>
-    </defs>
-    <g stroke="${NS.grid}" stroke-width="1">
-      ${Array.from({ length: yTicks }, (_, i) => {
-        const y = top + ((height - top) / (yTicks + 1)) * (i + 1);
-        return `<path d="M0 ${y}H${width}" />`;
-      }).join("")}
-    </g>
-    ${
-      bars
-        ? `<g class="chart-bars" fill="${NS.mint}" opacity="0.45">
-            ${bars.values
-              .map((value, index) => {
-                const maxBar = Math.max(...bars.values) * 1.55 || 1;
-                const h = (value / maxBar) * (height * 0.58);
-                return `<rect data-bar x="${xAt(index) - barW / 2}" y="${height}" width="${barW}" height="0"
-                  data-height="${h}" data-base="${height}" rx="4" />`;
-              })
-              .join("")}
-          </g>`
-        : ""
+/* Fritsch-Carlson monotone cubic: smooth, but never overshoots the data. */
+function monotonePath(points) {
+  const n = points.length;
+  if (n === 0) return "";
+  if (n === 1) return `M${points[0][0]} ${points[0][1]}`;
+  const dx = [];
+  const dy = [];
+  const slope = [];
+  for (let i = 0; i < n - 1; i++) {
+    dx[i] = points[i + 1][0] - points[i][0];
+    dy[i] = points[i + 1][1] - points[i][1];
+    slope[i] = dy[i] / dx[i];
+  }
+  const m = [slope[0]];
+  for (let i = 1; i < n - 1; i++) {
+    if (slope[i - 1] * slope[i] <= 0) m[i] = 0;
+    else {
+      const w1 = 2 * dx[i] + dx[i - 1];
+      const w2 = dx[i] + 2 * dx[i - 1];
+      m[i] = (w1 + w2) / (w1 / slope[i - 1] + w2 / slope[i]);
     }
-    <path d="${areaD}" fill="url(#${uid})" class="chart-area" />
-    <path d="${lineD}" fill="none" stroke="${NS.uv}" stroke-width="2.4" stroke-linecap="round"
-      class="chart-line" data-length="1" />
-    ${
-      series[1]
-        ? `<path d="${smoothPath(series[1].values, xAt, yAt)}" fill="none" stroke="${NS.mintDeep}"
-            stroke-width="2" stroke-linecap="round" opacity="0.9" class="chart-line-2" />`
-        : ""
-    }
-    ${
-      dots
-        ? primary.values
-            .map(
-              (value, index) =>
-                `<g class="chart-dot" data-i="${index}">
-                  <circle cx="${xAt(index)}" cy="${yAt(value)}" r="9" fill="transparent" />
-                  <circle cx="${xAt(index)}" cy="${yAt(value)}" r="2.6" fill="#fff"
-                    stroke="${NS.uv}" stroke-width="2" />
-                  <title>${labels[index] || ""}: ${valueFormat(value)}</title>
-                </g>`,
-            )
-            .join("")
-        : ""
-    }
-    ${
-      labels.length
-        ? `<g class="chart-hit">${labels
-            .map(
-              (label, index) =>
-                `<rect data-label="${label}" data-value="${valueFormat(primary.values[index])}"
-                  x="${xAt(index) - stepX / 2}" y="0" width="${stepX}" height="${height}" fill="transparent" />`,
-            )
-            .join("")}</g>`
-        : ""
-    }
+  }
+  m[n - 1] = slope[n - 2];
+
+  let d = `M${points[0][0]} ${points[0][1]}`;
+  for (let i = 0; i < n - 1; i++) {
+    const [x0, y0] = points[i];
+    const [x1, y1] = points[i + 1];
+    const h = dx[i] / 3;
+    d += ` C${x0 + h} ${y0 + m[i] * h} ${x1 - h} ${y1 - m[i + 1] * h} ${x1} ${y1}`;
+  }
+  return d;
+}
+
+export function sparkline(values, { width = 84, height = 26, color = C.uv, fill = true } = {}) {
+  if (!values.length) return "";
+  const max = niceMax(Math.max(...values));
+  const min = Math.min(0, Math.min(...values));
+  const span = max - min || 1;
+  const stepX = values.length > 1 ? (width - 2) / (values.length - 1) : width;
+  const pts = values.map((v, i) => [1 + i * stepX, height - 2 - ((v - min) / span) * (height - 5)]);
+  const d = monotonePath(pts);
+  const uid = `s${Math.random().toString(36).slice(2, 7)}`;
+  const [lx, ly] = pts[pts.length - 1];
+  return `<svg class="spark" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" aria-hidden="true">
+    ${fill ? `<defs><linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.13" />
+      <stop offset="100%" stop-color="${color}" stop-opacity="0" /></linearGradient></defs>
+    <path d="${d} L${width - 1} ${height} L1 ${height} Z" fill="url(#${uid})" />` : ""}
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="${lx}" cy="${ly}" r="2.1" fill="${color}" />
   </svg>`;
 }
 
-export function sparkline(values, { width = 92, height = 28, color = NS.uv } = {}) {
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const span = max - min || 1;
-  const stepX = width / (values.length - 1);
-  const yAt = (v) => height - 3 - ((v - min) / span) * (height - 6);
-  const d = values
-    .map((v, i) => `${i === 0 ? "M" : "L"}${(i * stepX).toFixed(1)} ${yAt(v).toFixed(1)}`)
-    .join(" ");
-  return `<svg class="spark" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"
-      aria-hidden="true"><path d="${d}" fill="none" stroke="${color}" stroke-width="1.8"
-      stroke-linecap="round" stroke-linejoin="round" /></svg>`;
-}
+/*
+  data: [{ label, value, bar? }]
+  - y axis with nice ticks and a unit
+  - optional columns behind the line (same x scale, own scale)
+*/
+export function lineChart({
+  data,
+  width = 720,
+  height = 240,
+  unit = "",
+  valueFormat = fmt.n,
+  barFormat = fmt.n,
+  ticks = 5,
+  barLabel = "Orders",
+  lineLabel = "Conversations",
+}) {
+  const padLeft = 46;
+  const padRight = 12;
+  const padTop = 14;
+  const padBottom = 26;
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom;
+  const scale = niceScale(Math.max(...data.map((d) => d.value)), ticks);
+  const max = scale.max;
+  const steps = scale.ticks;
+  const step = data.length > 1 ? plotW / (data.length - 1) : plotW;
 
-export function donut(items, { size = 168, thickness = 18, centerLabel = "", centerValue = "" } = {}) {
-  const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
-  const radius = (size - thickness) / 2;
-  const circumference = 2 * Math.PI * radius;
-  let offset = 0;
-  const segments = items
-    .map((item) => {
-      const length = (item.value / total) * circumference;
-      const el = `<circle class="donut-seg" cx="${size / 2}" cy="${size / 2}" r="${radius}"
-        fill="none" stroke="${item.color}" stroke-width="${thickness}"
-        stroke-dasharray="${length} ${circumference - length}"
-        stroke-dashoffset="${-offset}" stroke-linecap="butt"
-        transform="rotate(-90 ${size / 2} ${size / 2})"><title>${item.label}: ${fmt.n(item.value)}</title></circle>`;
-      offset += length;
-      return el;
+  const x = (i) => padLeft + (data.length > 1 ? i * step : plotW / 2);
+  const y = (v) => padTop + plotH - (v / max) * plotH;
+
+  const pts = data.map((d, i) => [x(i), y(d.value)]);
+  const line = monotonePath(pts);
+  const area = `${line} L${x(data.length - 1)} ${padTop + plotH} L${x(0)} ${padTop + plotH} Z`;
+
+  const barMax = niceMax(Math.max(...data.map((d) => d.bar ?? 0)) || 1, ticks) * 1.15;
+  const barW = Math.min(18, step * 0.34);
+
+  const grid = Array.from({ length: steps + 1 }, (_, i) => {
+    const value = (max / steps) * i;
+    const yy = y(value);
+    return `<g>
+      <path d="M${padLeft} ${yy}H${width - padRight}" stroke="${C.grid}" stroke-width="1" />
+      <text x="${padLeft - 10}" y="${yy + 3.5}" text-anchor="end" class="axis-text">${valueFormat(value)}</text>
+    </g>`;
+  }).join("");
+
+  const bars = data
+    .map((d, i) => {
+      if (d.bar === undefined || d.bar === null) return "";
+      const h = (d.bar / barMax) * plotH * 0.52;
+      return `<rect data-bar x="${x(i) - barW / 2}" y="${padTop + plotH}" width="${barW}" height="0"
+        data-h="${h}" data-base="${padTop + plotH}" rx="4" fill="${C.mintSoft}" opacity="0.38">
+        <title>${d.label}: ${barFormat(d.bar)} ${barLabel.toLowerCase()}</title></rect>`;
     })
     .join("");
-  return `<svg class="donut" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img"
-      aria-label="Channel mix">
-    <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="#f4f1fb"
-      stroke-width="${thickness}" />
-    ${segments}
-    <text x="50%" y="47%" text-anchor="middle" class="donut-value">${centerValue}</text>
-    <text x="50%" y="58%" text-anchor="middle" class="donut-label">${centerLabel}</text>
+
+  const xLabels = data
+    .map((d, i) => `<text x="${x(i)}" y="${height - 8}" text-anchor="middle" class="axis-text">${d.label}</text>`)
+    .join("");
+
+  const dots = data
+    .map(
+      (d, i) =>
+        `<circle class="dot" cx="${x(i)}" cy="${y(d.value)}" r="3" fill="#fff" stroke="${C.uv}" stroke-width="2" opacity="${i === data.length - 1 ? 1 : 0}" />`,
+    )
+    .join("");
+
+  const hover = data
+    .map(
+      (d, i) =>
+        `<rect data-hit x="${x(i) - step / 2}" y="${padTop}" width="${Math.max(step, 1)}" height="${plotH}"
+          fill="transparent" data-label="${d.label}" data-value="${valueFormat(d.value)}${unit}"
+          data-barlabel="${d.bar !== undefined ? `${barFormat(d.bar)} ${barLabel.toLowerCase()}` : ""}"></rect>`,
+    )
+    .join("");
+
+  const uid = `l${Math.random().toString(36).slice(2, 7)}`;
+
+  return `<svg class="chart" viewBox="0 0 ${width} ${height}" width="100%" height="${height}"
+      preserveAspectRatio="none" role="img" aria-label="${lineLabel} by ${data.length} points">
+    <defs>
+      <linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${C.uv}" stop-opacity="0.16" />
+        <stop offset="100%" stop-color="${C.uv}" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+    ${grid}
+    ${bars}
+    <path d="${area}" fill="url(#${uid})" />
+    <path class="line" d="${line}" fill="none" stroke="${C.uv}" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round" />
+    ${dots}
+    <g class="hits">${hover}</g>
+    ${xLabels}
+    <g class="cursor" opacity="0"><line y1="${padTop}" y2="${padTop + plotH}" stroke="${C.lav}" stroke-width="1" /></g>
   </svg>`;
 }
 
-export function columnChart(items, { width = 320, height = 150, color = NS.uv, secondary = null, showValues = false } = {}) {
-  const max = Math.max(...items.map((i) => i.value)) * 1.18 || 1;
-  const gap = 10;
-  const barW = (width - gap * (items.length - 1)) / items.length;
-  const bars = items
-    .map((item, index) => {
-      const h = (item.value / max) * (height - 26);
-      const x = index * (barW + gap);
-      return `<g class="col">
-        <rect x="${x}" y="${height - 18}" width="${barW}" height="0" data-height="${h}" data-base="${height - 18}"
-          rx="5" fill="${index === items.length - 1 ? color : "#e9e4f8"}" />
-        ${
-          secondary
-            ? `<rect x="${x}" y="${height - 18}" width="${barW}" height="0" rx="5"
-                fill="${secondary}" opacity="0.5" data-height="${(secondary.values?.[index] || 0) * 0.6}" />`
-            : ""
-        }
-        <title>${item.label}: ${fmt.n(item.value)}</title>
+export function columns(data, { width = 320, height = 150, highlightLast = true, unit = "" } = {}) {
+  const padTop = 18;
+  const padBottom = 22;
+  const padLeft = 4;
+  const plotH = height - padTop - padBottom;
+  const max = niceMax(Math.max(...data.map((d) => d.value)), 3);
+  const gap = 12;
+  const barW = (width - padLeft * 2 - gap * (data.length - 1)) / data.length;
+
+  const bars = data
+    .map((d, i) => {
+      const h = (d.value / max) * plotH;
+      const x = padLeft + i * (barW + gap);
+      const strong = highlightLast && i === data.length - 1;
+      return `<g>
+        <rect data-bar x="${x}" y="${padTop + plotH}" width="${barW}" height="0"
+          data-h="${h}" data-base="${padTop + plotH}" rx="4"
+          fill="${strong ? C.uv : "#e6e0f7"}" />
+        <text x="${x + barW / 2}" y="${padTop + plotH - h - 7}" text-anchor="middle" class="col-value">${fmt.n(d.value)}${unit}</text>
+        <text x="${x + barW / 2}" y="${height - 5}" text-anchor="middle" class="axis-text">${d.label}</text>
       </g>`;
     })
     .join("");
-  const values = showValues
-    ? items
-        .map(
-          (item, index) =>
-            `<text x="${index * (barW + gap) + barW / 2}" y="${height - 18 - (item.value / max) * (height - 26) - 6}"
-              text-anchor="middle" class="col-value">${fmt.n(item.value)}</text>`,
-        )
-        .join("")
-    : "";
-  const labels = items
-    .map(
-      (item, index) =>
-        `<text x="${index * (barW + gap) + barW / 2}" y="${height - 2}" text-anchor="middle"
-          class="col-label">${item.label}</text>`,
-    )
+
+  return `<svg class="columns" viewBox="0 0 ${width} ${height}" width="100%" height="${height}" role="img" aria-label="Columns">
+    <path d="M0 ${padTop + plotH}H${width}" stroke="${C.grid}" stroke-width="1" />
+    ${bars}
+  </svg>`;
+}
+
+export function donut(items, { size = 148, thickness = 14, centerValue = "", centerLabel = "" } = {}) {
+  const total = items.reduce((s, i) => s + i.value, 0) || 1;
+  const r = (size - thickness) / 2;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  const segs = items
+    .map((item) => {
+      const len = (item.value / total) * circ - 2;
+      const el = `<circle class="seg" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none"
+        stroke="${item.color}" stroke-width="${thickness}" stroke-linecap="round"
+        stroke-dasharray="${Math.max(len, 1)} ${circ}" stroke-dashoffset="${-offset - 1}"
+        transform="rotate(-90 ${size / 2} ${size / 2})"><title>${item.label}: ${fmt.n(item.value)}</title></circle>`;
+      offset += (item.value / total) * circ;
+      return el;
+    })
     .join("");
-  return `<svg class="columns" viewBox="0 0 ${width} ${height}" width="100%" height="${height}" role="img"
-      aria-label="Column chart">${bars}${values}${labels}</svg>`;
+  return `<svg class="donut" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Channel mix">
+    <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="#f4f1fb" stroke-width="${thickness}" />
+    ${segs}
+    <text x="50%" y="47%" text-anchor="middle" class="donut-value">${centerValue}</text>
+    <text x="50%" y="58%" text-anchor="middle" class="donut-label">${centerLabel}</text>
+  </svg>`;
 }
 
 export function funnel(stages) {
   const max = stages[0].value || 1;
   return `<div class="funnel">${stages
     .map(
-      (stage, index) => `
-    <div class="funnel-row" style="--i:${index}">
-      <span class="funnel-label">${stage.label}</span>
-      <span class="funnel-track"><i data-funnel="${(stage.value / max) * 100}"></i></span>
-      <span class="funnel-value">${fmt.n(stage.value)}</span>
-    </div>`,
+      (s, i) => `<div class="funnel-row">
+        <span class="funnel-label">${s.label}</span>
+        <span class="funnel-track"><i data-funnel="${(s.value / max) * 100}"></i></span>
+        <span class="funnel-value">${fmt.n(s.value)}</span>
+        <span class="funnel-drop">${i === 0 ? "" : `−${Math.round((1 - s.value / stages[i - 1].value) * 100)}%`}</span>
+      </div>`,
     )
     .join("")}</div>`;
 }
-
-export { NS };
