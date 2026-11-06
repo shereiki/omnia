@@ -2366,6 +2366,29 @@ function viewClaims() {
         .join("")}
     </div>
     <div class="card-foot"><span>Denials with Daman are up this month</span><span>Sample data</span></div>
+  </section>
+
+  <section class="card denials">
+    <div class="card-head">
+      <div><h2>Why claims get denied</h2><small>${denied} denials this month, grouped by the reason on the remittance</small></div>
+    </div>
+    <div class="card-body">
+      ${[
+        ["Missing pre-authorisation", 41, "Billing agent asks the clinic before resubmitting", "warn"],
+        ["Coding mismatch", 28, "Fixed automatically from the clinical note", "good"],
+        ["Patient not covered", 19, "Eligibility is checked at booking from now on", "uv"],
+        ["Late submission", 12, "Auto-submit at 48 hours, before the window closes", "good"],
+      ]
+        .map(
+          ([reason, share, note, tone]) => `<div class="denial-row">
+            <span class="denial-name"><strong>${reason}</strong><small>${note}</small></span>
+            <span class="denial-bar"><i class="${tone}" style="width:${share}%"></i></span>
+            <span class="denial-share">${share}%</span>
+          </div>`,
+        )
+        .join("")}
+    </div>
+    <div class="card-foot"><span>The agent clears coding and eligibility alone; pre-auth comes to you</span><span>Sample data</span></div>
   </section>`;
 }
 
